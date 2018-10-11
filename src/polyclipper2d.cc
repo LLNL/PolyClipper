@@ -81,7 +81,7 @@ segmentPlaneIntersection(const PolyClipper::Vector2d& a,       // line-segment b
                          const Plane2d& plane) {               // plane
   const auto asgndist = plane.dist + plane.normal.dot(a);
   const auto bsgndist = plane.dist + plane.normal.dot(b);
-  CHECK(asgndist != bsgndist);
+  assert(asgndist != bsgndist);
   return (a*bsgndist - b*asgndist)/(bsgndist - asgndist);
 }
 
@@ -238,7 +238,7 @@ polygon2string(const Polygon& poly) {
   //   auto vstart = 0;
   //   while (vstart < nverts and
   //          (poly[vstart].comp < 0 or usedVertices.find(vstart) != usedVertices.end())) vstart++;
-  //   CHECK(vstart < nverts);
+  //   assert (vstart < nverts);
   //   auto vnext = vstart;
 
   //   // Read out this loop.
@@ -281,7 +281,7 @@ void moments(double& zerothMoment, PolyClipper::Vector2d& firstMoment,
       firstMoment += triA * (polygon[vprev].position + polygon[vnext].position);
       vprev = vnext;
     }
-    CHECK(zerothMoment != 0.0);
+    assert (zerothMoment != 0.0);
     firstMoment = firstMoment/(3.0*zerothMoment) + polygon[vfirst].position;
     zerothMoment *= 0.5;
   }
@@ -319,7 +319,7 @@ void clipPolygon(Polygon& polygon,
     auto boxcomp = compare(plane, xmin, ymin, xmax, ymax);
     auto above = boxcomp ==  1;
     auto below = boxcomp == -1;
-    CHECK(not (above and below));
+    assert (not (above and below));
 
     // Check the current set of vertices against this plane.
     if (not (above or below)) {
@@ -331,7 +331,7 @@ void clipPolygon(Polygon& polygon,
           above = false;
         }
       }
-      CHECK(not (above and below));
+      assert (not (above and below));
     }
 
     // Did we get a simple case?
@@ -378,7 +378,7 @@ void clipPolygon(Polygon& polygon,
       // For each hanging vertex, link to the neighbors that survive the clipping.
       // If there are more than two hanging vertices, we've clipped a non-convex face and need to check
       // how to hook up each section, possibly resulting in new faces.
-      CHECK(hangingVertices.size() % 2 == 0);
+      assert (hangingVertices.size() % 2 == 0);
       if (true) { //(hangingVertices.size() > 2) {
 
         // Yep, more than one new edge here.
@@ -400,15 +400,15 @@ void clipPolygon(Polygon& polygon,
         // Just hook across the vertices and we're done.
         for (auto v: hangingVertices) {
           std::tie(vprev, vnext) = polygon[v].neighbors;
-          CHECK(polygon[v].comp == 0 or polygon[v].comp == 2);
-          CHECK(polygon[vprev].comp == -1 xor polygon[vnext].comp == -1);
+          assert (polygon[v].comp == 0 or polygon[v].comp == 2);
+          assert (polygon[vprev].comp == -1 xor polygon[vnext].comp == -1);
 
           if (polygon[vprev].comp == -1) {
             // We have to search backwards.
             while (polygon[vprev].comp == -1) {
               vprev = polygon[vprev].neighbors.first;
             }
-            CHECK(vprev != v);
+            assert (vprev != v);
             polygon[v].neighbors.first = vprev;
 
           } else {
@@ -416,7 +416,7 @@ void clipPolygon(Polygon& polygon,
             while (polygon[vnext].comp == -1) {
               vnext = polygon[vnext].neighbors.second;
             }
-            CHECK(vnext != v);
+            assert (vnext != v);
             polygon[v].neighbors.second = vnext;
 
           }
@@ -454,7 +454,7 @@ void clipPolygon(Polygon& polygon,
             polygon[k].neighbors.second = polygon[polygon[k].neighbors.second].ID;
           }
         }
-        Spheral::removeElements(polygon, verts2kill);
+        removeElements(polygon, verts2kill);
       }
 
       // cerr << "After compression: " << polygon2string(polygon) << endl;
@@ -487,7 +487,7 @@ void collapseDegenerates(Polygon& polygon,
       for (auto i = 0; i < n; ++i) {
         if (polygon[i].ID >= 0) {
           auto j = polygon[i].neighbors.second;
-          CHECK(polygon[j].ID >= 0);
+          assert (polygon[j].ID >= 0);
           if ((polygon[i].position - polygon[j].position).magnitude2() < tol2) {
             done = false;
             active = true;

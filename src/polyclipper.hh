@@ -16,9 +16,6 @@
 #ifndef __PolyClipper_hh__
 #define __PolyClipper_hh__
 
-#include "Geometry/Dimension.hh"
-#include "Geometry/GeomPlane.hh"
-
 #include <string>
 #include <vector>
 
@@ -130,8 +127,8 @@ void clipPolygon(Polygon& poly,
 void collapseDegenerates(Polygon& poly,
                          const double tol);
 
-  std::vector<std::vector<int>> splitIntoTriangles(const Polygon& poly,
-                                                   const double tol = 0.0);
+std::vector<std::vector<int>> splitIntoTriangles(const Polygon& poly,
+                                                 const double tol = 0.0);
 
 //------------------------------------------------------------------------------
 // 3D (polyhedron) methods.
