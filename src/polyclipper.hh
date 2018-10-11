@@ -18,6 +18,7 @@
 
 #include <string>
 #include <vector>
+#include <cmath>
 
 namespace PolyClipper {
 
@@ -26,8 +27,25 @@ namespace PolyClipper {
 //------------------------------------------------------------------------------
 struct Vector2d {
   double x, y;
-  Vector(double X, double Y): x(X), y(Y) {}
-  bool operator==(const Vector2d& rhs) { return x == rhs.x and y == rhs.y; }
+  Vector2d(): x(0.0), y(0.0) {}
+  Vector2d(double X, double Y): x(X), y(Y) {}
+  bool      operator==(const Vector2d& rhs) const { return x == rhs.x and y == rhs.y; }
+  double    dot(const Vector2d& rhs) const        { return x*rhs.x + y*rhs.y; }
+  double    cross(const Vector2d& rhs) const      { return x*rhs.y - y*rhs.x; }
+  double    magnitude2() const                    { return x*x + y*y; }
+  double    magnitude() const                     { return std::sqrt(x*x + y*y); }
+  Vector2d& operator*=(const double rhs)          { x *= rhs; y *= rhs; return *this; }
+  Vector2d& operator/=(const double rhs)          { x /= rhs; y /= rhs; return *this; }
+  Vector2d  operator+=(const Vector2d rhs)        { x += rhs.x; y += rhs.y; return *this; }
+  Vector2d  operator-=(const Vector2d rhs)        { x -= rhs.x; y -= rhs.y; return *this; }
+  Vector2d  operator*(const double rhs) const     { return Vector2d(rhs*x, rhs*y); }
+  Vector2d  operator/(const double rhs) const     { return Vector2d(x/rhs, y/rhs); }
+  Vector2d  operator+(const Vector2d rhs) const   { return Vector2d(x + rhs.x, y + rhs.y); }
+  Vector2d  operator-(const Vector2d rhs) const   { return Vector2d(x - rhs.x, y - rhs.y); }
+  Vector2d  unitVector() const {
+    const auto mag = this->magnitude();
+    return (mag > 0.0 ? Vector2d(x/mag, y/mag) : Vector2d(1.0, 0.0));
+  }
 };
 
 //------------------------------------------------------------------------------
@@ -35,8 +53,27 @@ struct Vector2d {
 //------------------------------------------------------------------------------
 struct Vector3d {
   double x, y, z;
-  Vector(double X, double Y, double Z): x(X), y(Y), z(Z) {}
-  bool operator==(const Vector3d& rhs) { return x == rhs.x and y == rhs.y and z == rhs.z; }
+  Vector3d(): x(0.0), y(0.0), z(0.0) {}
+  Vector3d(double X, double Y, double Z): x(X), y(Y), z(Z) {}
+  bool      operator==(const Vector3d& rhs) const { return x == rhs.x and y == rhs.y and z == rhs.z; }
+  double    dot(const Vector3d& rhs) const        { return x*rhs.x + y*rhs.y + z*rhs.z; }
+  Vector3d  cross(const Vector3d& rhs) const      { return Vector3d(y*rhs.z - z*rhs.y,
+                                                                    z*rhs.x - x*rhs.z,
+                                                                    x*rhs.y - y*rhs.x); }
+  double    magnitude2() const                    { return x*x + y*y + z*z; }
+  double    magnitude() const                     { return std::sqrt(x*x + y*y + z*z); }
+  Vector3d& operator*=(const double rhs)          { x *= rhs; y *= rhs; z *= rhs; return *this; }
+  Vector3d& operator/=(const double rhs)          { x /= rhs; y /= rhs; z /= rhs; return *this; }
+  Vector3d  operator+=(const Vector3d rhs)        { x += rhs.x; y += rhs.y; z += rhs.z; return *this; }
+  Vector3d  operator-=(const Vector3d rhs)        { x -= rhs.x; y -= rhs.y; z -= rhs.z; return *this; }
+  Vector3d  operator*(const double rhs) const     { return Vector3d(rhs*x, rhs*y, rhs*z); }
+  Vector3d  operator/(const double rhs) const     { return Vector3d(x/rhs, y/rhs, z/rhs); }
+  Vector3d  operator+(const Vector3d rhs) const   { return Vector3d(x + rhs.x, y + rhs.y, z + rhs.z); }
+  Vector3d  operator-(const Vector3d rhs) const   { return Vector3d(x - rhs.x, y - rhs.y, z - rhs.z); }
+  Vector3d  unitVector() const {
+    const auto mag = this->magnitude();
+    return (mag > 0.0 ? Vector3d(x/mag, y/mag, z/mag) : Vector3d(1.0, 0.0, 0.0));
+  }
 };
 
 //------------------------------------------------------------------------------

@@ -6,6 +6,8 @@
 #ifndef __polyclipper_utilities__
 #define __polyclipper_utilities__
 
+#include <ostream>
+
 namespace PolyClipper {
 
 //------------------------------------------------------------------------------
@@ -133,6 +135,44 @@ removeElements(std::vector<Value>& vec,
   }
 }
 
+}
+
+//------------------------------------------------------------------------------
+// Vector2d ostream
+//------------------------------------------------------------------------------
+inline
+std::ostream&
+operator<<(std::ostream& os, const PolyClipper::Vector2d& vec) {
+  os << "( " << vec.x << " " << vec.y << ")";
+  return os;
+}
+
+//------------------------------------------------------------------------------
+// double * Vector2d
+//------------------------------------------------------------------------------
+inline
+PolyClipper::Vector2d
+operator*(const double lhs, const PolyClipper::Vector2d& rhs) {
+  return rhs*lhs;
+}
+
+//------------------------------------------------------------------------------
+// Vector3d ostream
+//------------------------------------------------------------------------------
+inline
+std::ostream&
+operator<<(std::ostream& os, const PolyClipper::Vector3d& vec) {
+  os << "( " << vec.x << " " << vec.y << " " << vec.z << ")";
+  return os;
+}
+
+//------------------------------------------------------------------------------
+// double * Vector3d
+//------------------------------------------------------------------------------
+inline
+PolyClipper::Vector3d
+operator*(const double lhs, const PolyClipper::Vector3d& rhs) {
+  return rhs*lhs;
 }
 
 #endif

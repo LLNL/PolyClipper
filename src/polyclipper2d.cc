@@ -21,8 +21,10 @@
 #include <map>
 #include <set>
 #include <iostream>
+#include <sstream>
 #include <iterator>
 #include <algorithm>
+#include <assert.h>
 using std::vector;
 using std::list;
 using std::map;
@@ -97,7 +99,7 @@ segmentsIntersect(const PolyClipper::Vector2d& a,
 
   // The plane in the (c,c) orientation.
   Plane2d cdplane;
-  cdplane.normal = PolyClipper::Vector2d(-(c.y() - d.y()), c.x() - d.x()).unitVector();
+  cdplane.normal = PolyClipper::Vector2d(-(c.y - d.y), c.x - d.x).unitVector();
   cdplane.dist = -c.dot(cdplane.normal);
 
   // Does the (a,b) segment straddle the plane?
@@ -196,13 +198,10 @@ initializePolygon(Polygon& poly,
 
   // Pre-conditions
   const auto n = positions.size();
-  VERIFY2(neighbors.size() == n,
-          "PolyClipper::initializePolygon ERROR: positions and neighbors should be same size.");
-
+  assert (neighbors.size() == n);
   poly.resize(n);
   for (auto i = 0; i < n; ++i) {
-    VERIFY2(neighbors[i].size() == 2,
-            "PolyClipper::initializePolygon ERROR: each neighbor entry should be of size 2.");
+    assert (neighbors[i].size() == 2);
     poly[i].position = positions[i];
     poly[i].neighbors = {neighbors[i][0], neighbors[i][1]};
   }
@@ -266,7 +265,8 @@ void moments(double& zerothMoment, PolyClipper::Vector2d& firstMoment,
 
   // Clear the result for accumulation.
   zerothMoment = 0.0;
-  firstMoment = Vector::zero;
+  firstMoment.x = 0.0;
+  firstMoment.y = 0.0;
 
   // Walk the polygon, and add up our results triangle by triangle.
   if (not polygon.empty()) {
@@ -276,7 +276,7 @@ void moments(double& zerothMoment, PolyClipper::Vector2d& firstMoment,
     auto vnext = vfirst;
     for (auto k = 0; k < nverts; ++k) {
       vnext = polygon[vnext].neighbors.second;
-      const auto triA = (polygon[vprev].position - polygon[vfirst].position).cross(polygon[vnext].position - polygon[vfirst].position).z();
+      const auto triA = (polygon[vprev].position - polygon[vfirst].position).cross(polygon[vnext].position - polygon[vfirst].position);
       zerothMoment += triA;
       firstMoment += triA * (polygon[vprev].position + polygon[vnext].position);
       vprev = vnext;
@@ -302,10 +302,10 @@ void clipPolygon(Polygon& polygon,
   auto xmin = std::numeric_limits<double>::max(), xmax = std::numeric_limits<double>::lowest();
   auto ymin = std::numeric_limits<double>::max(), ymax = std::numeric_limits<double>::lowest();
   for (auto& v: polygon) {
-    xmin = std::min(xmin, v.position[0]);
-    xmax = std::max(xmax, v.position[0]);
-    ymin = std::min(ymin, v.position[1]);
-    ymax = std::max(ymax, v.position[1]);
+    xmin = std::min(xmin, v.position.x);
+    xmax = std::max(xmax, v.position.x);
+    ymin = std::min(ymin, v.position.y);
+    ymax = std::max(ymax, v.position.y);
   }
 
   // Loop over the planes.
@@ -382,7 +382,7 @@ void clipPolygon(Polygon& polygon,
       if (true) { //(hangingVertices.size() > 2) {
 
         // Yep, more than one new edge here.
-        const Vector direction(plane.normal.y(), -(plane.normal.x()));
+        const Vector direction(plane.normal.y, -(plane.normal.x));
         sort(hangingVertices.begin(), hangingVertices.end(), 
              [&](const int a, const int b) { return (polygon[a].position).dot(direction) < (polygon[b].position).dot(direction); });
 
@@ -436,10 +436,10 @@ void clipPolygon(Polygon& polygon,
           nkill++;
         } else {
           v.ID = i++;
-          xmin = std::min(xmin, v.position[0]);
-          xmax = std::max(xmax, v.position[0]);
-          ymin = std::min(ymin, v.position[1]);
-          ymax = std::max(ymax, v.position[1]);
+          xmin = std::min(xmin, v.position.x);
+          xmax = std::max(xmax, v.position.x);
+          ymin = std::min(ymin, v.position.y);
+          ymax = std::max(ymax, v.position.y);
         }
       }
 
@@ -523,16 +523,16 @@ void collapseDegenerates(Polygon& polygon,
   }
 
   // Post-conditions.
-  BEGIN_CONTRACT_SCOPE
+#ifndef NDEBUG
   {
     const auto n = polygon.size();
     for (auto i = 0; i < n; ++i) {
-      ENSURE(polygon[i].ID == i);
-      ENSURE(polygon[i].neighbors.first < n);
-      ENSURE(polygon[i].neighbors.second < n);
+      assert(polygon[i].ID == i);
+      assert(polygon[i].neighbors.first < n);
+      assert(polygon[i].neighbors.second < n);
     }
   }
-  END_CONTRACT_SCOPE
+#endif
 }
 
 //------------------------------------------------------------------------------
@@ -549,7 +549,7 @@ vector<vector<int>> splitIntoTriangles(const Polygon& poly,
   bool convex = true;
   auto i = 0;
   while (convex and i < n0) {
-    convex = ((poly[poly[i].neighbors.second].position - poly[i].position).cross((poly[poly[i].neighbors.first].position - poly[i].position)).z() >= 0.0);
+    convex = ((poly[poly[i].neighbors.second].position - poly[i].position).cross((poly[poly[i].neighbors.first].position - poly[i].position)) >= 0.0);
     ++i;
   }
 
@@ -560,13 +560,14 @@ vector<vector<int>> splitIntoTriangles(const Polygon& poly,
     for (auto i = 2; i < n0; ++i) {
       const auto& v1 = poly[i-1].position;
       const auto& v2 = poly[i].position;
-      a = 0.5*(v1 - v0).cross(v2 - v0).z();
+      a = 0.5*(v1 - v0).cross(v2 - v0);
       if (a > tol) result.push_back({0, i - 1, i});
     }
     return result;
   }
 
-  VERIFY2(false, "PolyClipper::splitIntoTriangles ERROR: non-convex polygons not supported yet.");
+  // PolyClipper::splitIntoTriangles ERROR: non-convex polygons not supported yet.
+  assert (false);
 }
 
 }

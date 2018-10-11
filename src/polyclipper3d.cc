@@ -21,8 +21,10 @@
 #include <map>
 #include <set>
 #include <iostream>
+#include <sstream>
 #include <iterator>
 #include <algorithm>
+#include <assert.h>
 using std::vector;
 using std::list;
 using std::map;
@@ -188,7 +190,7 @@ extractFaces(const Polyhedron& poly) {
   }
 
   // Post-conditions.
-  BEGIN_CONTRACT_SCOPE
+#ifndef NDEBUG
   {
     // Every pair should have been walked twice, once in each direction.
     for (auto i = 0; i < nverts; ++i) {
@@ -198,7 +200,7 @@ extractFaces(const Polyhedron& poly) {
       }
     }
   }
-  END_CONTRACT_SCOPE
+#endif
 
   // That's it.
   return result;
@@ -214,13 +216,10 @@ initializePolyhedron(Polyhedron& poly,
 
   // Pre-conditions
   const auto n = positions.size();
-  VERIFY2(neighbors.size() == n,
-          "PolyClipper::initializePolyhedron ERROR: positions and neighbors should be same size.");
-
+  assert (neighbors.size() == n);
   poly.resize(n);
   for (auto i = 0; i < n; ++i) {
-    VERIFY2(neighbors[i].size() >= 3,
-            "PolyClipper::initializePolyhedron ERROR: each vertex should have a minimum of three neighbors.");
+    assert(neighbors[i].size() >= 3);
     poly[i].position = positions[i];
     poly[i].neighbors = neighbors[i];
   }
@@ -276,7 +275,9 @@ void moments(double& zerothMoment, PolyClipper::Vector3d& firstMoment,
 
   // Clear the result for accumulation.
   zerothMoment = 0.0;
-  firstMoment = Vector::zero;
+  firstMoment.x = 0.0;
+  firstMoment.y = 0.0;
+  firstMoment.z = 0.0;
 
   if (not polyhedron.empty()) {
 
@@ -319,12 +320,12 @@ void clipPolyhedron(Polyhedron& polyhedron,
   auto ymin = std::numeric_limits<double>::max(), ymax = std::numeric_limits<double>::lowest();
   auto zmin = std::numeric_limits<double>::max(), zmax = std::numeric_limits<double>::lowest();
   for (auto& v: polyhedron) {
-    xmin = std::min(xmin, v.position[0]);
-    xmax = std::max(xmax, v.position[0]);
-    ymin = std::min(ymin, v.position[1]);
-    ymax = std::max(ymax, v.position[1]);
-    zmin = std::min(zmin, v.position[2]);
-    zmax = std::max(zmax, v.position[2]);
+    xmin = std::min(xmin, v.position.x);
+    xmax = std::max(xmax, v.position.x);
+    ymin = std::min(ymin, v.position.y);
+    ymax = std::max(ymax, v.position.y);
+    zmin = std::min(zmin, v.position.z);
+    zmax = std::max(zmax, v.position.z);
   }
 
   // Loop over the planes.
@@ -489,12 +490,12 @@ void clipPolyhedron(Polyhedron& polyhedron,
       for (auto& v: polyhedron) {
         if (v.comp >= 0) {
           v.ID = i++;
-          xmin = std::min(xmin, v.position[0]);
-          xmax = std::max(xmax, v.position[0]);
-          ymin = std::min(ymin, v.position[1]);
-          ymax = std::max(ymax, v.position[1]);
-          zmin = std::min(zmin, v.position[2]);
-          zmax = std::max(zmax, v.position[2]);
+          xmin = std::min(xmin, v.position.x);
+          xmax = std::max(xmax, v.position.x);
+          ymin = std::min(ymin, v.position.y);
+          ymax = std::max(ymax, v.position.y);
+          zmin = std::min(zmin, v.position.z);
+          zmax = std::max(zmax, v.position.z);
         }
       }
 
@@ -619,15 +620,15 @@ void collapseDegenerates(Polyhedron& polyhedron,
   // cerr << "Final: " << endl << polyhedron2string(polyhedron) << endl;
 
   // Post-conditions.
-  BEGIN_CONTRACT_SCOPE
+#ifndef NDEBUG
   {
     const auto n = polyhedron.size();
     for (auto i = 0; i < n; ++i) {
-      ENSURE(polyhedron[i].ID == i);
-      for (auto j: polyhedron[i].neighbors) ENSURE(j >= 0 and j < n);
+      assert (polyhedron[i].ID == i);
+      for (auto j: polyhedron[i].neighbors) assert (j >= 0 and j < n);
     }
   }
-  END_CONTRACT_SCOPE
+#endif
 
 }
 
@@ -688,7 +689,8 @@ vector<vector<int>> splitIntoTetrahedra(const Polyhedron& poly,
     return result;
   }
 
-  VERIFY2(false, "PolyClipper::splitIntoTetrahedra ERROR: non-convex polyhedra not supported yet:\n" + polyhedron2string(poly));
+  // PolyClipper::splitIntoTetrahedra ERROR: non-convex polyhedra not supported yet:\n" + polyhedron2string(poly)
+  assert(false);
 }
 
 }
