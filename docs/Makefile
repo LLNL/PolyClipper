@@ -2,7 +2,7 @@
 #
 
 # You can set these variables from the command line.
-SPHINXOPTS    =
+SPHINXOPTS    = #-D imgmath_latex=/usr/tce/packages/texlive/texlive-2016/2016/bin/x86_64-linux/latex
 SPHINXBUILD   = sphinx-build
 SOURCEDIR     = .
 BUILDDIR      = _build
