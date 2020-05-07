@@ -31,12 +31,17 @@ include(${POLYCLIPPER_BLT_DIR}/SetupBLT.cmake)
 ################################
 # Install
 ################################
-set(POLYCLIPPER_INSTALL_DIR "" CACHE STRING "Directory to install Polyclipper.")
+set(POLYCLIPPER_INSTALL_DIR "" CACHE STRING "Directory to install PolyClipper.")
 
 ################################
 # Include standard build system logic and options / definitions
 ################################
+option(ENABLE_STATIC_CXXONLY "enable C++ only build with static libraries" OFF)
 option(ENABLE_CXXONLY "enable C++ only build without python bindings" OFF)
+
+if(ENABLE_STATIC_CXXONLY)
+  set(ENABLE_CXXONLY ON)
+endif()
 
 if(ENABLE_CXXONLY)
   set(CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/PolyClipper)
@@ -44,7 +49,7 @@ if(ENABLE_CXXONLY)
     set(CMAKE_INSTALL_PREFIX ${POLYCLIPPER_INSTALL_DIR})
   endif()
 else()
-  set(CMAKE_INSTALL_PREFIX ${PYTHON_SITE_PACKAGE_DIR}/Polyclipper)
+  set(CMAKE_INSTALL_PREFIX ${PYTHON_SITE_PACKAGE_DIR}/PolyClipper)
 endif()
 
 if(ENABLE_OPENMP)

@@ -13,7 +13,7 @@ install(TARGETS              PolyClipper
         DESTINATION          lib
         INCLUDES DESTINATION include)
 install(FILES       polyclipper.hh
-        DESTINATION include/PolyClipper)
+        DESTINATION include)
 
 # # Are we building the Python bindings?
 # if(NOT ENABLE_CXXONLY)
