@@ -16,9 +16,11 @@
 #ifndef __PolyClipper_hh__
 #define __PolyClipper_hh__
 
-#include <string>
-#include <vector>
 #include <cmath>
+#include <string>
+#include <limits>
+#include <vector>
+#include <set>
 
 namespace PolyClipper {
 
