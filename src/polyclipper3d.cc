@@ -34,6 +34,9 @@ using std::make_pair;
 using std::min;
 using std::max;
 using std::abs;
+using std::ostream_iterator;
+using std::cerr;
+using std::endl;
 
 namespace PolyClipper {
 
@@ -236,7 +239,9 @@ polyhedron2string(const Polyhedron& poly) {
   for (auto i = 0; i < nverts; ++i) {
     s << i << " ID=" << poly[i].ID << " comp=" << poly[i].comp << " @ " << poly[i].position
       << " neighbors=[";
-    for (const auto ni: poly[i].neighbors) s << " " << ni;
+    copy(poly[i].neighbors.begin(), poly[i].neighbors.end(), ostream_iterator<int>(s, " "));
+    s << "] clips[";
+    copy(poly[i].clips.begin(), poly[i].clips.end(), ostream_iterator<int>(s, " "));
     s << "]\n";
   }
 
@@ -385,6 +390,15 @@ void clipPolyhedron(Polyhedron& polyhedron,
                                             2));         // 2 indicates new vertex
               assert (polyhedron.size() == inew + 1);
               polyhedron[inew].neighbors = vector<int>({jn, i});
+              polyhedron[inew].clips.insert(plane.ID);
+
+              // Patch up clip info -- gotta scan for common elements in the neighbors of the clipped guy.
+              std::set<int> common_clips;
+              std::set_intersection(polyhedron[i].clips.begin(), polyhedron[i].clips.end(),
+                                    polyhedron[jn].clips.begin(), polyhedron[jn].clips.end(),
+                                    std::inserter(common_clips, common_clips.begin()));
+              polyhedron[inew].clips.insert(common_clips.begin(), common_clips.end());
+
               nitr = find(polyhedron[jn].neighbors.begin(), polyhedron[jn].neighbors.end(), i);
               assert (nitr != polyhedron[jn].neighbors.end());
               *nitr = inew;
@@ -393,6 +407,9 @@ void clipPolyhedron(Polyhedron& polyhedron,
 
             }
           }
+        } else if (polyhedron[i].comp == 0) {
+          // This vertex is exactly in plane, so just add this plane as a clip.
+          polyhedron[i].clips.insert(plane.ID);
         }
       }
       nverts = polyhedron.size();
@@ -540,16 +557,18 @@ void collapseDegenerates(Polyhedron& polyhedron,
         auto idone = false;
         while (not idone) {
           idone = true;
-          for (auto jitr = polyhedron[i].neighbors.begin(); jitr < polyhedron[i].neighbors.end(); ++jitr) {
-            const auto j = *jitr;
+          for (auto jneigh = 0; jneigh < polyhedron[i].neighbors.size(); ++jneigh) {
+            const auto j = polyhedron[i].neighbors[jneigh];
             assert (polyhedron[j].ID >= 0);
             if ((polyhedron[i].position - polyhedron[j].position).magnitude2() < tol2) {
               // cerr << " --> collapasing " << j << " to " << i;
               active = true;
               idone = false;
               polyhedron[j].ID = -1;
+              polyhedron[i].clips.insert(polyhedron[j].clips.begin(), polyhedron[j].clips.end());
 
               // Merge the neighbors of j->i.
+              auto jitr = polyhedron[i].neighbors.begin() + jneigh;
               auto kitr = find(polyhedron[j].neighbors.begin(), polyhedron[j].neighbors.end(), i);
               assert (kitr != polyhedron[j].neighbors.end());
               jitr = polyhedron[i].neighbors.insert(jitr, polyhedron[j].neighbors.begin(), kitr);
@@ -574,11 +593,14 @@ void collapseDegenerates(Polyhedron& polyhedron,
 
               // Make all the neighbors of j point back at i instead of j.
               for (auto k: polyhedron[j].neighbors) {
-                auto itr = find(polyhedron[k].neighbors.begin(), polyhedron[k].neighbors.end(), j);
-                assert (itr != polyhedron[j].neighbors.end());
-                *itr = i;
+                 // i is a neighbor to j, and j has already been removed from list
+                 // also, i can not be a neighbor to itself
+                 if (k != i) {
+                    auto itr = find(polyhedron[k].neighbors.begin(), polyhedron[k].neighbors.end(), j);
+                    // assert (itr != polyhedron[k].neighbors.end());
+                    if (itr != polyhedron[k].neighbors.end()) *itr = i;
+                 }
               }
-              // break;   // break out of the loop over the neighbors of i and start again
             }
           }
         }

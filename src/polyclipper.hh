@@ -83,11 +83,17 @@ struct Plane2d {
   typedef PolyClipper::Vector2d Vector;
   double dist;                       // Signed distance to the origin
   Vector normal;                     // Unit normal
-  Plane2d(): dist(0.0), normal(1,0) {}
-  Plane2d(const double d, const Vector& nhat): dist(d), normal(nhat) {}
-  Plane2d(const Vector& p, const Vector& nhat): dist(-p.dot(nhat)), normal(nhat) {}
-  Plane2d& operator=(const Plane2d& rhs) { dist = rhs.dist; normal = rhs.normal; return *this; }
-  bool operator==(const Plane2d& rhs) { return (dist == rhs.dist and normal == rhs.normal); }
+  int ID;                            // ID for the plane, used to label vertices
+  Plane2d()                                                  : dist(0.0), normal(1,0), ID(std::numeric_limits<int>::min()) {}
+  Plane2d(const double d, const Vector& nhat)                : dist(d), normal(nhat), ID(std::numeric_limits<int>::min()) {}
+  Plane2d(const Vector& p, const Vector& nhat)               : dist(-p.dot(nhat)), normal(nhat), ID(std::numeric_limits<int>::min()) {}
+  Plane2d(const Vector& p, const Vector& nhat, const int id) : dist(-p.dot(nhat)), normal(nhat), ID(id) {}
+  Plane2d(const Plane2d& rhs)                                : dist(rhs.dist), normal(rhs.normal), ID(rhs.ID) {}
+  Plane2d& operator=(const Plane2d& rhs)                     { dist = rhs.dist; normal = rhs.normal; ID = rhs.ID; return *this; }
+  bool operator==(const Plane2d& rhs) const                  { return (dist == rhs.dist and normal == rhs.normal); }
+  bool operator!=(const Plane2d& rhs) const                  { return not (*this == rhs); }
+  bool operator< (const Plane2d& rhs) const                  { return (dist < rhs.dist); }
+  bool operator> (const Plane2d& rhs) const                  { return (dist > rhs.dist); }
 };
 
 //------------------------------------------------------------------------------
@@ -97,11 +103,17 @@ struct Plane3d {
   typedef PolyClipper::Vector3d Vector;
   Vector normal;                     // Unit normal
   double dist;                       // Signed distance to the origin
-  Plane3d(): dist(0.0), normal(1,0,0) {}
-  Plane3d(const double d, const Vector& nhat): dist(d), normal(nhat) {}
-  Plane3d(const Vector& p, const Vector& nhat): dist(-p.dot(nhat)), normal(nhat) {}
-  Plane3d& operator=(const Plane3d& rhs) { dist = rhs.dist; normal = rhs.normal; return *this; }
-  bool operator==(const Plane3d& rhs) { return (dist == rhs.dist and normal == rhs.normal); }
+  int ID;                            // ID for the plane, used to label vertices
+  Plane3d()                                                  : dist(0.0), normal(1,0,0), ID(std::numeric_limits<int>::min()) {}
+  Plane3d(const double d, const Vector& nhat)                : dist(d), normal(nhat), ID(std::numeric_limits<int>::min()) {}
+  Plane3d(const Vector& p, const Vector& nhat)               : dist(-p.dot(nhat)), normal(nhat), ID(std::numeric_limits<int>::min()) {}
+  Plane3d(const Vector& p, const Vector& nhat, const int id) : dist(-p.dot(nhat)), normal(nhat), ID(id) {}
+  Plane3d(const Plane3d& rhs)                                : dist(rhs.dist), normal(rhs.normal), ID(rhs.ID) {}
+  Plane3d& operator=(const Plane3d& rhs)                     { dist = rhs.dist; normal = rhs.normal; ID = rhs.ID; return *this; }
+  bool operator==(const Plane3d& rhs) const                  { return (dist == rhs.dist and normal == rhs.normal); }
+  bool operator!=(const Plane3d& rhs) const                  { return not (*this == rhs); }
+  bool operator< (const Plane3d& rhs) const                  { return (dist < rhs.dist); }
+  bool operator> (const Plane3d& rhs) const                  { return (dist > rhs.dist); }
 };
 
 //------------------------------------------------------------------------------
@@ -112,10 +124,13 @@ struct Vertex2d {
   Vector position;
   std::pair<int, int> neighbors;
   int comp;
-  mutable int ID;    // convenient, but sneaky
-  Vertex2d():                               position(),    neighbors(), comp(1), ID(-1) {}
-  Vertex2d(const Vector& pos):              position(pos), neighbors(), comp(1), ID(-1) {}
-  Vertex2d(const Vector& pos, const int c): position(pos), neighbors(), comp(c), ID(-1) {}
+  mutable int ID;                            // convenient, but sneaky
+  mutable std::set<int> clips;               // the planes (if any) that created this point
+  Vertex2d():                                  position(),    neighbors(), comp(1), ID(-1), clips() {}
+  Vertex2d(const Vector& pos):                 position(pos), neighbors(), comp(1), ID(-1), clips() {}
+  Vertex2d(const Vector& pos, const int c)   : position(pos), neighbors(), comp(c), ID(-1), clips() {}
+  Vertex2d(const Vertex2d& rhs)              : position(rhs.position), neighbors(rhs.neighbors), comp(rhs.comp), ID(rhs.ID), clips(rhs.clips) {}
+  Vertex2d& operator=(const Vertex2d& rhs)   { position = rhs.position; neighbors = rhs.neighbors; comp = rhs.comp; ID = rhs.ID; clips = rhs.clips; return *this; }
   bool operator==(const Vertex2d& rhs) const {
     return (position  == rhs.position and
             neighbors == rhs.neighbors and
@@ -132,10 +147,13 @@ struct Vertex3d {
   Vector position;
   std::vector<int> neighbors;
   int comp;
-  mutable int ID;    // convenient, but sneaky
-  Vertex3d():                               position(),    neighbors(), comp(1), ID(-1) {}
-  Vertex3d(const Vector& pos):              position(pos), neighbors(), comp(1), ID(-1) {}
-  Vertex3d(const Vector& pos, const int c): position(pos), neighbors(), comp(c), ID(-1) {}
+  mutable int ID;                            // convenient, but sneaky
+  mutable std::set<int> clips;               // the planes (if any) that created this point
+  Vertex3d():                                  position(),    neighbors(), comp(1), ID(-1), clips() {}
+  Vertex3d(const Vector& pos):                 position(pos), neighbors(), comp(1), ID(-1), clips() {}
+  Vertex3d(const Vector& pos, const int c):    position(pos), neighbors(), comp(c), ID(-1), clips() {}
+  Vertex3d(const Vertex3d& rhs)              : position(rhs.position), neighbors(rhs.neighbors), comp(rhs.comp), ID(rhs.ID), clips(rhs.clips) {}
+  Vertex3d& operator=(const Vertex3d& rhs)   { position = rhs.position; neighbors = rhs.neighbors; comp = rhs.comp; ID = rhs.ID; clips = rhs.clips; return *this; }
   bool operator==(const Vertex3d& rhs) const {
     return (position  == rhs.position and
             neighbors == rhs.neighbors and
