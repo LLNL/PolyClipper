@@ -1,0 +1,1 @@
+polyclipper_add_pybind11_library(PolyClipperMOD)

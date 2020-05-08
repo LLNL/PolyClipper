@@ -15,9 +15,9 @@ install(TARGETS              PolyClipper
 install(FILES       polyclipper.hh
         DESTINATION include)
 
-# # Are we building the Python bindings?
-# if(NOT ENABLE_CXXONLY)
-#   add_subdirectory(src/Pybind11Wraps)
-# endif()
+# Are we building the Python bindings?
+if(NOT ENABLE_CXXONLY)
+  add_subdirectory(Pybind11Wraps)
+endif()
 
 install(EXPORT ${PROJECT_NAME}-targets DESTINATION lib/cmake)
