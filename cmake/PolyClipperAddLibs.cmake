@@ -29,13 +29,16 @@ function(polyclipper_add_pybind11_library package_name)
 
   set(MODULE_NAME ${PYB11_MODULE_NAME})
   set(GENERATED_SOURCE ${PYB11_GENERATED_SOURCE})
+  message(" --> ${MODULE_NAME}")
+  message(" --> ${GENERATED_SOURCE}")
+  message(" --> ${PYB11_MODULE_NAME}")
 
   blt_add_library(
     NAME         ${MODULE_NAME}
     SOURCES      ${GENERATED_SOURCE} ${${package_name}_ADDITIONAL_SOURCES}
     DEPENDS_ON   -Wl,--start-group ${POLYCLIPPER_PYTHON_DEPENDS} -Wl,--end-group ${${package_name}_ADDITIONAL_DEPENDS} ${polyclipper_blt_depends}
     INCLUDES     ${${package_name}_ADDITIONAL_INCLUDES}
-    OUTPUT_NAME  ${MODULE_NAME}
+    OUTPUT_NAME  ${PYB11_MODULE_NAME}
     CLEAR_PREFIX TRUE
     SHARED       TRUE
     )

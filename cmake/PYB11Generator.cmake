@@ -41,8 +41,8 @@ set(PYB11_GENERATED_SOURCE)
 #
 macro(PYB11_GENERATE_BINDINGS)
   set(PYB11_GENERATED_SOURCE)
-  list(APPEND PYB11_SOURCE "${PYB11_MODULE_NAME}MOD.py")
-  list(APPEND PYB11_GENERATED_SOURCE "PY_${PYB11_MODULE_NAME}.cc")
+  list(APPEND PYB11_SOURCE "${PYB11_MODULE_NAME}.py")
+  list(APPEND PYB11_GENERATED_SOURCE "${PYB11_MODULE_NAME}.cc")
 
   set(PYTHON_ENV 
     "${PROJECT_SOURCE_DIR}/src/Pybind11Wraps:"
@@ -51,6 +51,9 @@ macro(PYB11_GENERATE_BINDINGS)
   STRING(REPLACE ";" "<->" PYTHON_ENV_STR ${PYTHON_ENV})
 
   message("Using Python ${PYTHON_EXE}")
+  message(" **> ${CMAKE_MODULE_PATH}/moduleCheck.py")
+  message(" **> ${PYB11_MODULE_NAME}")
+  message(" **> ${CMAKE_CURRENT_SOURCE_DIR}/${PYB11_SOURCE}")
   if (EXISTS ${PYTHON_EXE})
     if (NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${PYB11_MODULE_NAME}_stamp.cmake")
       execute_process(COMMAND env PYTHONPATH=\"${PYTHON_ENV_STR}\"
@@ -78,8 +81,8 @@ macro(PYB11_GENERATE_BINDINGS)
     COMMAND env PYTHONPATH=\"${PYTHON_ENV_STR}\"
     ${PYTHON_EXE} -c
     'from PYB11Generator import * \; 
-    import ${PYB11_MODULE_NAME}MOD \;
-    PYB11generateModule(${PYB11_MODULE_NAME}MOD, \"Spheral${PYB11_MODULE_NAME}\") '
+    import ${PYB11_MODULE_NAME} \;
+    PYB11generateModule(${PYB11_MODULE_NAME}, \"${PYB11_MODULE_NAME}\") '
     DEPENDS ${PYB11_MODULE_NAME}_stamp ${${PYB11_MODULE_NAME}_DEPENDS} ${PYB11_SOURCE}
     )
 endmacro()
