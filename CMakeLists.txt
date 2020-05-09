@@ -50,6 +50,15 @@ if(ENABLE_CXXONLY)
   endif()
 else()
   set(CMAKE_INSTALL_PREFIX ${PYTHON_SITE_PACKAGE_DIR}/PolyClipper)
+
+  # We need pybind11 paths to compile
+  execute_process(COMMAND         ${PYTHON_EXE} -m pybind11 --includes
+                  OUTPUT_VARIABLE PYBIND11_INCLUDE_PATH)
+  string(REPLACE "-I" "" PYBIND11_INCLUDE_PATH ${PYBIND11_INCLUDE_PATH})
+  message(" --> PYBIND11_INCLUDE_PATH ${PYBIND11_INCLUDE_PATH}")
+  set(PYBIND11_INCLUDE_PATHS ${PYBIND11_INCLUDE_PATH})
+  separate_arguments(PYBIND11_INCLUDE_PATHS)
+  include_directories(${PYBIND11_INCLUDE_PATHS})
 endif()
 
 if(ENABLE_OPENMP)
