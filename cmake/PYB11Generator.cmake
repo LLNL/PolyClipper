@@ -50,10 +50,6 @@ macro(PYB11_GENERATE_BINDINGS)
     )
   STRING(REPLACE ";" "<->" PYTHON_ENV_STR ${PYTHON_ENV})
 
-  message("Using Python ${PYTHON_EXE}")
-  message(" **> ${CMAKE_MODULE_PATH}/moduleCheck.py")
-  message(" **> ${PYB11_MODULE_NAME}")
-  message(" **> ${CMAKE_CURRENT_SOURCE_DIR}/${PYB11_SOURCE}")
   if (EXISTS ${PYTHON_EXE})
     if (NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${PYB11_MODULE_NAME}_stamp.cmake")
       execute_process(COMMAND env PYTHONPATH=\"${PYTHON_ENV_STR}\"

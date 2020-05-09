@@ -32,6 +32,15 @@ include(${POLYCLIPPER_BLT_DIR}/SetupBLT.cmake)
 # Install
 ################################
 set(POLYCLIPPER_INSTALL_DIR "" CACHE STRING "Directory to install PolyClipper.")
+set(CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/PolyClipper)
+if(POLYCLIPPER_INSTALL_DIR)
+  set(CMAKE_INSTALL_PREFIX ${POLYCLIPPER_INSTALL_DIR})
+endif()
+
+if (NOT POLYCLIPPER_PYTHON_INSTALL)
+  set(POLYCLIPPER_PYTHON_INSTALL "${POLYCLIPPER_INSTALL_DIR}/lib/python/site-packages/PolyClipper")
+endif()
+set(POLYCLIPPER_PYTHON_INSTALL "" CACHE STRING "Directory to install PolyClipper Python module.")
 
 ################################
 # Include standard build system logic and options / definitions
@@ -43,19 +52,12 @@ if(ENABLE_STATIC_CXXONLY)
   set(ENABLE_CXXONLY ON)
 endif()
 
-# Install paths
-set(CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/PolyClipper)
-if(POLYCLIPPER_INSTALL_DIR)
-  set(CMAKE_INSTALL_PREFIX ${POLYCLIPPER_INSTALL_DIR})
-endif()
-
 # Are we building the python package?
 if(NOT ENABLE_CXXONLY)
   # We need pybind11 paths to compile
   execute_process(COMMAND         ${PYTHON_EXE} -m pybind11 --includes
                   OUTPUT_VARIABLE PYBIND11_INCLUDE_PATH)
   string(REPLACE "-I" "" PYBIND11_INCLUDE_PATH ${PYBIND11_INCLUDE_PATH})
-  message(" --> PYBIND11_INCLUDE_PATH ${PYBIND11_INCLUDE_PATH}")
   set(PYBIND11_INCLUDE_PATHS ${PYBIND11_INCLUDE_PATH})
   separate_arguments(PYBIND11_INCLUDE_PATHS)
   include_directories(${PYBIND11_INCLUDE_PATHS})
@@ -80,7 +82,6 @@ if(ENABLE_CXXONLY)
 endif()
 
 set(POLYCLIPPER_PYTHON_DEPENDS )
-set(POLYCLIPPER_PYTHON_INSTALL ${PROJECT_BINARY_DIR}/lib)
 
 #-------------------------------------------------------------------------------
 # Prepare to build the src

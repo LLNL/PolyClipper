@@ -33,9 +33,6 @@ function(polyclipper_add_pybind11_library package_name)
 
   set(MODULE_NAME ${PYB11_MODULE_NAME})
   set(GENERATED_SOURCE ${PYB11_GENERATED_SOURCE})
-  message(" --> ${MODULE_NAME}")
-  message(" --> ${GENERATED_SOURCE}")
-  message(" --> ${PYB11_MODULE_NAME}")
 
   blt_add_library(
     NAME         ${MODULE_NAME}
@@ -50,9 +47,8 @@ function(polyclipper_add_pybind11_library package_name)
     add_dependencies(${MODULE_NAME} ${polyclipper_py_depends} ${polyclipper_depends})
   endif()
 
-  # file(MAKE_DIRECTORY ${POLYCLIPPER_INSTALL_DIR}/python)
   install(
     FILES ${CMAKE_BINARY_DIR}/lib/$<TARGET_FILE_NAME:${MODULE_NAME}>
-    DESTINATION lib/python/site-packages/PolyClipper
+    DESTINATION ${POLYCLIPPER_PYTHON_INSTALL}
     )
 endfunction()
