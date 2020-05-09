@@ -43,14 +43,14 @@ if(ENABLE_STATIC_CXXONLY)
   set(ENABLE_CXXONLY ON)
 endif()
 
-if(ENABLE_CXXONLY)
-  set(CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/PolyClipper)
-  if(POLYCLIPPER_INSTALL_DIR)
-    set(CMAKE_INSTALL_PREFIX ${POLYCLIPPER_INSTALL_DIR})
-  endif()
-else()
-  set(CMAKE_INSTALL_PREFIX ${PYTHON_SITE_PACKAGE_DIR}/PolyClipper)
+# Install paths
+set(CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/PolyClipper)
+if(POLYCLIPPER_INSTALL_DIR)
+  set(CMAKE_INSTALL_PREFIX ${POLYCLIPPER_INSTALL_DIR})
+endif()
 
+# Are we building the python package?
+if(NOT ENABLE_CXXONLY)
   # We need pybind11 paths to compile
   execute_process(COMMAND         ${PYTHON_EXE} -m pybind11 --includes
                   OUTPUT_VARIABLE PYBIND11_INCLUDE_PATH)

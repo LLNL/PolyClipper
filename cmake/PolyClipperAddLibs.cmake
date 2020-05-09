@@ -1,3 +1,6 @@
+#-------------------------------------------------------------------------------
+# polyclipper_add_cxx_library package_name
+#-------------------------------------------------------------------------------
 function(polyclipper_add_cxx_library package_name)
   if(ENABLE_STATIC_CXXONLY)
     blt_add_library(NAME        ${package_name}
@@ -19,8 +22,9 @@ function(polyclipper_add_cxx_library package_name)
   endif()
 endfunction()
 
-
-
+#----------------------------------------------------------------------
+# polyclipper_add_pybind11_library package_name
+#----------------------------------------------------------------------
 function(polyclipper_add_pybind11_library package_name)
   include(${CMAKE_MODULE_PATH}/PYB11Generator.cmake)
 
@@ -46,8 +50,9 @@ function(polyclipper_add_pybind11_library package_name)
     add_dependencies(${MODULE_NAME} ${polyclipper_py_depends} ${polyclipper_depends})
   endif()
 
+  # file(MAKE_DIRECTORY ${POLYCLIPPER_INSTALL_DIR}/python)
   install(
-    FILES ${POLYCLIPPER_INSTALL_DIR}/python/$<TARGET_FILE_NAME:${MODULE_NAME}>
-    DESTINATION .
+    FILES ${CMAKE_BINARY_DIR}/lib/$<TARGET_FILE_NAME:${MODULE_NAME}>
+    DESTINATION lib/python/site-packages/PolyClipper
     )
 endfunction()
