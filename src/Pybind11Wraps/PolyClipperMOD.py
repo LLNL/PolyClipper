@@ -12,21 +12,21 @@ PYB11includes = ['"polyclipper.hh"']
 
 PYB11namespaces = ["PolyClipper"]
 
-PYB11opaque = ["std::vector<char>",
-               "std::vector<unsigned>",
-               "std::vector<uint64_t>",
-               "std::vector<int>",
-               "std::vector<float>",
-               "std::vector<double>",
-               "std::vector<std::string>",
+# PYB11opaque = ["std::vector<char>",
+#                "std::vector<unsigned>",
+#                "std::vector<uint64_t>",
+#                "std::vector<int>",
+#                "std::vector<float>",
+#                "std::vector<double>",
+#                "std::vector<std::string>",
 
-               "std::vector<std::vector<char>>",
-               "std::vector<std::vector<unsigned>>",
-               "std::vector<std::vector<uint64_t>>",
-               "std::vector<std::vector<int>>",
-               "std::vector<std::vector<float>>",
-               "std::vector<std::vector<double>>",
-               "std::vector<std::vector<std::string>>"]
+#                "std::vector<std::vector<char>>",
+#                "std::vector<std::vector<unsigned>>",
+#                "std::vector<std::vector<uint64_t>>",
+#                "std::vector<std::vector<int>>",
+#                "std::vector<std::vector<float>>",
+#                "std::vector<std::vector<double>>",
+#                "std::vector<std::vector<std::string>>"]
 
 #-------------------------------------------------------------------------------
 # Import the types defined in this module
@@ -36,6 +36,7 @@ from Vector3d import *
 from Plane2d import *
 from Plane3d import *
 from Vertex2d import *
+from Vertex3d import *
 
 # #-------------------------------------------------------------------------------
 # # Vertex

@@ -1,22 +1,23 @@
 from PYB11Generator import *
 
-class Vertex2d:
-    '''The PolyClipper 2D (x,y) vertex type.
+class Vertex3d:
+    '''The PolyClipper 3D (x,y,z) vertex type.
 
-Vertex2d is used to encode Polygons, so that PolyClipper Polygons are simply 
-collections of vertices.  A Vertex2d consists of a position and a pair of 
-neighbor Vertex2d indices (a,b), which represent the (previous, next) vertices
-going around a polygon in counterclockwise order.
+Vertex3d is used to encode Polyhedra, so that PolyClipper Polyhedra are simply 
+collections of vertices.  A Vertex3d consists of a position and a vector of 
+neighbor Vertex3d indices (a,b,c,...), which represent the connected vertices
+to this one going counterclockwise around this vertex viewed from outside the
+polyhedron.
 
 New vertices are created by clipping operations, and Vertex maintains a set of 
 the plane IDs that have touched/clipped this vertex.
 
-Vertex2d also maintains a "comp" and "ID" attributes, which are primarily for
+Vertex3d also maintains a "comp" and "ID" attributes, which are primarily for
 internal usage during PolyClipper clipping operations.
 '''
 
     PYB11typedefs = """
-  typedef Vector2d Vector;
+  typedef Vector3d Vector;
 """
 
     #---------------------------------------------------------------------------
@@ -35,7 +36,7 @@ internal usage during PolyClipper clipping operations.
         "Construct with a position and initial 'comp' value"
 
     def pyinit3(self,
-                rhs = "const Vertex2d&"):
+                rhs = "const Vertex3d&"):
         "Copy constructor"
 
     #---------------------------------------------------------------------------
@@ -48,11 +49,12 @@ internal usage during PolyClipper clipping operations.
     # Methods
     #---------------------------------------------------------------------------
     @PYB11implementation('''
-[](const Vertex2d& self) { 
+[](const Vertex3d& self) { 
   auto result = "{pos=(" + std::to_string(self.position.x) + " " + std::to_string(self.position.y) + 
-                "), neighbors=(" + std::to_string(self.neighbors.first) + " " + std::to_string(self.neighbors.second) +
-                "), ID=" + std::to_string(self.ID) +
-                ", clips=( ";
+                "), neighbors=( ";
+  for (const auto x: self.neighbors) result += std::to_string(x) + " "; 
+  result += "), ID=" + std::to_string(self.ID) +
+            ", clips=( ";
   for (const auto x: self.clips) result += std::to_string(x) + " ";
   result += ")}";
   return result;
