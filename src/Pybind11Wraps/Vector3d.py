@@ -1,6 +1,6 @@
 from PYB11Generator import *
 
-class Vector2d:
+class Vector3d:
     "The PolyClipper (x,y) geometric vector type"
 
     #---------------------------------------------------------------------------
@@ -11,8 +11,9 @@ class Vector2d:
 
     def pyinit1(self,
                 X = "double",
-                Y = "double"):
-        "Construct with (X,Y) values"
+                Y = "double",
+                Z = "double"):
+        "Construct with (X,Y,Z) values"
 
     #---------------------------------------------------------------------------
     # Operators
@@ -48,14 +49,14 @@ class Vector2d:
     # Methods
     #---------------------------------------------------------------------------
     @PYB11const
-    def dot(self, rhs="const Vector2d&"):
+    def dot(self, rhs="const Vector3d&"):
         "Return the dot product"
         return "double"
 
     @PYB11const
-    def cross(self, rhs="const Vector2d&"):
-        "Return the z-value of the cross product as a scalar"
-        return "double"
+    def cross(self, rhs="const Vector3d&"):
+        "Return the cross product"
+        return "Vector3d"
 
     @PYB11const
     def magnitude(self):
@@ -70,13 +71,13 @@ class Vector2d:
     @PYB11const
     def unitVector(self):
         "Return a unit vector in the same direction as this one"
-        return "Vector2d"
+        return "Vector3d"
 
-    @PYB11implementation('''[](const Vector2d& self) { return "(" + std::to_string(self.x) + ", " + std::to_string(self.y) + ")"; }''')
+    @PYB11implementation('''[](const Vector3d& self) { return "(" + std::to_string(self.x) + ", " + std::to_string(self.y) + ", " + std::to_string(self.z) + ")"; }''')
     def __repr__(self):
         return
 
-    @PYB11implementation('''[](const Vector2d& self) { return "(" + std::to_string(self.x) + ", " + std::to_string(self.y) + ")"; }''')
+    @PYB11implementation('''[](const Vector3d& self) { return "(" + std::to_string(self.x) + ", " + std::to_string(self.y) + ", " + std::to_string(self.z) + ")"; }''')
     def __str__(self):
         return
 
@@ -85,3 +86,4 @@ class Vector2d:
     #---------------------------------------------------------------------------
     x = PYB11readwrite()
     y = PYB11readwrite()
+    z = PYB11readwrite()

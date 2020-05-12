@@ -32,6 +32,7 @@ PYB11opaque = ["std::vector<char>",
 # Import the types defined in this module
 #-------------------------------------------------------------------------------
 from Vector2d import *
+from Vector3d import *
 
 # #-------------------------------------------------------------------------------
 # # Planes.
