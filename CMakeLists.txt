@@ -2,17 +2,17 @@
 cmake_minimum_required(VERSION 3.14)
 project(PolyClipper LANGUAGES CXX)
 
-################################
+#-------------------------------------------------------------------------------
 # Configure CMake
-################################
+#-------------------------------------------------------------------------------
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -w")
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 set(CMAKE_EXPORT_COMPILE_COMMANDS On)
 
-################################
+#-------------------------------------------------------------------------------
 # Configure and Include blt
-################################
+#-------------------------------------------------------------------------------
 set(ENABLE_OPENMP ON CACHE BOOL "")
 
 if (NOT POLYCLIPPER_BLT_DIR) 
@@ -28,19 +28,15 @@ endif()
 
 include(${POLYCLIPPER_BLT_DIR}/SetupBLT.cmake)
 
-################################
+#-------------------------------------------------------------------------------
 # Install
-################################
+#-------------------------------------------------------------------------------
 set(POLYCLIPPER_INSTALL_DIR "" CACHE STRING "Directory to install PolyClipper.")
 set(CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/PolyClipper)
 if (POLYCLIPPER_INSTALL_DIR)
   set(CMAKE_INSTALL_PREFIX ${POLYCLIPPER_INSTALL_DIR})
 endif()
-
-if (NOT POLYCLIPPER_PYTHON_INSTALL)
-  set(POLYCLIPPER_PYTHON_INSTALL "${POLYCLIPPER_INSTALL_DIR}/lib/python/site-packages/PolyClipper")
-endif()
-set(POLYCLIPPER_PYTHON_INSTALL "" CACHE STRING "Directory to install PolyClipper Python module.")
+message("-- install path ${CMAKE_INSTALL_PREFIX}")
 
 #-------------------------------------------------------------------------------
 # Include standard build system logic and options / definitions
@@ -91,6 +87,13 @@ else()
     set(PYB11GEN_PATH "${CMAKE_MODULE_PATH}/PYB11Generator")
   endif()
   message("-- PYB11GEN_PATH ${PYB11GEN_PATH}")
+
+  # Install python module path
+  if (NOT POLYCLIPPER_PYTHON_INSTALL)
+    set(POLYCLIPPER_PYTHON_INSTALL "${POLYCLIPPER_INSTALL_DIR}/lib/python/site-packages/PolyClipper")
+  endif()
+  #set(POLYCLIPPER_PYTHON_INSTALL "" CACHE STRING "Directory to install PolyClipper Python module.")
+  message("-- Python module install path ${POLYCLIPPER_PYTHON_INSTALL}")
 endif()
 
 set(POLYCLIPPER_PYTHON_DEPENDS )
