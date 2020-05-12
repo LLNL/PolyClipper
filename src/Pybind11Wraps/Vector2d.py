@@ -76,10 +76,6 @@ class Vector2d:
     def __repr__(self):
         return
 
-    @PYB11implementation('''[](const Vector2d& self) { return "(" + std::to_string(self.x) + ", " + std::to_string(self.y) + ")"; }''')
-    def __str__(self):
-        return
-
     #---------------------------------------------------------------------------
     # Attributes
     #---------------------------------------------------------------------------

@@ -77,10 +77,6 @@ class Vector3d:
     def __repr__(self):
         return
 
-    @PYB11implementation('''[](const Vector3d& self) { return "(" + std::to_string(self.x) + ", " + std::to_string(self.y) + ", " + std::to_string(self.z) + ")"; }''')
-    def __str__(self):
-        return
-
     #---------------------------------------------------------------------------
     # Attributes
     #---------------------------------------------------------------------------
