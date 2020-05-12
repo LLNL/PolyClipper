@@ -34,6 +34,7 @@ PYB11opaque = ["std::vector<char>",
 from Vector2d import *
 from Vector3d import *
 from Plane2d import *
+from Plane3d import *
 
 # #-------------------------------------------------------------------------------
 # # Planes.

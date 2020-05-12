@@ -1,7 +1,7 @@
 from PYB11Generator import *
 
-class Plane2d:
-    """The PolyClipper 2D plane.
+class Plane3d:
+    """The PolyClipper 3D plane.
 
 A plane is defined by a signed scalar distance (dist) and unit normal (normal).
 The distance d represents the signed shortest distance from the plane to the 
@@ -22,7 +22,7 @@ Planes also optionally keep an integer ID, which is used during clipping
 operations to track which plane(s) are responsible for each vertex."""
 
     PYB11typedefs = """
-typedef Vector2d Vector;
+typedef Vector3d Vector;
 """
 
     #---------------------------------------------------------------------------
@@ -48,7 +48,7 @@ typedef Vector2d Vector;
         "Construct using a point in the plane (p), unit normal (nhat), plane ID (id)"
 
     def pyinit4(self,
-                rhs = "const Plane2d&"):
+                rhs = "const Plane3d&"):
         "Copy constructor"
         
     #---------------------------------------------------------------------------
@@ -69,7 +69,7 @@ typedef Vector2d Vector;
     #---------------------------------------------------------------------------
     # Methods
     #---------------------------------------------------------------------------
-    @PYB11implementation('''[](const Plane2d& self) { return "{" + std::to_string(self.dist) + ", (" + std::to_string(self.normal.x) + ", " + std::to_string(self.normal.y) + ")}"; }''')
+    @PYB11implementation('''[](const Plane3d& self) { return "{" + std::to_string(self.dist) + ", (" + std::to_string(self.normal.x) + ", " + std::to_string(self.normal.y)+ ", " + std::to_string(self.normal.z) + ")}"; }''')
     def __repr__(self):
         return
 
