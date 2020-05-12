@@ -15,7 +15,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS On)
 ################################
 set(ENABLE_OPENMP ON CACHE BOOL "")
 
-if(NOT POLYCLIPPER_BLT_DIR) 
+if (NOT POLYCLIPPER_BLT_DIR) 
   set (POLYCLIPPER_BLT_REL_DIR "${PROJECT_SOURCE_DIR}/cmake/blt" CACHE PATH "")
   get_filename_component(POLYCLIPPER_BLT_DIR "${POLYCLIPPER_BLT_REL_DIR}" ABSOLUTE)
 endif()
@@ -33,7 +33,7 @@ include(${POLYCLIPPER_BLT_DIR}/SetupBLT.cmake)
 ################################
 set(POLYCLIPPER_INSTALL_DIR "" CACHE STRING "Directory to install PolyClipper.")
 set(CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/PolyClipper)
-if(POLYCLIPPER_INSTALL_DIR)
+if (POLYCLIPPER_INSTALL_DIR)
   set(CMAKE_INSTALL_PREFIX ${POLYCLIPPER_INSTALL_DIR})
 endif()
 
@@ -42,28 +42,17 @@ if (NOT POLYCLIPPER_PYTHON_INSTALL)
 endif()
 set(POLYCLIPPER_PYTHON_INSTALL "" CACHE STRING "Directory to install PolyClipper Python module.")
 
-################################
+#-------------------------------------------------------------------------------
 # Include standard build system logic and options / definitions
-################################
+#-------------------------------------------------------------------------------
 option(ENABLE_STATIC_CXXONLY "enable C++ only build with static libraries" OFF)
 option(ENABLE_CXXONLY "enable C++ only build without python bindings" OFF)
 
-if(ENABLE_STATIC_CXXONLY)
+if (ENABLE_STATIC_CXXONLY)
   set(ENABLE_CXXONLY ON)
 endif()
 
-# Are we building the python package?
-if(NOT ENABLE_CXXONLY)
-  # We need pybind11 paths to compile
-  execute_process(COMMAND         ${PYTHON_EXE} -m pybind11 --includes
-                  OUTPUT_VARIABLE PYBIND11_INCLUDE_PATH)
-  string(REPLACE "-I" "" PYBIND11_INCLUDE_PATH "${PYBIND11_INCLUDE_PATH}")
-  set(PYBIND11_INCLUDE_PATHS ${PYBIND11_INCLUDE_PATH})
-  separate_arguments(PYBIND11_INCLUDE_PATHS)
-  include_directories(${PYBIND11_INCLUDE_PATHS})
-endif()
-
-if(ENABLE_OPENMP)
+if (ENABLE_OPENMP)
   list(APPEND polyclipper_blt_depends openmp)
 endif()
 
@@ -71,8 +60,37 @@ if (ENABLE_BOUNDCHECKING)
   add_definitions(-D_GLIBCXX_DEBUG=1)
 endif()
 
-if(ENABLE_CXXONLY)
+#-------------------------------------------------------------------------------
+# Are we building the python package?
+#-------------------------------------------------------------------------------
+if (ENABLE_CXXONLY)
   add_definitions(-DCXXONLY=1)
+
+else()
+  if (NOT PYTHON_EXE)
+    find_package(Python2 COMPONENTS Interpreter Development)
+    set(PYTHON_EXE "${Python2_EXECUTABLE}")
+  endif()
+  message("-- PYTHON_EXE ${PYTHON_EXE}")
+
+  # We need pybind11 paths to compile
+  if (LOOKUP_PYBIND11_INCLUDE_PATH)
+    execute_process(COMMAND         ${PYTHON_EXE} -m pybind11 --includes
+                    OUTPUT_VARIABLE PYBIND11_INCLUDE_PATH)
+    string(REPLACE "-I" "" PYBIND11_INCLUDE_PATH "${PYBIND11_INCLUDE_PATH}")
+  elseif (NOT PYBIND11_INCLUDE_PATH)
+    set(PYBIND11_INCLUDE_PATH "${CMAKE_MODULE_PATH}/pybind11/include ${Python2_INCLUDE_DIRS}")
+  endif()
+  set(PYBIND11_INCLUDE_PATHS ${PYBIND11_INCLUDE_PATH})
+  separate_arguments(PYBIND11_INCLUDE_PATHS)
+  include_directories(${PYBIND11_INCLUDE_PATHS})
+  message("-- PYBIND11_INCLUDE_PATH ${PYBIND11_INCLUDE_PATH}")
+
+  # Also PYB11Generator
+  if (NOT PYB11GEN_PATH)
+    set(PYB11GEN_PATH "${CMAKE_MODULE_PATH}/PYB11Generator")
+  endif()
+  message("-- PYB11GEN_PATH ${PYB11GEN_PATH}")
 endif()
 
 set(POLYCLIPPER_PYTHON_DEPENDS )

@@ -47,6 +47,7 @@ macro(PYB11_GENERATE_BINDINGS)
   set(PYTHON_ENV 
     "${PROJECT_SOURCE_DIR}/src/Pybind11Wraps:"
     "${PROJECT_SOURCE_DIR}/src/Pybind11Wraps/${PYB11_MODULE_NAME}:"
+    "${PYB11GEN_PATH}:"
     )
   STRING(REPLACE ";" "<->" PYTHON_ENV_STR ${PYTHON_ENV})
 
