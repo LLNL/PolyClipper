@@ -74,3 +74,9 @@ class Vector2d:
     @PYB11implementation('''[](const Vector2d& self) { return "(" + std::to_string(self.x) + ", " + std::to_string(self.y) + ")"; }''')
     def __str__(self):
         return
+
+    #---------------------------------------------------------------------------
+    # Attributes
+    #---------------------------------------------------------------------------
+    x = PYB11readwrite()
+    y = PYB11readwrite()
