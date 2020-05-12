@@ -66,3 +66,11 @@ class Vector2d:
     def magnitude2(self):
         "Return the square of the magnitude of the vector"
         return "double"
+
+    @PYB11implementation('''[](const Vector2d& self) { return "(" + std::to_string(self.x) + ", " + std::to_string(self.y) + ")"; }''')
+    def __repr__(self):
+        return
+
+    @PYB11implementation('''[](const Vector2d& self) { return "(" + std::to_string(self.x) + ", " + std::to_string(self.y) + ")"; }''')
+    def __str__(self):
+        return
