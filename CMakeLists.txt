@@ -57,7 +57,7 @@ if(NOT ENABLE_CXXONLY)
   # We need pybind11 paths to compile
   execute_process(COMMAND         ${PYTHON_EXE} -m pybind11 --includes
                   OUTPUT_VARIABLE PYBIND11_INCLUDE_PATH)
-  string(REPLACE "-I" "" PYBIND11_INCLUDE_PATH ${PYBIND11_INCLUDE_PATH})
+  string(REPLACE "-I" "" PYBIND11_INCLUDE_PATH "${PYBIND11_INCLUDE_PATH}")
   set(PYBIND11_INCLUDE_PATHS ${PYBIND11_INCLUDE_PATH})
   separate_arguments(PYBIND11_INCLUDE_PATHS)
   include_directories(${PYBIND11_INCLUDE_PATHS})
@@ -65,12 +65,6 @@ endif()
 
 if(ENABLE_OPENMP)
   list(APPEND polyclipper_blt_depends openmp)
-endif()
-
-if (CMAKE_BUILD_TYPE STREQUAL "Debug")
-    add_definitions("-DDEBUG=1")
-else()
-    add_definitions("-DDEBUG=0")
 endif()
 
 if (ENABLE_BOUNDCHECKING)
