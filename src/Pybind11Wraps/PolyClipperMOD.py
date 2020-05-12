@@ -35,51 +35,7 @@ from Vector2d import *
 from Vector3d import *
 from Plane2d import *
 from Plane3d import *
-
-# #-------------------------------------------------------------------------------
-# # Planes.
-# #-------------------------------------------------------------------------------
-# @PYB11ignore
-# class PlaneBase:
-
-#     # Constructors
-#     def pyinit0(self):
-#         "Default constructor"
-
-#     def pyinit1(self,
-#                 rhs = "const Plane%(ndim)sd"):
-#         "Copy constructor"
-
-#     def pyinit2(self,
-#                 dist = "double",
-#                 normal = "const Plane%(ndim)sd::Vector&"):
-#         "Construct with a distance and normal."
-
-#     def pyinit3(self,
-#                 point = "const Plane%(ndim)sd::Vector&",
-#                 normal = "const Plane%(ndim)sd::Vector&"):
-#         "Construct with a point and normal."
-
-#     def pyinit4(self,
-#                 point = "const Plane%(ndim)sd::Vector&",
-#                 normal = "const Plane%(ndim)sd::Vector&",
-#                 id = "const int"):
-#         "Construct with a point, normal, and ID."
-
-#     # Attributes
-#     dist = PYB11readwrite(doc="The distance to the origin along the normal.")
-#     normal = PYB11readwrite(doc="The normal to the plane.")
-#     ID = PYB11readwrite(doc="Arbitrary ID number for plane")
-
-# @PYB11template_dict({"ndim" : "2"})
-# class Plane2d:
-#     """Plane class for polyclipper in 2 dimensions."""
-# PYB11inject(PlaneBase, Plane2d)
-
-# @PYB11template_dict({"ndim" : "3"})
-# class Plane3d:
-#     """Plane class for polyclipper in 3 dimensions."""
-# PYB11inject(PlaneBase, Plane3d)
+from Vertex2d import *
 
 # #-------------------------------------------------------------------------------
 # # Vertex
