@@ -17,9 +17,16 @@ function(polyclipper_add_cxx_library package_name)
                     SHARED      TRUE
                     )
   endif()
+
+  # Are there any additional depends?
   if(polyclipper_depends)
     add_dependencies(Polyclipper_${package_name} ${polyclipper_depends})
   endif()
+
+  # Set the r-path of the C++ lib such that it is independent of the build dir when installed
+  set_target_properties(${package_name} PROPERTIES
+                        INSTALL_RPATH   ${POLYCLIPPER_INSTALL_DIR}/lib
+                        )
 endfunction()
 
 #----------------------------------------------------------------------
@@ -43,12 +50,19 @@ function(polyclipper_add_pybind11_library package_name)
     CLEAR_PREFIX TRUE
     SHARED       TRUE
     )
+
+  install(
+    TARGETS ${MODULE_NAME}
+    DESTINATION ${POLYCLIPPER_PYTHON_INSTALL}
+    )
+
+  # Are there any additional depends?
   if (polyclipper_py_depends OR polyclipper_depends)
     add_dependencies(${MODULE_NAME} ${polyclipper_py_depends} ${polyclipper_depends})
   endif()
 
-  install(
-    FILES ${CMAKE_BINARY_DIR}/lib/$<TARGET_FILE_NAME:${MODULE_NAME}>
-    DESTINATION ${POLYCLIPPER_PYTHON_INSTALL}
-    )
+  # Set the r-path of the C++ lib such that it is independent of the build dir when installed
+  set_target_properties(${MODULE_NAME}  PROPERTIES
+                        INSTALL_RPATH   ${POLYCLIPPER_INSTALL_DIR}/lib
+                        )
 endfunction()
