@@ -18,7 +18,7 @@
 
 macro(PYB11_GENERATE_BINDINGS PYB11_MODULE_NAME)
   set(PYB11_SOURCE "${PYB11_MODULE_NAME}MOD.py")
-  set(PYB11_GENERATED_SOURCE "${PYB11_MODULE_NAME}MOD.cc")
+  set(PYB11_GENERATED_SOURCE "${PYB11_MODULE_NAME}.cc")
 
   message("**** ${PYB11_MODULE_NAME}")
   message("**** ${PYB11_SOURCE}")
@@ -69,7 +69,8 @@ macro(PYB11_GENERATE_BINDINGS PYB11_MODULE_NAME)
                      ${PYTHON_EXE} -c
                      'import os \; print(\"${PYB11_MODULE_NAME} in directory \", os.getcwd()) \;
                      from PYB11Generator import * \;
-                     import ${PYB11_MODULE_NAME}MOD as ${PYB11_MODULE_NAME}\; 
+                     import ${PYB11_MODULE_NAME}MOD as ${PYB11_MODULE_NAME} \;
+                     ${PYB11_MODULE_NAME}.__name__ = \"${PYB11_MODULE_NAME}\" \;
                      PYB11generateModule(${PYB11_MODULE_NAME}) '
                      DEPENDS ${PYB11_MODULE_NAME}_stamp ${${PYB11_MODULE_NAME}_DEPENDS} ${PYB11_SOURCE}
                      )
