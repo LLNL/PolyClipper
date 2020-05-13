@@ -20,10 +20,6 @@ macro(PYB11_GENERATE_BINDINGS PYB11_MODULE_NAME)
   set(PYB11_SOURCE "${PYB11_MODULE_NAME}MOD.py")
   set(PYB11_GENERATED_SOURCE "${PYB11_MODULE_NAME}.cc")
 
-  message("**** ${PYB11_MODULE_NAME}")
-  message("**** ${PYB11_SOURCE}")
-  message("**** ${PYB11_GENERATED_SOURCE}")
-
   # List directories in which spheral .py files can be found.
   set(PYTHON_ENV 
       "${CMAKE_MODULE_PATH}/PYB11Generator:"
@@ -32,7 +28,6 @@ macro(PYB11_GENERATE_BINDINGS PYB11_MODULE_NAME)
 
   # Format list into a one line shell friendly format
   STRING(REPLACE ";" "<->" PYTHON_ENV_STR ${PYTHON_ENV})
-  message("**** ${PYTHON_ENV_STR}")
 
   # Generating python stamp files to detect changes in PYB11_SOURCE and
   # its included modules
@@ -67,8 +62,7 @@ macro(PYB11_GENERATE_BINDINGS PYB11_MODULE_NAME)
   add_custom_command(OUTPUT ${PYB11_GENERATED_SOURCE}
                      COMMAND env PYTHONPATH=\"${PYTHON_ENV_STR}\"
                      ${PYTHON_EXE} -c
-                     'import os \; print(\"${PYB11_MODULE_NAME} in directory \", os.getcwd()) \;
-                     from PYB11Generator import * \;
+                     'from PYB11Generator import * \;
                      import ${PYB11_MODULE_NAME}MOD as ${PYB11_MODULE_NAME} \;
                      ${PYB11_MODULE_NAME}.__name__ = \"${PYB11_MODULE_NAME}\" \;
                      PYB11generateModule(${PYB11_MODULE_NAME}) '
