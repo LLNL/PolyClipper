@@ -12,22 +12,6 @@ PYB11includes = ['"polyclipper.hh"']
 
 PYB11namespaces = ["PolyClipper"]
 
-# PYB11opaque = ["std::vector<char>",
-#                "std::vector<unsigned>",
-#                "std::vector<uint64_t>",
-#                "std::vector<int>",
-#                "std::vector<float>",
-#                "std::vector<double>",
-#                "std::vector<std::string>",
-
-#                "std::vector<std::vector<char>>",
-#                "std::vector<std::vector<unsigned>>",
-#                "std::vector<std::vector<uint64_t>>",
-#                "std::vector<std::vector<int>>",
-#                "std::vector<std::vector<float>>",
-#                "std::vector<std::vector<double>>",
-#                "std::vector<std::vector<std::string>>"]
-
 #-------------------------------------------------------------------------------
 # Import the types defined in this module
 #-------------------------------------------------------------------------------
@@ -38,111 +22,53 @@ from Plane3d import *
 from Vertex2d import *
 from Vertex3d import *
 
-# #-------------------------------------------------------------------------------
-# # Vertex
-# #-------------------------------------------------------------------------------
-# @PYB11ignore
-# class VertexBase:
+#-------------------------------------------------------------------------------
+# Polygon & Polyhedron
+#-------------------------------------------------------------------------------
+Polygon    = PYB11_bind_vector("PolyClipper::Vertex2d", opaque=True, local=True)
+Polyhedron = PYB11_bind_vector("PolyClipper::Vertex3d", opaque=True, local=True)
 
-#     # Constructors
-#     def pyinit0(self):
-#         "Default constructor"
+#-------------------------------------------------------------------------------
+# Polygon methods.
+#-------------------------------------------------------------------------------
+def initializePolygon(poly = "Polygon&",
+                      positions = "const std::vector<Vector2d>&",
+                      neighbors = "const std::vector<std::vector<int>>&"):
+    "Initialize a PolyClipper::Polygon from vertex positions and vertex neighbors."
+    return "void"
 
-#     def pyinit1(rhs = "const Vertex%(ndim)sd"):
-#         "Copy constructor"
+def polygon2string(poly = "Polygon&"):
+    "Return a formatted string representation for a PolyClipper::Polygon."
+    return "std::string"
 
-#     def pyinit2(position = "const Plane%(ndim)sd::Vector&"):
-#         "Construct with a position."
+@PYB11implementation("""[](const Polygon& self) {
+                                                  double zerothMoment;
+                                                  Vector2d firstMoment;
+                                                  moments(zerothMoment, firstMoment, self);
+                                                  return py::make_tuple(zerothMoment, firstMoment);
+                                                }""")
+@PYB11pycppname("moments")
+def momentsPolygon(poly = "const Polygon&"):
+    "Compute the zeroth and first moment of a PolyClipper::Polygon."
+    return "py::tuple"
 
-#     def pyinit3(position = "const Plane%(ndim)sd::Vector&",
-#                 c = "int"):
-#         "Construct with a position and initial compare flag."
+def clipPolygon(poly = "Polygon&",
+                planes = "const std::vector<Plane2d>&"):
+    "Clip a PolyClipper::Polygon with a collection of planes."
+    return "void"
 
-#     # Attributes
-#     position = PYB11readwrite(doc="The position of the vertex.")
-#     neighbors = PYB11readwrite(doc="The connectivty of the vertex.")
-#     comp = PYB11readwrite(doc="The current comparison flag.")
-#     ID = PYB11readwrite(doc="The ID or index of the vertex.")
-#     clips = PYB11readwrite(doc="The set of plane IDs (if any) responsible for this vertex.")
+@PYB11pycppname("collapseDegenerates")
+def collapseDegeneratesPolygon(poly = "Polygon&",
+                               tol = "const double"):
+    "Collapse edges in a PolyClipper::Polygon below the given tolerance."
+    return "void"
 
-#     def __eq__(self):
-#         return
-
-# @PYB11template_dict({"ndim" : "2"})
-# class Vertex2d:
-#     """Vertex class for polyclipper in 2 dimensions."""
-# PYB11inject(VertexBase, Vertex2d)
-
-# @PYB11template_dict({"ndim" : "3"})
-# class Vertex3d:
-#     """Vertex class for polyclipper in 3 dimensions."""
-# PYB11inject(VertexBase, Vertex3d)
-
-# #-------------------------------------------------------------------------------
-# # Polygon & Polyhedron
-# #-------------------------------------------------------------------------------
-# Polygon    = PYB11_bind_vector("PolyClipper::Vertex2d", opaque=True, local=True)
-# Polyhedron = PYB11_bind_vector("PolyClipper::Vertex3d", opaque=True, local=True)
-
-# #-------------------------------------------------------------------------------
-# # Polygon methods.
-# #-------------------------------------------------------------------------------
-# @PYB11namespace("PolyClipper")
-# def initializePolygon(poly = "Polygon&",
-#                       positions = "const std::vector<Spheral::Dim<2>::Vector>&",
-#                       neighbors = "const std::vector<std::vector<int>>&"):
-#     "Initialize a PolyClipper::Polygon from vertex positions and vertex neighbors."
-#     return "void"
-
-# @PYB11namespace("PolyClipper")
-# def polygon2string(poly = "Polygon&"):
-#     "Return a formatted string representation for a PolyClipper::Polygon."
-#     return "std::string"
-
-# @PYB11namespace("PolyClipper")
-# def convertToPolygon(polygon = "Polygon&",
-#                      Spheral_polygon = "const Spheral::Dim<2>::FacetedVolume&"):
-#     "Construct a PolyClipper::Polygon from a Spheral::Polygon."
-#     return "void"
-
-# @PYB11namespace("PolyClipper")
-# def convertFromPolygon(Spheral_polygon = "Spheral::Dim<2>::FacetedVolume&",
-#                        polygon = "const Polygon&"):
-#     "Construct a Spheral::Polygon from a PolyClipper::Polygon.  Returns the set of clip planes responsible for each vertex."
-#     return "std::vector<std::set<int>>"
-
-# @PYB11namespace("PolyClipper")
-# @PYB11implementation("""[](const Polygon& self) {
-#                                                   double zerothMoment;
-#                                                   Spheral::Dim<2>::Vector firstMoment;
-#                                                   moments(zerothMoment, firstMoment, self);
-#                                                   return py::make_tuple(zerothMoment, firstMoment);
-#                                                 }""")
-# @PYB11pycppname("moments")
-# def momentsPolygon(poly = "const Polygon&"):
-#     "Compute the zeroth and first moment of a PolyClipper::Polygon."
-#     return "py::tuple"
-
-# @PYB11namespace("PolyClipper")
-# def clipPolygon(poly = "Polygon&",
-#                 planes = "const std::vector<Plane2d>&"):
-#     "Clip a PolyClipper::Polygon with a collection of planes."
-#     return "void"
-
-# @PYB11namespace("PolyClipper")
-# @PYB11pycppname("collapseDegenerates")
-# def collapseDegeneratesPolygon(poly = "Polygon&",
-#                                tol = "const double"):
-#     "Collapse edges in a PolyClipper::Polygon below the given tolerance."
-#     return "void"
-
-# @PYB11namespace("PolyClipper")
-# def splitIntoTriangles(poly = "const Polygon&",
-#                        tol = ("const double", "0.0")):
-#     """Split a PolyClipper::Polygon into triangles.
-# The result is returned as a vector<vector<int>>, where each inner vector is a triple of
-# ints representing vertex indices in the input Polygon."""
-#     return "std::vector<std::vector<int>>"
+def splitIntoTriangles(poly = "const Polygon&",
+                       tol = ("const double", "0.0")):
+    """Split a PolyClipper::Polygon into triangles.
+The result is returned as a vector<vector<int>>, where each inner vector is a triple of
+ints representing vertex indices in the input Polygon."""
+    return "std::vector<std::vector<int>>"
 
 # #-------------------------------------------------------------------------------
 # # Polyhedron methods.
