@@ -36,9 +36,9 @@ function(polyclipper_add_pybind11_library package_name)
   include(${CMAKE_MODULE_PATH}/PYB11Generator.cmake)
 
   set(PYB11_MODULE_NAME ${package_name})
-  PYB11_GENERATE_BINDINGS()
+  PYB11_GENERATE_BINDINGS(${PYB11_MODULE_NAME})
 
-  set(MODULE_NAME ${PYB11_MODULE_NAME})
+  set(MODULE_NAME ${package_name}MOD)
   set(GENERATED_SOURCE ${PYB11_GENERATED_SOURCE})
 
   blt_add_library(
@@ -46,7 +46,7 @@ function(polyclipper_add_pybind11_library package_name)
     SOURCES      ${GENERATED_SOURCE} ${${package_name}_ADDITIONAL_SOURCES}
     DEPENDS_ON   -Wl,--start-group ${POLYCLIPPER_PYTHON_DEPENDS} -Wl,--end-group ${${package_name}_ADDITIONAL_DEPENDS} ${polyclipper_blt_depends}
     INCLUDES     ${${package_name}_ADDITIONAL_INCLUDES}
-    OUTPUT_NAME  ${PYB11_MODULE_NAME}
+    OUTPUT_NAME  ${package_name}
     CLEAR_PREFIX TRUE
     SHARED       TRUE
     )

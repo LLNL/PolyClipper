@@ -1,1 +1,2 @@
-polyclipper_add_pybind11_library(PolyClipperMOD)
+set(PolyClipper_DEPENDS )
+polyclipper_add_pybind11_library(PolyClipper)
