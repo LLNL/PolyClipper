@@ -225,7 +225,7 @@ void moments(double& zerothMoment, PolyClipper::Vector2d& firstMoment,
       vnext = polygon[vnext].neighbors.second;
       const auto triA = (polygon[vprev].position - polygon[vfirst].position).cross(polygon[vnext].position - polygon[vfirst].position);
       zerothMoment += triA;
-      firstMoment += triA * (polygon[vprev].position + polygon[vnext].position);
+      firstMoment += triA * (polygon[vprev].position + polygon[vnext].position - 2.0*polygon[vfirst].position);
       vprev = vnext;
     }
     assert (zerothMoment != 0.0);
