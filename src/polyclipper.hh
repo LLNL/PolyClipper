@@ -44,6 +44,7 @@ struct Vector2d {
   Vector2d  operator/(const double rhs) const     { return Vector2d(x/rhs, y/rhs); }
   Vector2d  operator+(const Vector2d rhs) const   { return Vector2d(x + rhs.x, y + rhs.y); }
   Vector2d  operator-(const Vector2d rhs) const   { return Vector2d(x - rhs.x, y - rhs.y); }
+  Vector2d  operator-() const                     { return Vector2d(-x, -y); }
   Vector2d  unitVector() const {
     const auto mag = this->magnitude();
     return (mag > 0.0 ? Vector2d(x/mag, y/mag) : Vector2d(1.0, 0.0));
@@ -72,6 +73,7 @@ struct Vector3d {
   Vector3d  operator/(const double rhs) const     { return Vector3d(x/rhs, y/rhs, z/rhs); }
   Vector3d  operator+(const Vector3d rhs) const   { return Vector3d(x + rhs.x, y + rhs.y, z + rhs.z); }
   Vector3d  operator-(const Vector3d rhs) const   { return Vector3d(x - rhs.x, y - rhs.y, z - rhs.z); }
+  Vector3d  operator-() const                     { return Vector3d(-x, -y, -z); }
   Vector3d  unitVector() const {
     const auto mag = this->magnitude();
     return (mag > 0.0 ? Vector3d(x/mag, y/mag, z/mag) : Vector3d(1.0, 0.0, 0.0));
