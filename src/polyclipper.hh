@@ -176,19 +176,19 @@ struct Vertex3d {
 typedef std::vector<Vertex2d> Polygon;
 
 void initializePolygon(Polygon& poly,
-                       const std::vector<PolyClipper::Vector2d>& positions,
-                       const std::vector<std::vector<int>>& neighbors);
+                         const std::vector<PolyClipper::Vector2d>& positions,
+                         const std::vector<std::vector<int>>& neighbors);
 
 std::string polygon2string(const Polygon& poly);
 
 void moments(double& zerothMoment, PolyClipper::Vector2d& firstMoment,
-             const Polygon& polygon);
+              const Polygon& polygon);
 
 void clipPolygon(Polygon& poly,
-                 const std::vector<Plane2d>& planes);
+                  const std::vector<Plane2d>& planes);
 
 void collapseDegenerates(Polygon& poly,
-                         const double tol);
+                           const double tol);
 
 std::vector<std::vector<int>> splitIntoTriangles(const Polygon& poly,
                                                    const double tol = 0.0);
@@ -201,19 +201,19 @@ typedef std::vector<Vertex3d> Polyhedron;
 std::vector<std::vector<int>> extractFaces(const Polyhedron& poly);
 
 void initializePolyhedron(Polyhedron& poly,
-                          const std::vector<PolyClipper::Vector3d>& positions,
-                          const std::vector<std::vector<int>>& neighbors);
+                            const std::vector<PolyClipper::Vector3d>& positions,
+                            const std::vector<std::vector<int>>& neighbors);
 
 std::string polyhedron2string(const Polyhedron& poly);
 
 void moments(double& zerothMoment, PolyClipper::Vector3d& firstMoment,
-             const Polyhedron& polyhedron);
+              const Polyhedron& polyhedron);
 
 void clipPolyhedron(Polyhedron& poly,
-                    const std::vector<Plane3d>& planes);
+                     const std::vector<Plane3d>& planes);
 
 void collapseDegenerates(Polyhedron& poly,
-                         const double tol);
+                           const double tol);
 
 std::vector<std::vector<int>> splitIntoTetrahedra(const Polyhedron& poly, 
                                                     const double tol = 0.0);
