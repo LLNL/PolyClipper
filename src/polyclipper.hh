@@ -51,6 +51,8 @@ struct Vector2d {
   }
 };
 
+inline Vector2d operator*(const double lhs, const Vector2d& rhs) { return rhs*lhs; }
+
 //------------------------------------------------------------------------------
 // 3D Vector
 //------------------------------------------------------------------------------
@@ -79,6 +81,8 @@ struct Vector3d {
     return (mag > 0.0 ? Vector3d(x/mag, y/mag, z/mag) : Vector3d(1.0, 0.0, 0.0));
   }
 };
+
+inline Vector3d operator*(const double lhs, const Vector3d& rhs) { return rhs*lhs; }
 
 //------------------------------------------------------------------------------
 // 2D plane.

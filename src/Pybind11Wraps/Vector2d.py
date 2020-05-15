@@ -35,6 +35,9 @@ class Vector2d:
     def __mul__(self, rhs="double()"):
         return
 
+    def __rmul__(self, rhs="double()"):
+        return
+
     def __div__(self, rhs="double()"):
         return
 
