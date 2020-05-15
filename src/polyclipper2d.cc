@@ -498,6 +498,48 @@ void collapseDegenerates(Polygon& polygon,
 }
 
 //------------------------------------------------------------------------------
+// Return the vertices ordered in faces.
+//------------------------------------------------------------------------------
+vector<vector<int>>
+extractFaces(const Polygon& poly) {
+
+  // Numbers of vertices.
+  const auto nverts = poly.size();
+  const auto nactive = count_if(poly.begin(), poly.end(),
+                                [](const Vertex2d& x) { return x.comp >= 0; });
+  set<int> usedVertices;
+
+  // Go until we hit all the active vertices.
+  vector<vector<int>> facets(nactive, vector<int>(2));
+  auto k = 0;
+  while (usedVertices.size() < nactive) {
+
+    // Look for the first active unused vertex.
+    auto vstart = 0;
+    while (vstart < nverts and
+           (poly[vstart].comp < 0 or usedVertices.find(vstart) != usedVertices.end())) vstart++;
+    assert(vstart < nverts);
+    auto vnext = vstart;
+
+    // Read out this loop.
+    auto force = true;
+    while (force or vnext != vstart) {
+      assert(k < nactive);
+      facets[k][0] = vnext;
+      vnext = poly[vnext].neighbors.second;
+      facets[k][1] = vnext;
+      ++k;
+      force = false;
+      usedVertices.insert(vnext);
+    }
+    facets[k-1][1] = vstart;
+  }
+  assert(k == nactive);
+
+  return facets;
+}
+
+//------------------------------------------------------------------------------
 // Split a polygon into a set of triangles.
 //------------------------------------------------------------------------------
 vector<vector<int>> splitIntoTriangles(const Polygon& poly,

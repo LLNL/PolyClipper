@@ -190,6 +190,8 @@ void clipPolygon(Polygon& poly,
 void collapseDegenerates(Polygon& poly,
                            const double tol);
 
+std::vector<std::vector<int>> extractFaces(const Polygon& poly);
+
 std::vector<std::vector<int>> splitIntoTriangles(const Polygon& poly,
                                                    const double tol = 0.0);
 
@@ -214,6 +216,8 @@ void clipPolyhedron(Polyhedron& poly,
 
 void collapseDegenerates(Polyhedron& poly,
                            const double tol);
+
+std::vector<std::vector<int>> extractFaces(const Polyhedron& poly);
 
 std::vector<std::vector<int>> splitIntoTetrahedra(const Polyhedron& poly, 
                                                     const double tol = 0.0);

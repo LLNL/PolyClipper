@@ -118,98 +118,6 @@ nextInFaceLoop(const Vertex3d& v, const int vprev) {
 }              // anonymous methods
 
 //------------------------------------------------------------------------------
-// Return the vertices ordered in faces.
-// Implicitly uses the convention that neighbors for each vertex are arranged
-// counter-clockwise viewed from the exterior.
-//------------------------------------------------------------------------------
-vector<vector<int>>
-extractFaces(const Polyhedron& poly) {
-
-  typedef pair<int, int> Edge;
-  typedef vector<int> Face;
-
-  // Prepare the result.
-  vector<vector<int>> result;
-
-  // {
-  //   int i = 0;
-  //   for (const auto& v: poly) v.ID = i++;
-  //   for (const auto& v: poly) {
-  //     cerr << " **> " << v.ID << " " << v.position << " :";
-  //     for (const auto nptr: v.neighbors) cerr << " " << nptr->ID;
-  //     cerr << endl;
-  //   }
-  // }
-
-  // Walk each vertex in the polyhedron.
-  set<Edge> edgesWalked;
-  const auto nverts = poly.size();
-  for (auto i = 0; i < nverts; ++i) {
-    const auto& v = poly[i];
-    if (v.comp >= 0) {
-
-      // {
-      //   cerr << " --> " << v.ID << " " << v.position << " :";
-      //   for (const auto nptr: v.neighbors) cerr << " " << nptr->ID;
-      //   cerr << endl;
-      // }
-
-      // Check every (outgoing) edge attached to this vertex.
-      for (const auto ni: v.neighbors) {
-        assert (poly[ni].comp >= 0);
-
-        // Has this edge been walked yet?
-        if (edgesWalked.find(make_pair(ni, i)) == edgesWalked.end()) {
-          Face face(1, ni);
-          auto vstart = ni;
-          auto vnext = i;
-          auto vprev = ni;
-          // cerr << "Face: " << ni;
-
-          // Follow around the face represented by this edge until we get back
-          // to our starting vertex.
-          while (vnext != vstart) {
-            // cerr << " " << vnext;
-            face.push_back(vnext);
-            assert (edgesWalked.find(make_pair(vprev, vnext)) == edgesWalked.end());
-            edgesWalked.insert(make_pair(vprev, vnext));
-            auto itr = find(poly[vnext].neighbors.begin(), poly[vnext].neighbors.end(), vprev);
-            assert (itr != poly[vnext].neighbors.end());
-            vprev = vnext;
-            if (itr == poly[vnext].neighbors.begin()) {
-              vnext = poly[vnext].neighbors.back();
-            } else {
-              vnext = *(itr - 1);
-            }
-          }
-          // cerr << endl;
-          edgesWalked.insert(make_pair(vprev, vnext));   // Final edge connecting last->first vertex
-          assert (face.size() >= 3);
-          result.push_back(face);
-
-        }
-      }
-    }
-  }
-
-  // Post-conditions.
-#ifndef NDEBUG
-  {
-    // Every pair should have been walked twice, once in each direction.
-    for (auto i = 0; i < nverts; ++i) {
-      for (const auto ni: poly[i].neighbors) {
-        assert (edgesWalked.find(make_pair(i, ni)) != edgesWalked.end());
-        assert (edgesWalked.find(make_pair(ni, i)) != edgesWalked.end());
-      }
-    }
-  }
-#endif
-
-  // That's it.
-  return result;
-}
-
-//------------------------------------------------------------------------------
 // Initialize a polyhedron given the vertex coordinates and connectivity.
 //------------------------------------------------------------------------------
 void
@@ -652,6 +560,98 @@ void collapseDegenerates(Polyhedron& polyhedron,
   }
 #endif
 
+}
+
+//------------------------------------------------------------------------------
+// Return the vertices ordered in faces.
+// Implicitly uses the convention that neighbors for each vertex are arranged
+// counter-clockwise viewed from the exterior.
+//------------------------------------------------------------------------------
+vector<vector<int>>
+extractFaces(const Polyhedron& poly) {
+
+  typedef pair<int, int> Edge;
+  typedef vector<int> Face;
+
+  // Prepare the result.
+  vector<vector<int>> result;
+
+  // {
+  //   int i = 0;
+  //   for (const auto& v: poly) v.ID = i++;
+  //   for (const auto& v: poly) {
+  //     cerr << " **> " << v.ID << " " << v.position << " :";
+  //     for (const auto nptr: v.neighbors) cerr << " " << nptr->ID;
+  //     cerr << endl;
+  //   }
+  // }
+
+  // Walk each vertex in the polyhedron.
+  set<Edge> edgesWalked;
+  const auto nverts = poly.size();
+  for (auto i = 0; i < nverts; ++i) {
+    const auto& v = poly[i];
+    if (v.comp >= 0) {
+
+      // {
+      //   cerr << " --> " << v.ID << " " << v.position << " :";
+      //   for (const auto nptr: v.neighbors) cerr << " " << nptr->ID;
+      //   cerr << endl;
+      // }
+
+      // Check every (outgoing) edge attached to this vertex.
+      for (const auto ni: v.neighbors) {
+        assert (poly[ni].comp >= 0);
+
+        // Has this edge been walked yet?
+        if (edgesWalked.find(make_pair(ni, i)) == edgesWalked.end()) {
+          Face face(1, ni);
+          auto vstart = ni;
+          auto vnext = i;
+          auto vprev = ni;
+          // cerr << "Face: " << ni;
+
+          // Follow around the face represented by this edge until we get back
+          // to our starting vertex.
+          while (vnext != vstart) {
+            // cerr << " " << vnext;
+            face.push_back(vnext);
+            assert (edgesWalked.find(make_pair(vprev, vnext)) == edgesWalked.end());
+            edgesWalked.insert(make_pair(vprev, vnext));
+            auto itr = find(poly[vnext].neighbors.begin(), poly[vnext].neighbors.end(), vprev);
+            assert (itr != poly[vnext].neighbors.end());
+            vprev = vnext;
+            if (itr == poly[vnext].neighbors.begin()) {
+              vnext = poly[vnext].neighbors.back();
+            } else {
+              vnext = *(itr - 1);
+            }
+          }
+          // cerr << endl;
+          edgesWalked.insert(make_pair(vprev, vnext));   // Final edge connecting last->first vertex
+          assert (face.size() >= 3);
+          result.push_back(face);
+
+        }
+      }
+    }
+  }
+
+  // Post-conditions.
+#ifndef NDEBUG
+  {
+    // Every pair should have been walked twice, once in each direction.
+    for (auto i = 0; i < nverts; ++i) {
+      for (const auto ni: poly[i].neighbors) {
+        assert (edgesWalked.find(make_pair(i, ni)) != edgesWalked.end());
+        assert (edgesWalked.find(make_pair(ni, i)) != edgesWalked.end());
+      }
+    }
+  }
+#endif
+
+  // That's it.
+  return result;
 }
 
 //------------------------------------------------------------------------------
