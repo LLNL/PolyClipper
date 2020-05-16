@@ -115,6 +115,30 @@ nextInFaceLoop(const Vertex3d& v, const int vprev) {
   }
 }
 
+//------------------------------------------------------------------------------
+// Perform an in-place intersection of two sets, leaving the result in the
+// first argument.
+//------------------------------------------------------------------------------
+inline
+void
+inPlaceSetIntersection(set<int>& a, const set<int>& b) {
+  auto it1 = a.begin();
+  auto it2 = b.begin();
+  while ((it1 != a.end()) and (it2 != b.end())) {
+    if (*it1 < *it2) {
+      a.erase(it1++);
+    } else if (*it2 < *it1) {
+      ++it2;
+    } else { // *it1 == *it2
+      ++it1;
+      ++it2;
+    }
+  }
+
+  // Anything left in a from here on did not appear in b, so we remove it.
+  a.erase(it1, a.end());
+}
+
 }              // anonymous methods
 
 //------------------------------------------------------------------------------
@@ -574,7 +598,7 @@ extractFaces(const Polyhedron& poly) {
   typedef vector<int> Face;
 
   // Prepare the result.
-  vector<vector<int>> result;
+  vector<vector<int>> faceVertices;
 
   // {
   //   int i = 0;
@@ -630,8 +654,7 @@ extractFaces(const Polyhedron& poly) {
           // cerr << endl;
           edgesWalked.insert(make_pair(vprev, vnext));   // Final edge connecting last->first vertex
           assert (face.size() >= 3);
-          result.push_back(face);
-
+          faceVertices.push_back(face);
         }
       }
     }
@@ -650,8 +673,25 @@ extractFaces(const Polyhedron& poly) {
   }
 #endif
 
-  // That's it.
-  return result;
+}
+
+//------------------------------------------------------------------------------
+// Compute the set of clips common to each face.
+//------------------------------------------------------------------------------
+vector<set<int>>
+commonFaceClips(const Polyhedron& poly,
+                const vector<vector<int>>& faceVertices) {
+  const auto nfaces = faceVertices.size();
+  assert(nfaces >= 4);
+  vector<set<int>> faceClips(nfaces);
+  for (auto k = 0; k < nfaces; ++k) {
+    const auto n = faceVertices[k].size();
+    assert(n >= 3);
+    faceClips[k] = poly[faceVertices[k][0]].clips;
+    for (auto j = 1; j < n; ++j) {
+      inPlaceSetIntersection(faceClips[k], poly[faceVertices[k][j]].clips);
+    }
+  }
 }
 
 //------------------------------------------------------------------------------

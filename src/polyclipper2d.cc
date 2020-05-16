@@ -507,11 +507,13 @@ extractFaces(const Polygon& poly) {
   const auto nverts = poly.size();
   const auto nactive = count_if(poly.begin(), poly.end(),
                                 [](const Vertex2d& x) { return x.comp >= 0; });
-  set<int> usedVertices;
+
+  // Allocate the result arrays.
+  vector<vector<int>> faceVertices(nactive, vector<int>(2));
 
   // Go until we hit all the active vertices.
-  vector<vector<int>> facets(nactive, vector<int>(2));
   auto k = 0;
+  set<int> usedVertices;
   while (usedVertices.size() < nactive) {
 
     // Look for the first active unused vertex.
@@ -525,18 +527,37 @@ extractFaces(const Polygon& poly) {
     auto force = true;
     while (force or vnext != vstart) {
       assert(k < nactive);
-      facets[k][0] = vnext;
+      faceVertices[k][0] = vnext;
       vnext = poly[vnext].neighbors.second;
-      facets[k][1] = vnext;
+      faceVertices[k][1] = vnext;
       ++k;
       force = false;
       usedVertices.insert(vnext);
     }
-    facets[k-1][1] = vstart;
+    faceVertices[k-1][1] = vstart;
   }
-  assert(k == nactive);
 
-  return facets;
+  assert(k == nactive);
+  return faceVertices;
+}
+
+//------------------------------------------------------------------------------
+// Compute the set of clips common to each face.
+//------------------------------------------------------------------------------
+vector<set<int>>
+commonFaceClips(const Polygon& poly,
+                const vector<vector<int>>& faceVertices) {
+
+  const auto nfaces = faceVertices.size();
+  assert(nfaces >= 3);
+  vector<set<int>> faceClips(nfaces);
+  for (auto k = 0; k < nfaces; ++k) {
+    assert(faceVertices[k].size() == 2);
+    std::set_intersection(poly[faceVertices[k][0]].clips.begin(), poly[faceVertices[k][0]].clips.end(),
+                          poly[faceVertices[k][1]].clips.begin(), poly[faceVertices[k][1]].clips.end(),
+                          std::inserter(faceClips[k], faceClips[k].begin()));
+  }
+  return faceClips;
 }
 
 //------------------------------------------------------------------------------

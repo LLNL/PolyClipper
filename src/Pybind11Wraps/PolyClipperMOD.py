@@ -63,6 +63,15 @@ def collapseDegeneratesPolygon(poly = "Polygon&",
     "Collapse edges in a PolyClipper::Polygon below the given tolerance."
     return "void"
 
+def extractFaces(poly = "const Polygon&"):
+    "Compute the faces (as pairs of vertex indices) for the Polygon"
+    return "std::vector<std::vector<int>>"
+
+def commonFaceClips(poly = "const Polygon&",
+                    faces = "const std::vector<std::vector<int>>&"):
+    "Find the common clipping planes for each face"
+    return "std::vector<std::set<int>>"
+
 def splitIntoTriangles(poly = "const Polygon&",
                        tol = ("const double", "0.0")):
     """Split a PolyClipper::Polygon into triangles.
@@ -104,6 +113,17 @@ def collapseDegeneratesPolyhedron(poly = "Polyhedron&",
                                   tol = "const double"):
     "Collapse edges in a PolyClipper::Polyhedron below the given tolerance."
     return "void"
+
+@PYB11pycppname("extractFaces")
+def extractFacesPolyhedron(poly = "const Polygon&"):
+    "Compute the faces (as pairs of vertex indices) for the Polygon"
+    return "std::vector<std::vector<int>>"
+
+@PYB11pycppname("commonFaceClips")
+def commonFaceClipsPolyhedron(poly = "const Polygon&",
+                              faces = "const std::vector<std::vector<int>>&"):
+    "Find the common clipping planes for each face"
+    return "std::vector<std::set<int>>"
 
 def splitIntoTetrahedra(poly = "const Polyhedron&",
                         tol = ("const double", "0.0")):

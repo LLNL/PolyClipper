@@ -176,35 +176,36 @@ struct Vertex3d {
 typedef std::vector<Vertex2d> Polygon;
 
 void initializePolygon(Polygon& poly,
-                         const std::vector<PolyClipper::Vector2d>& positions,
-                         const std::vector<std::vector<int>>& neighbors);
+                       const std::vector<PolyClipper::Vector2d>& positions,
+                       const std::vector<std::vector<int>>& neighbors);
 
 std::string polygon2string(const Polygon& poly);
 
 void moments(double& zerothMoment, PolyClipper::Vector2d& firstMoment,
-              const Polygon& polygon);
+             const Polygon& polygon);
 
 void clipPolygon(Polygon& poly,
-                  const std::vector<Plane2d>& planes);
+                 const std::vector<Plane2d>& planes);
 
 void collapseDegenerates(Polygon& poly,
-                           const double tol);
+                         const double tol);
 
 std::vector<std::vector<int>> extractFaces(const Polygon& poly);
 
+std::vector<std::set<int>> commonFaceClips(const Polygon& poly,
+                                           const std::vector<std::vector<int>>& faces);
+
 std::vector<std::vector<int>> splitIntoTriangles(const Polygon& poly,
-                                                   const double tol = 0.0);
+                                                 const double tol = 0.0);
 
 //------------------------------------------------------------------------------
 // 3D (polyhedron) methods.
 //------------------------------------------------------------------------------
 typedef std::vector<Vertex3d> Polyhedron;
 
-std::vector<std::vector<int>> extractFaces(const Polyhedron& poly);
-
 void initializePolyhedron(Polyhedron& poly,
-                            const std::vector<PolyClipper::Vector3d>& positions,
-                            const std::vector<std::vector<int>>& neighbors);
+                          const std::vector<PolyClipper::Vector3d>& positions,
+                          const std::vector<std::vector<int>>& neighbors);
 
 std::string polyhedron2string(const Polyhedron& poly);
 
@@ -219,8 +220,13 @@ void collapseDegenerates(Polyhedron& poly,
 
 std::vector<std::vector<int>> extractFaces(const Polyhedron& poly);
 
+std::vector<std::set<int>> commonFaceClips(const Polyhedron& poly,
+                                           const std::vector<std::vector<int>>& faces);
+
 std::vector<std::vector<int>> splitIntoTetrahedra(const Polyhedron& poly, 
-                                                    const double tol = 0.0);
+                                                  const double tol = 0.0);
+
+
 }
 
 #endif
