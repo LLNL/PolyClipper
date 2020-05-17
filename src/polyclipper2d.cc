@@ -218,18 +218,15 @@ void moments(double& zerothMoment, PolyClipper::Vector2d& firstMoment,
   // Walk the polygon, and add up our results triangle by triangle.
   if (not polygon.empty()) {
     const auto nverts = polygon.size();
-    auto vfirst = 0;
-    auto vprev = vfirst;
-    auto vnext = vfirst;
-    for (auto k = 0; k < nverts; ++k) {
-      vnext = polygon[vnext].neighbors.second;
-      const auto triA = (polygon[vprev].position - polygon[vfirst].position).cross(polygon[vnext].position - polygon[vfirst].position);
+    const auto v0 = polygon[0];
+    for (const auto v1: polygon) {
+      const auto v2 = polygon[v1.neighbors.second];
+      const auto triA = (v1.position - v0.position).cross(v2.position - v0.position);
       zerothMoment += triA;
-      firstMoment += triA * (polygon[vprev].position + polygon[vnext].position - 2.0*polygon[vfirst].position);
-      vprev = vnext;
+      firstMoment += triA * (v1.position + v2.position - 2.0*v0.position);
     }
     assert (zerothMoment != 0.0);
-    firstMoment = firstMoment/(3.0*zerothMoment) + polygon[vfirst].position;
+    firstMoment = firstMoment/(3.0*zerothMoment) + v0.position;
     zerothMoment *= 0.5;
   }
 }
