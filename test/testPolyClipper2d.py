@@ -287,27 +287,27 @@ class TestPolyClipper2d(unittest.TestCase):
                 self.failUnless(fuzzyEqual(v1 + v2 + v3 + v4, v0),
                                 "Two plane clipping summing to wrong volumes: %s + %s + %s + %s = %s != %s" % (v1, v2, v3, v4, v1 + v2 + v3 + v4, v0))
 
-    # #---------------------------------------------------------------------------
-    # # Split a (convex) polygon into triangles.
-    # #---------------------------------------------------------------------------
-    # def testSplitIntoTriangles(self):
-    #     for points in self.convexPointSets:
-    #         PCpoly = Polygon()
-    #         initializePolygon(PCpoly, points, vertexNeighbors(points))
-    #         tris = splitIntoTriangles(PCpoly)
-    #         vol0, centroid0 = moments(PCpoly)
-    #         volTris = 0.0
-    #         centroidTris = Vector2d()
-    #         for inds in tris:
-    #             assert len(inds) == 3
-    #             a = ((PCpoly[inds[1]].position - PCpoly[inds[0]].position).cross(PCpoly[inds[2]].position - PCpoly[inds[0]].position).z)
-    #             assert a >= 0.0
-    #             volTris += a
-    #             centroidTris += a*(PCpoly[inds[0]].position + PCpoly[inds[1]].position + PCpoly[inds[2]].position)
-    #         volTris *= 0.5
-    #         centroidTris /= 6.0*volTris
-    #         assert abs(volTris - vol0) < 1.0e-20
-    #         assert (centroidTris - centroid0).magnitude() < 1.0e-20
+    #---------------------------------------------------------------------------
+    # Split a (convex) polygon into triangles.
+    #---------------------------------------------------------------------------
+    def testSplitIntoTriangles(self):
+        for points in self.convexPointSets:
+            poly = Polygon()
+            initializePolygon(poly, points, vertexNeighbors(points))
+            tris = splitIntoTriangles(poly)
+            vol0, centroid0 = moments(poly)
+            volTris = 0.0
+            centroidTris = Vector2d()
+            for inds in tris:
+                assert len(inds) == 3
+                a = (poly[inds[1]].position - poly[inds[0]].position).cross(poly[inds[2]].position - poly[inds[0]].position)
+                assert a >= 0.0
+                volTris += a
+                centroidTris += a*(poly[inds[0]].position + poly[inds[1]].position + poly[inds[2]].position)
+            volTris *= 0.5
+            centroidTris /= 6.0*volTris
+            assert abs(volTris - vol0) < 1.0e-20
+            assert (centroidTris - centroid0).magnitude() < 1.0e-20
 
 if __name__ == "__main__":
     unittest.main()
