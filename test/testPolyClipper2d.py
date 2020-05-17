@@ -168,6 +168,9 @@ class TestPolyClipper2d(unittest.TestCase):
                     print moments(chunk1)
                     print moments(chunk2)
                     print "Vol check: %g + %g = %g" % (v1, v2, v0)
+                    writePolyOBJ(poly, "poly.obj")
+                    writePolyOBJ(chunk1, "chunk1.obj")
+                    writePolyOBJ(chunk2, "chunk2.obj")
                 self.failUnless(success, "Plane clipping summing to wrong volumes: %s + %s = %s != %s" % (v1, v2, v1 + v2, v0))
 
     #---------------------------------------------------------------------------
