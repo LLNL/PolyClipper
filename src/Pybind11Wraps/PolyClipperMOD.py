@@ -115,12 +115,12 @@ def collapseDegeneratesPolyhedron(poly = "Polyhedron&",
     return "void"
 
 @PYB11pycppname("extractFaces")
-def extractFacesPolyhedron(poly = "const Polygon&"):
-    "Compute the faces (as pairs of vertex indices) for the Polygon"
+def extractFacesPolyhedron(poly = "const Polyhedron&"):
+    "Compute the faces (as pairs of vertex indices) for the Polyhedron"
     return "std::vector<std::vector<int>>"
 
 @PYB11pycppname("commonFaceClips")
-def commonFaceClipsPolyhedron(poly = "const Polygon&",
+def commonFaceClipsPolyhedron(poly = "const Polyhedron&",
                               faces = "const std::vector<std::vector<int>>&"):
     "Find the common clipping planes for each face"
     return "std::vector<std::set<int>>"

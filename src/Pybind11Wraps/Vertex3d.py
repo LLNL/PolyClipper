@@ -50,7 +50,7 @@ internal usage during PolyClipper clipping operations.
     #---------------------------------------------------------------------------
     @PYB11implementation('''
 [](const Vertex3d& self) { 
-  auto result = "{pos=(" + std::to_string(self.position.x) + " " + std::to_string(self.position.y) + 
+  auto result = "{pos=(" + std::to_string(self.position.x) + " " + std::to_string(self.position.y) + + " " + std::to_string(self.position.z) + 
                 "), neighbors=( ";
   for (const auto x: self.neighbors) result += std::to_string(x) + " "; 
   result += "), ID=" + std::to_string(self.ID) +
