@@ -217,15 +217,16 @@ void moments(double& zerothMoment, PolyClipper::Vector3d& firstMoment,
   if (not polyhedron.empty()) {
 
     // Pick a central point to work from.
-    auto nactive = 0;
-    Vector3d origin;
-    for (const auto v: polyhedron) {
-      if (v.comp >= 0.0) {
-        ++nactive;
-        origin += v.position;
-      }
-    }
-    origin /= nactive;
+    // auto nactive = 0;
+    // Vector3d origin;
+    // for (const auto v: polyhedron) {
+    //   if (v.comp >= 0.0) {
+    //     ++nactive;
+    //     origin += v.position;
+    //   }
+    // }
+    // origin /= nactive;
+    const auto origin = polyhedron[0].position;
 
     // Walk the polyhedron, and add up the results as tetrahedra.
     for (const auto v: polyhedron) {
