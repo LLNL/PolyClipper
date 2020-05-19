@@ -137,7 +137,7 @@ def max_chord(poly):
     ymax = max([v.position.y for v in poly])
     zmin = min([v.position.z for v in poly])
     zmax = max([v.position.z for v in poly])
-    return (Vector3d(xmax, ymax, zmax) - Vector2d(xmin, ymin, zmin)).magnitude()
+    return (Vector3d(xmax, ymax, zmax) - Vector3d(xmin, ymin, zmin)).magnitude()
 
 #-------------------------------------------------------------------------------
 # Test harness
@@ -167,26 +167,38 @@ class TestPolyhedronClipping(unittest.TestCase):
             PolyClipper.initializePolyhedron(poly, points, neighbors)
             m0, m1 = PolyClipper.moments(poly)
             M0, M1 = moments_answer(poly)
-            self.failUnless(m0 == M0,
+            self.failUnless(fuzzyEqual(m0, M0),
                             "Volume comparison failure: %g != %g" % (m0, M0))
-            self.failUnless(m1 == M1,
+            self.failUnless(fuzzyEqual((m1 - M1).magnitude(), 0.0),
                             "Centroid comparison failure: %s != %s" % (m1, M1))
 
-    # #---------------------------------------------------------------------------
-    # # collapseDegenerates
-    # #---------------------------------------------------------------------------
-    # def test_collapseDegenerates(self):
-    #     for points, neighbors, facets in self.degeneratePolyData:
-    #         PCpoly0 = PolyClipper.Polyhedron()
-    #         PolyClipper.initializePolyhedron(PCpoly0, points, neighbors)
-    #         assert len(PCpoly0) == len(points)
-    #         PCpoly1 = PolyClipper.Polyhedron(PCpoly0)
-    #         PolyClipper.collapseDegenerates(PCpoly1, 1.0e-10)
-    #         assert len(PCpoly1) == 5
-    #         vol0, centroid0 = PolyClipper.moments(PCpoly0)
-    #         vol1, centroid1 = PolyClipper.moments(PCpoly1)
-    #         assert vol1 == vol0
-    #         assert centroid1 == centroid0
+    #---------------------------------------------------------------------------
+    # collapseDegenerates
+    #---------------------------------------------------------------------------
+    def test_collapseDegenerates(self):
+        for points, neighbors, facets in self.degeneratePolyData:
+            print "points: ", points
+            print "neighbors: ", neighbors
+            print "facets: ", facets
+            poly0 = PolyClipper.Polyhedron()
+            PolyClipper.initializePolyhedron(poly0, points, neighbors)
+            assert len(poly0) == len(points)
+            #writePolyOBJ(poly0, "poly0.obj")
+            poly1 = PolyClipper.Polyhedron(poly0)
+            print "poly0: ", list(poly0)
+            print "poly1: ", list(poly1)
+            #writePolyOBJ(poly1, "poly1_initial.obj")
+            PolyClipper.collapseDegenerates(poly1, 1.0e-10)
+            #writePolyOBJ(poly1, "poly1_collapse.obj")
+            print "poly1: ", list(poly1)
+            assert len(poly1) == 5
+            vol0, centroid0 = PolyClipper.moments(poly0)
+            vol1, centroid1 = PolyClipper.moments(poly1)
+            writePolyhedronOBJ(poly1, "poly1_collapse.obj")
+            self.failUnless(fuzzyEqual(vol1, vol0),
+                            "Volume comparison failure: %g != %g" % (vol1, vol0))
+            self.failUnless(fuzzyEqual((centroid1 - centroid0).magnitude(), 0.0),
+                            "Centroid comparison failure: %s != %s" % (centroid1, centroid0))
 
     # #---------------------------------------------------------------------------
     # # Spheral::Polyhedron --> PolyClipper::Polyhedron
