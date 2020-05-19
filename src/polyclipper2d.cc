@@ -212,8 +212,7 @@ void moments(double& zerothMoment, PolyClipper::Vector2d& firstMoment,
 
   // Clear the result for accumulation.
   zerothMoment = 0.0;
-  firstMoment.x = 0.0;
-  firstMoment.y = 0.0;
+  firstMoment = {0.0, 0.0};
 
   // Walk the polygon, and add up our results triangle by triangle.
   if (not polygon.empty()) {

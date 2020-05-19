@@ -212,29 +212,37 @@ void moments(double& zerothMoment, PolyClipper::Vector3d& firstMoment,
 
   // Clear the result for accumulation.
   zerothMoment = 0.0;
-  firstMoment.x = 0.0;
-  firstMoment.y = 0.0;
-  firstMoment.z = 0.0;
+  firstMoment = {0.0, 0.0, 0.0};
 
   if (not polyhedron.empty()) {
 
-    // Walk the polyhedron, and add up our results face by face.
-    const auto faces = extractFaces(polyhedron);
-    double dV;
-    for (const auto& face: faces) {
-      const auto nverts = face.size();
-      assert (nverts >= 3);
-      const auto& v0 = polyhedron[face[0]].position;
-      for (auto i = 1; i < nverts - 1; ++i) {
-        const auto& v1 = polyhedron[face[i]].position;
-        const auto& v2 = polyhedron[face[i+1]].position;
-        dV = v0.dot(v1.cross(v2));
+    // Pick a central point to work from.
+    auto nactive = 0;
+    Vector3d origin;
+    for (const auto v: polyhedron) {
+      if (v.comp >= 0.0) {
+        ++nactive;
+        origin += v.position;
+      }
+    }
+    origin /= nactive;
+
+    // Walk the polyhedron, and add up the results as tetrahedra.
+    for (const auto v: polyhedron) {
+      const auto nneigh = v.neighbors.size();
+      assert(nneigh >= 3);
+      const auto p1 = v.position - origin;
+      for (auto j = 0; j < nneigh; ++j) {
+        const auto p2 = 0.5*(v.position + polyhedron[v.neighbors[j]].position) - origin;
+        const auto p3 = 0.5*(v.position + polyhedron[v.neighbors[(j + 1) % nneigh]].position) - origin;
+        const auto dV = p1.dot(p2.cross(p3));
         zerothMoment += dV;
-        firstMoment += dV*(v0 + v1 + v2);
+        firstMoment += dV*(p1 + p2 + p3);
       }
     }
     zerothMoment /= 6.0;
     firstMoment *= safeInv(24.0*zerothMoment);
+    firstMoment += origin;
   }
 }
 
