@@ -325,9 +325,9 @@ class TestPolyClipper2d(unittest.TestCase):
                 assert face in answer
 
     #---------------------------------------------------------------------------
-    # commonFaceClips
+    # commonFaceClips (convex)
     #---------------------------------------------------------------------------
-    def testCommonFaceClips(self):
+    def testCommonFaceClipsConvex(self):
         for points in self.convexPointSets:
             poly = Polygon()
             initializePolygon(poly, points, vertexNeighbors(points))
@@ -350,6 +350,10 @@ class TestPolyClipper2d(unittest.TestCase):
                     for iclip in clip:
                         assert iclip in (10, 20)
 
+    #---------------------------------------------------------------------------
+    # commonFaceClips (non-convex)
+    #---------------------------------------------------------------------------
+    def testCommonFaceClipsNonConvex(self):
         for points in self.nonconvexPointSets:
             poly = Polygon()
             initializePolygon(poly, points, vertexNeighbors(points))

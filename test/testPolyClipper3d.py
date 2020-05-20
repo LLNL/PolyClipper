@@ -407,5 +407,63 @@ class TestPolyhedronClipping(unittest.TestCase):
             for face in faces:
                 assert face in answer
 
+    #---------------------------------------------------------------------------
+    # commonFaceClips (convex)
+    #---------------------------------------------------------------------------
+    def testCommonFaceClipsConvex(self):
+        for points, neighbors,facets in self.convexPolyData:
+            poly = Polyhedron()
+            initializePolyhedron(poly, points, neighbors)
+            for i in xrange(self.ntests):
+                p0 = Vector3d(rangen.uniform(0.0, 1.0),
+                              rangen.uniform(0.0, 1.0),
+                              rangen.uniform(0.0, 1.0))
+                norm1 = Vector3d(rangen.uniform(-1.0, 1.0), 
+                                 rangen.uniform(-1.0, 1.0),
+                                 rangen.uniform(-1.0, 1.0)).unitVector()
+                norm2 = Vector3d(rangen.uniform(-1.0, 1.0), 
+                                 rangen.uniform(-1.0, 1.0),
+                                 rangen.uniform(-1.0, 1.0)).unitVector()
+                planes1 = [Plane3d(p0,  norm1, 10),
+                           Plane3d(p0,  norm2, 20)]
+                chunk1 = Polyhedron(poly)
+                clipPolyhedron(chunk1, planes1)
+                faces1 = extractFaces(chunk1)
+                clips1 = commonFaceClips(chunk1, faces1)
+                assert len(clips1) == len(faces1)
+                for clip in clips1:
+                    assert len(clip) in (0, 1)
+                    for iclip in clip:
+                        assert iclip in (10, 20)
+
+    #---------------------------------------------------------------------------
+    # commonFaceClips (non-convex)
+    #---------------------------------------------------------------------------
+    def testCommonFaceClipsNonConvex(self):
+        for points, neighbors,facets in self.nonconvexPolyData:
+            poly = Polyhedron()
+            initializePolyhedron(poly, points, neighbors)
+            for i in xrange(self.ntests):
+                p0 = Vector3d(rangen.uniform(0.0, 1.0),
+                              rangen.uniform(0.0, 1.0),
+                              rangen.uniform(0.0, 1.0))
+                norm1 = Vector3d(rangen.uniform(-1.0, 1.0), 
+                                 rangen.uniform(-1.0, 1.0),
+                                 rangen.uniform(-1.0, 1.0)).unitVector()
+                norm2 = Vector3d(rangen.uniform(-1.0, 1.0), 
+                                 rangen.uniform(-1.0, 1.0),
+                                 rangen.uniform(-1.0, 1.0)).unitVector()
+                planes1 = [Plane3d(p0,  norm1, 10),
+                           Plane3d(p0,  norm2, 20)]
+                chunk1 = Polyhedron(poly)
+                clipPolyhedron(chunk1, planes1)
+                faces1 = extractFaces(chunk1)
+                clips1 = commonFaceClips(chunk1, faces1)
+                assert len(clips1) == len(faces1)
+                for clip in clips1:
+                    assert len(clip) in (0, 1, 2)
+                    for iclip in clip:
+                        assert iclip in (10, 20)
+
 if __name__ == "__main__":
     unittest.main()

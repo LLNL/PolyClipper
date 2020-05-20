@@ -545,7 +545,6 @@ commonFaceClips(const Polygon& poly,
                 const vector<vector<int>>& faceVertices) {
 
   const auto nfaces = faceVertices.size();
-  assert(nfaces >= 3);
   vector<set<int>> faceClips(nfaces);
   for (auto k = 0; k < nfaces; ++k) {
     assert(faceVertices[k].size() == 2);

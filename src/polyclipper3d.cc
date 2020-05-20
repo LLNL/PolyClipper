@@ -693,7 +693,6 @@ vector<set<int>>
 commonFaceClips(const Polyhedron& poly,
                 const vector<vector<int>>& faceVertices) {
   const auto nfaces = faceVertices.size();
-  assert(nfaces >= 4);
   vector<set<int>> faceClips(nfaces);
   for (auto k = 0; k < nfaces; ++k) {
     const auto n = faceVertices[k].size();
