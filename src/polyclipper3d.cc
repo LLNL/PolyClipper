@@ -228,17 +228,19 @@ void moments(double& zerothMoment, PolyClipper::Vector3d& firstMoment,
     // origin /= nactive;
     const auto origin = polyhedron[0].position;
 
-    // Walk the polyhedron, and add up the results as tetrahedra.
-    for (const auto v: polyhedron) {
-      const auto nneigh = v.neighbors.size();
-      assert(nneigh >= 3);
-      const auto p1 = v.position - origin;
-      for (auto j = 0; j < nneigh; ++j) {
-        const auto p2 = 0.5*(v.position + polyhedron[v.neighbors[j]].position) - origin;
-        const auto p3 = 0.5*(v.position + polyhedron[v.neighbors[(j + 1) % nneigh]].position) - origin;
-        const auto dV = p1.dot(p2.cross(p3));
-        zerothMoment += dV;
-        firstMoment += dV*(p1 + p2 + p3);
+    // Walk the facets
+    const auto facets = extractFaces(polyhedron);
+    for (const auto& facet: facets) {
+      const auto n = facet.size();
+      const auto p0 = polyhedron[facet[0]].position - origin;
+      for (auto k = 1; k < n - 1; ++k) {
+        const auto i = facet[k];
+        const auto j = facet[(k + 1) % n];
+        const auto p1 = polyhedron[i].position - origin;
+        const auto p2 = polyhedron[j].position - origin;
+        const auto dV = p0.dot(p1.cross(p2));
+        zerothMoment += dV;                               // 6x
+        firstMoment += dV*(p0 + p1 + p2);                 // 24x
       }
     }
     zerothMoment /= 6.0;
