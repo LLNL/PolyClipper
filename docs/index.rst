@@ -11,6 +11,7 @@ Welcome to PolyClipper's documentation!
    :caption: Contents:
 
    intro.rst
+   building.rst
    concepts.rst
 
 Indices and tables
