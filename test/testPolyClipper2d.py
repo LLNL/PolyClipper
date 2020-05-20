@@ -324,5 +324,54 @@ class TestPolyClipper2d(unittest.TestCase):
                 assert len(face) == 2
                 assert face in answer
 
+    #---------------------------------------------------------------------------
+    # commonFaceClips
+    #---------------------------------------------------------------------------
+    def testCommonFaceClips(self):
+        for points in self.convexPointSets:
+            poly = Polygon()
+            initializePolygon(poly, points, vertexNeighbors(points))
+            for i in xrange(self.ntests):
+                p0 = Vector2d(rangen.uniform(0.0, 1.0),
+                              rangen.uniform(0.0, 1.0))
+                norm1 = Vector2d(rangen.uniform(-1.0, 1.0), 
+                                 rangen.uniform(-1.0, 1.0)).unitVector()
+                norm2 = Vector2d(rangen.uniform(-1.0, 1.0), 
+                                 rangen.uniform(-1.0, 1.0)).unitVector()
+                planes1 = [Plane2d(p0,  norm1, 10),
+                           Plane2d(p0,  norm2, 20)]
+                chunk1 = Polygon(poly)
+                clipPolygon(chunk1, planes1)
+                faces1 = extractFaces(chunk1)
+                clips1 = commonFaceClips(chunk1, faces1)
+                assert len(clips1) == len(faces1)
+                for clip in clips1:
+                    assert len(clip) in (0, 1)
+                    for iclip in clip:
+                        assert iclip in (10, 20)
+
+        for points in self.nonconvexPointSets:
+            poly = Polygon()
+            initializePolygon(poly, points, vertexNeighbors(points))
+            for i in xrange(self.ntests):
+                p0 = Vector2d(rangen.uniform(0.0, 1.0),
+                              rangen.uniform(0.0, 1.0))
+                norm1 = Vector2d(rangen.uniform(-1.0, 1.0), 
+                                 rangen.uniform(-1.0, 1.0)).unitVector()
+                norm2 = Vector2d(rangen.uniform(-1.0, 1.0), 
+                                 rangen.uniform(-1.0, 1.0)).unitVector()
+                planes1 = [Plane2d(p0,  norm1, 10),
+                           Plane2d(p0,  norm2, 20)]
+                chunk1 = Polygon(poly)
+                clipPolygon(chunk1, planes1)
+                faces1 = extractFaces(chunk1)
+                clips1 = commonFaceClips(chunk1, faces1)
+                assert len(clips1) == len(faces1)
+                for clip in clips1:
+                    assert len(clip) in (0, 1, 2)
+                    for iclip in clip:
+                        assert iclip in (10, 20)
+
+
 if __name__ == "__main__":
     unittest.main()
