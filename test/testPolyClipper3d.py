@@ -390,5 +390,22 @@ class TestPolyhedronClipping(unittest.TestCase):
             assert abs(volTets - vol0) < 1.0e-20
             assert (centroidTets - centroid0).magnitude() < 1.0e-20
 
+    #---------------------------------------------------------------------------
+    # extractFaces
+    #---------------------------------------------------------------------------
+    def testExtractFaces(self):
+        def minLeadingPermutation(xlist):
+            imin = xlist.index(min(xlist))
+            return xlist[imin:] + xlist[:imin]
+        for points, neighbors, answer in self.convexPolyData:
+            answer = [minLeadingPermutation(x) for x in answer]
+            poly = Polyhedron()
+            initializePolyhedron(poly, points, neighbors)
+            faces = extractFaces(poly)
+            faces = [minLeadingPermutation(x) for x in faces]
+            assert len(faces) == len(answer)
+            for face in faces:
+                assert face in answer
+
 if __name__ == "__main__":
     unittest.main()

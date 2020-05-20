@@ -309,5 +309,20 @@ class TestPolyClipper2d(unittest.TestCase):
             assert abs(volTris - vol0) < 1.0e-20
             assert (centroidTris - centroid0).magnitude() < 1.0e-20
 
+    #---------------------------------------------------------------------------
+    # extractFaces
+    #---------------------------------------------------------------------------
+    def testExtractFaces(self):
+        for points in self.pointSets:
+            poly = Polygon()
+            initializePolygon(poly, points, vertexNeighbors(points))
+            n = len(points)
+            answer = [[i, (i+1)%n] for i in xrange(n)]
+            faces = extractFaces(poly)
+            assert len(faces) == len(answer)
+            for face in faces:
+                assert len(face) == 2
+                assert face in answer
+
 if __name__ == "__main__":
     unittest.main()
