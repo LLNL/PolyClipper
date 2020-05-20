@@ -614,7 +614,7 @@ extractFaces(const Polyhedron& poly) {
   //   for (const auto& v: poly) v.ID = i++;
   //   for (const auto& v: poly) {
   //     cerr << " **> " << v.ID << " " << v.position << " :";
-  //     for (const auto nptr: v.neighbors) cerr << " " << nptr->ID;
+  //     for (const auto j: v.neighbors) cerr << " " << poly[j].ID;
   //     cerr << endl;
   //   }
   // }
@@ -628,7 +628,7 @@ extractFaces(const Polyhedron& poly) {
 
       // {
       //   cerr << " --> " << v.ID << " " << v.position << " :";
-      //   for (const auto nptr: v.neighbors) cerr << " " << nptr->ID;
+      //   for (const auto j: v.neighbors) cerr << " " << poly[j].ID;
       //   cerr << endl;
       // }
 
@@ -681,7 +681,7 @@ extractFaces(const Polyhedron& poly) {
     }
   }
 #endif
-
+  return faceVertices;
 }
 
 //------------------------------------------------------------------------------
