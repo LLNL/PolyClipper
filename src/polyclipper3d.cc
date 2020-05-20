@@ -703,6 +703,7 @@ commonFaceClips(const Polyhedron& poly,
       inPlaceSetIntersection(faceClips[k], poly[faceVertices[k][j]].clips);
     }
   }
+  return faceClips;
 }
 
 //------------------------------------------------------------------------------
