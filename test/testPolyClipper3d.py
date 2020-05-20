@@ -108,20 +108,21 @@ for coords in [(0,0,0),  (10,0,0),  (10,10,0),  (10,10,0),
 # Compute the answer for zeroth and first moments
 #-------------------------------------------------------------------------------
 def moments_answer(poly):
-    n = len(poly)
-    assert n >= 4
+    assert len(poly) >= 4
     origin = poly[0].position
     m0, m1 = 0.0, Vector3d(0, 0, 0)
-    for v in poly:
-        n = len(v.neighbors)
-        assert n >= 3
-        p1 = v.position - origin
-        for j in xrange(n):
-            p2 = 0.5*(poly[v.neighbors[j]].position + v.position) - origin
-            p3 = 0.5*(poly[v.neighbors[(j+1)%n]].position + v.position) - origin
-            dV = p1.dot(p2.cross(p3))                           # 6x
-            m0 += dV
-            m1 += dV*(p1 + p2 + p3)                             # 24x
+    facets = extractFaces(poly)
+    for facet in facets:
+        n = len(facet)
+        p0 = poly[facet[0]].position - origin
+        for k in xrange(1,n-1):
+            i = facet[k]
+            j = facet[(k + 1) % n]
+            p1 = poly[i].position - origin
+            p2 = poly[j].position - origin
+            dV = p0.dot(p1.cross(p2))
+            m0 += dV                                    # 6x
+            m1 += dV*(p0 + p1 + p2)                     # 24x
     m0 /= 6.0
     m1 /= 24.0*m0
     m1 += origin
@@ -163,9 +164,9 @@ class TestPolyhedronClipping(unittest.TestCase):
     #---------------------------------------------------------------------------
     def test_initializePolyhedron(self):
         for points, neighbors, facets in self.polyData:
-            poly = PolyClipper.Polyhedron()
-            PolyClipper.initializePolyhedron(poly, points, neighbors)
-            m0, m1 = PolyClipper.moments(poly)
+            poly = Polyhedron()
+            initializePolyhedron(poly, points, neighbors)
+            m0, m1 = moments(poly)
             M0, M1 = moments_answer(poly)
             self.failUnless(fuzzyEqual(m0, M0),
                             "Volume comparison failure: %g != %g" % (m0, M0))
@@ -177,103 +178,62 @@ class TestPolyhedronClipping(unittest.TestCase):
     #---------------------------------------------------------------------------
     def test_collapseDegenerates(self):
         for points, neighbors, facets in self.degeneratePolyData:
-            print "points: ", points
-            print "neighbors: ", neighbors
-            print "facets: ", facets
-            poly0 = PolyClipper.Polyhedron()
-            PolyClipper.initializePolyhedron(poly0, points, neighbors)
+            poly0 = Polyhedron()
+            initializePolyhedron(poly0, points, neighbors)
             assert len(poly0) == len(points)
             #writePolyOBJ(poly0, "poly0.obj")
-            poly1 = PolyClipper.Polyhedron(poly0)
-            print "poly0: ", list(poly0)
-            print "poly1: ", list(poly1)
+            poly1 = Polyhedron(poly0)
             #writePolyOBJ(poly1, "poly1_initial.obj")
-            PolyClipper.collapseDegenerates(poly1, 1.0e-10)
+            collapseDegenerates(poly1, 1.0e-10)
             #writePolyOBJ(poly1, "poly1_collapse.obj")
-            print "poly1: ", list(poly1)
             assert len(poly1) == 5
-            vol0, centroid0 = PolyClipper.moments(poly0)
-            vol1, centroid1 = PolyClipper.moments(poly1)
-            writePolyhedronOBJ(poly1, "poly1_collapse.obj")
+            vol0, centroid0 = moments(poly0)
+            vol1, centroid1 = moments(poly1)
+            #writePolyOBJ(poly1, "poly1_collapse.obj")
             self.failUnless(fuzzyEqual(vol1, vol0),
                             "Volume comparison failure: %g != %g" % (vol1, vol0))
             self.failUnless(fuzzyEqual((centroid1 - centroid0).magnitude(), 0.0),
                             "Centroid comparison failure: %s != %s" % (centroid1, centroid0))
 
-    # #---------------------------------------------------------------------------
-    # # Spheral::Polyhedron --> PolyClipper::Polyhedron
-    # #---------------------------------------------------------------------------
-    # def testConvertToPolyhedron(self):
-    #     for points, neighbors, facets in self.polyData:
-    #         poly = Polyhedron(points, facets)
-    #         PCpoly = PolyClipper.Polyhedron()
-    #         PolyClipper.convertToPolyhedron(PCpoly, poly)
-    #         assert len(poly.vertices) == len(PCpoly)
-    #         vol, centroid = PolyClipper.moments(PCpoly)
-    #         self.failUnless(vol == poly.volume,
-    #                         "Volume comparison failure: %g != %g" % (vol, poly.volume))
-    #         self.failUnless(centroid == poly.centroid,
-    #                         "Centroid comparison failure: %s != %s" % (centroid, poly.centroid))
-
-
-    # #---------------------------------------------------------------------------
-    # # PolyClipper::Polyhedron --> Spheral::Polyhedron
-    # #---------------------------------------------------------------------------
-    # def testConvertFromPolyhedron(self):
-    #     for points, neighbors, facets in self.polyData:
-    #         poly = Polyhedron(points, facets)
-    #         PCpoly = PolyClipper.Polyhedron()
-    #         PolyClipper.convertToPolyhedron(PCpoly, poly)
-    #         assert len(poly.vertices) == len(PCpoly)
-    #         poly1 = Polyhedron()
-    #         PolyClipper.convertFromPolyhedron(poly1, PCpoly)
-    #         assert poly1.volume == poly.volume
-    #         assert poly1.centroid == poly.centroid
-
-    # #---------------------------------------------------------------------------
-    # # Clip with planes passing through the polyhedron.
-    # #---------------------------------------------------------------------------
-    # def testClipInternalOnePlane(self):
-    #     for points, neighbors, facets in self.polyData:
-    #         poly = Polyhedron(points, facets)
-    #         PCpoly = PolyClipper.Polyhedron()
-    #         PolyClipper.convertToPolyhedron(PCpoly, poly)
-    #         for i in xrange(self.ntests):
-    #             planes1, planes2 = [], []
-    #             p0 = Vector3d(rangen.uniform(0.0, 1.0),
-    #                         rangen.uniform(0.0, 1.0),
-    #                         rangen.uniform(0.0, 1.0))
-    #             phat = Vector3d(rangen.uniform(-1.0, 1.0), 
-    #                           rangen.uniform(-1.0, 1.0), 
-    #                           rangen.uniform(-1.0, 1.0)).unitVector()
-    #             planes1.append(PolyClipper.Plane3d(p0,  phat))
-    #             planes2.append(PolyClipper.Plane3d(p0, -phat))
-    #             PCchunk1 = PolyClipper.Polyhedron(PCpoly)
-    #             PCchunk2 = PolyClipper.Polyhedron(PCpoly)
-    #             PolyClipper.clipPolyhedron(PCchunk1, planes1)
-    #             PolyClipper.clipPolyhedron(PCchunk2, planes2)
-    #             chunk1 = Polyhedron()
-    #             chunk2 = Polyhedron()
-    #             PolyClipper.convertFromPolyhedron(chunk1, PCchunk1)
-    #             PolyClipper.convertFromPolyhedron(chunk2, PCchunk2)
-    #             success = fuzzyEqual(chunk1.volume + chunk2.volume, poly.volume)
-    #             if not success:
-    #                 print "Failed on pass ", i
-    #                 print "Plane: ", p0, phat
-    #                 print "Poly:\n", poly
-    #                 print "Chunk 1:\n ", chunk1
-    #                 print "Chunk 2:\n ", chunk2
-    #                 vol1, cent1 = PolyClipper.moments(PCchunk1)
-    #                 vol2, cent2 = PolyClipper.moments(PCchunk2)
-    #                 print "Vol check: %g + %g = %g" % (vol1, vol2, vol1 + vol2)
-    #                 writePolyhedronOBJ(poly, "poly.obj")
-    #                 writePolyhedronOBJ(chunk1, "chunk_ONE.obj")
-    #                 writePolyhedronOBJ(chunk2, "chunk_TWO.obj")
-    #             self.failUnless(success,
-    #                             "Plane clipping summing to wrong volumes: %s + %s != %s" % (chunk1.volume,
-    #                                                                                         chunk2.volume,
-    #                                                                                         poly.volume))
-    #     return
+    #---------------------------------------------------------------------------
+    # Clip with planes passing through the polyhedron.
+    #---------------------------------------------------------------------------
+    def testClipInternalOnePlane(self):
+        for points, neighbors, facets in self.polyData:
+            poly = Polyhedron()
+            initializePolyhedron(poly, points, neighbors)
+            for i in xrange(self.ntests):
+                planes1, planes2 = [], []
+                p0 = Vector3d(rangen.uniform(0.0, 1.0),
+                              rangen.uniform(0.0, 1.0),
+                              rangen.uniform(0.0, 1.0))
+                phat = Vector3d(rangen.uniform(-1.0, 1.0), 
+                                rangen.uniform(-1.0, 1.0), 
+                                rangen.uniform(-1.0, 1.0)).unitVector()
+                planes1.append(Plane3d(p0,  phat))
+                planes2.append(Plane3d(p0, -phat))
+                chunk1 = Polyhedron(poly)
+                chunk2 = Polyhedron(poly)
+                clipPolyhedron(chunk1, planes1)
+                clipPolyhedron(chunk2, planes2)
+                v0, c0 = moments(poly)
+                v1, c1 = moments(chunk1)
+                v2, c2 = moments(chunk2)
+                success = fuzzyEqual(v1 + v2, v0)
+                if not success:
+                    print "Failed on pass ", i
+                    print "Plane: ", p0, phat
+                    print "Poly:\n", list(poly)
+                    print "Chunk 1:\n ", list(chunk1)
+                    print "Chunk 2:\n ", list(chunk2)
+                    print moments(chunk1)
+                    print moments(chunk2)
+                    print "Vol check: %g + %g = %g" % (v1, v2, v0)
+                    writePolyOBJ(poly, "poly.obj")
+                    writePolyOBJ(chunk1, "chunk1.obj")
+                    writePolyOBJ(chunk2, "chunk2.obj")
+                self.failUnless(success, "Plane clipping summing to wrong volumes: %s + %s = %s != %s" % (v1, v2, v1 + v2, v0))
+        return
 
     # #---------------------------------------------------------------------------
     # # Clip with the same plane repeatedly.
@@ -281,25 +241,25 @@ class TestPolyhedronClipping(unittest.TestCase):
     # def testRedundantClip(self):
     #     for points, neighbors, facets in self.polyData:
     #         poly = Polyhedron(points, facets)
-    #         PCpoly = PolyClipper.Polyhedron()
-    #         PolyClipper.convertToPolyhedron(PCpoly, poly)
+    #         PCpoly = Polyhedron()
+    #         convertToPolyhedron(PCpoly, poly)
     #         for i in xrange(self.ntests):
     #             planes1, planes2 = [], []
     #             p0 = Vector3d(rangen.uniform(0.0, 1.0),
     #                         rangen.uniform(0.0, 1.0))
     #             phat = Vector3d(rangen.uniform(-1.0, 1.0), 
     #                           rangen.uniform(-1.0, 1.0)).unitVector()
-    #             planes1.append(PolyClipper.Plane3d(p0,  phat))
-    #             planes2.append(PolyClipper.Plane3d(p0,  phat))
-    #             planes2.append(PolyClipper.Plane3d(p0,  phat))
-    #             PCchunk1 = PolyClipper.Polyhedron(PCpoly)
-    #             PCchunk2 = PolyClipper.Polyhedron(PCpoly)
-    #             PolyClipper.clipPolyhedron(PCchunk1, planes1)
-    #             PolyClipper.clipPolyhedron(PCchunk2, planes2)
+    #             planes1.append(Plane3d(p0,  phat))
+    #             planes2.append(Plane3d(p0,  phat))
+    #             planes2.append(Plane3d(p0,  phat))
+    #             PCchunk1 = Polyhedron(PCpoly)
+    #             PCchunk2 = Polyhedron(PCpoly)
+    #             clipPolyhedron(PCchunk1, planes1)
+    #             clipPolyhedron(PCchunk2, planes2)
     #             chunk1 = Polyhedron()
     #             chunk2 = Polyhedron()
-    #             PolyClipper.convertFromPolyhedron(chunk1, PCchunk1)
-    #             PolyClipper.convertFromPolyhedron(chunk2, PCchunk2)
+    #             convertFromPolyhedron(chunk1, PCchunk1)
+    #             convertFromPolyhedron(chunk2, PCchunk2)
     #             success = fuzzyEqual(chunk1.volume, chunk2.volume)
     #             if not success:
     #                 print "Failed on pass ", i
@@ -307,8 +267,8 @@ class TestPolyhedronClipping(unittest.TestCase):
     #                 print "Poly:\n", poly
     #                 print "Chunk 1:\n ", chunk1
     #                 print "Chunk 2:\n ", chunk2
-    #                 vol1, cent1 = PolyClipper.moments(PCchunk1)
-    #                 vol2, cent2 = PolyClipper.moments(PCchunk2)
+    #                 vol1, cent1 = moments(PCchunk1)
+    #                 vol2, cent2 = moments(PCchunk2)
     #                 print "Vol check: %g = %g" % (vol1, vol2)
     #                 writePolyhedronOBJ(poly, "poly.obj")
     #                 writePolyhedronOBJ(chunk1, "chunk_ONE.obj")
@@ -330,12 +290,12 @@ class TestPolyhedronClipping(unittest.TestCase):
     #             phat = Vector3d(cos(theta), sin(theta))
     #             p0 = poly.centroid + r*phat
     #             planes = []
-    #             planes.append(PolyClipper.Plane3d(p0, -phat))
-    #             PCchunk = PolyClipper.Polyhedron()
-    #             PolyClipper.convertToPolyhedron(PCchunk, poly)
-    #             PolyClipper.clipPolyhedron(PCchunk, planes)
+    #             planes.append(Plane3d(p0, -phat))
+    #             PCchunk = Polyhedron()
+    #             convertToPolyhedron(PCchunk, poly)
+    #             clipPolyhedron(PCchunk, planes)
     #             chunk = Polyhedron()
-    #             PolyClipper.convertFromPolyhedron(chunk, PCchunk)
+    #             convertFromPolyhedron(chunk, PCchunk)
     #             success = (chunk.volume == poly.volume)
     #             if not success:
     #                 writePolyhedronOBJ(poly, "poly.obj")
@@ -356,12 +316,12 @@ class TestPolyhedronClipping(unittest.TestCase):
     #             theta = rangen.uniform(0.0, 2.0*pi)
     #             phat = Vector3d(cos(theta), sin(theta))
     #             p0 = poly.centroid + r*phat
-    #             planes.append(PolyClipper.Plane3d(p0, phat))
-    #             PCchunk = PolyClipper.Polyhedron()
-    #             PolyClipper.convertToPolyhedron(PCchunk, poly)
-    #             PolyClipper.clipPolyhedron(PCchunk, planes)
+    #             planes.append(Plane3d(p0, phat))
+    #             PCchunk = Polyhedron()
+    #             convertToPolyhedron(PCchunk, poly)
+    #             clipPolyhedron(PCchunk, planes)
     #             chunk = Polyhedron()
-    #             PolyClipper.convertFromPolyhedron(chunk, PCchunk)
+    #             convertFromPolyhedron(chunk, PCchunk)
     #             success = (chunk.volume == 0.0)
     #             if not success:
     #                 writePolyhedronOBJ(poly, "poly.obj")
@@ -376,8 +336,8 @@ class TestPolyhedronClipping(unittest.TestCase):
     # def testClipInternalTwoPlanes(self):
     #     for points, neighbors, facets in self.polyData:
     #         poly = Polyhedron(points, facets)
-    #         PCpoly = PolyClipper.Polyhedron()
-    #         PolyClipper.convertToPolyhedron(PCpoly, poly)
+    #         PCpoly = Polyhedron()
+    #         convertToPolyhedron(PCpoly, poly)
     #         for i in xrange(self.ntests):
     #             p0 = Vector3d(rangen.uniform(0.0, 1.0),
     #                         rangen.uniform(0.0, 1.0),
@@ -389,33 +349,33 @@ class TestPolyhedronClipping(unittest.TestCase):
     #                            rangen.uniform(-1.0, 1.0),
     #                            rangen.uniform(-1.0, 1.0)).unitVector3d()
     #             planes1 = []
-    #             planes1.append(PolyClipper.Plane3d(p0,  norm1))
-    #             planes1.append(PolyClipper.Plane3d(p0,  norm2))
+    #             planes1.append(Plane3d(p0,  norm1))
+    #             planes1.append(Plane3d(p0,  norm2))
     #             planes2 = []
-    #             planes2.append(PolyClipper.Plane3d(p0,  norm1))
-    #             planes2.append(PolyClipper.Plane3d(p0, -norm2))
+    #             planes2.append(Plane3d(p0,  norm1))
+    #             planes2.append(Plane3d(p0, -norm2))
     #             planes3 = []
-    #             planes3.append(PolyClipper.Plane3d(p0, -norm1))
-    #             planes3.append(PolyClipper.Plane3d(p0,  norm2))
+    #             planes3.append(Plane3d(p0, -norm1))
+    #             planes3.append(Plane3d(p0,  norm2))
     #             planes4 = []
-    #             planes4.append(PolyClipper.Plane3d(p0, -norm1))
-    #             planes4.append(PolyClipper.Plane3d(p0, -norm2))
-    #             PCchunk1 = PolyClipper.Polyhedron(PCpoly)
-    #             PCchunk2 = PolyClipper.Polyhedron(PCpoly)
-    #             PCchunk3 = PolyClipper.Polyhedron(PCpoly)
-    #             PCchunk4 = PolyClipper.Polyhedron(PCpoly)
-    #             PolyClipper.clipPolyhedron(PCchunk1, planes1)
-    #             PolyClipper.clipPolyhedron(PCchunk2, planes2)
-    #             PolyClipper.clipPolyhedron(PCchunk3, planes3)
-    #             PolyClipper.clipPolyhedron(PCchunk4, planes4)
+    #             planes4.append(Plane3d(p0, -norm1))
+    #             planes4.append(Plane3d(p0, -norm2))
+    #             PCchunk1 = Polyhedron(PCpoly)
+    #             PCchunk2 = Polyhedron(PCpoly)
+    #             PCchunk3 = Polyhedron(PCpoly)
+    #             PCchunk4 = Polyhedron(PCpoly)
+    #             clipPolyhedron(PCchunk1, planes1)
+    #             clipPolyhedron(PCchunk2, planes2)
+    #             clipPolyhedron(PCchunk3, planes3)
+    #             clipPolyhedron(PCchunk4, planes4)
     #             chunk1 = Polyhedron(poly)
     #             chunk2 = Polyhedron(poly)
     #             chunk3 = Polyhedron(poly)
     #             chunk4 = Polyhedron(poly)
-    #             PolyClipper.convertFromPolyhedron(chunk1, PCchunk1)
-    #             PolyClipper.convertFromPolyhedron(chunk2, PCchunk2)
-    #             PolyClipper.convertFromPolyhedron(chunk3, PCchunk3)
-    #             PolyClipper.convertFromPolyhedron(chunk4, PCchunk4)
+    #             convertFromPolyhedron(chunk1, PCchunk1)
+    #             convertFromPolyhedron(chunk2, PCchunk2)
+    #             convertFromPolyhedron(chunk3, PCchunk3)
+    #             convertFromPolyhedron(chunk4, PCchunk4)
     #             success = fuzzyEqual(chunk1.volume + chunk2.volume + chunk3.volume + chunk4.volume, poly.volume)
     #             if not success:
     #                 writePolyhedronOBJ(poly, "poly.obj")
@@ -437,10 +397,10 @@ class TestPolyhedronClipping(unittest.TestCase):
     # #---------------------------------------------------------------------------
     # def testSplitIntoTetrahedra(self):
     #     for points, neighbors, facets in self.convexPolyData:
-    #         PCpoly = PolyClipper.Polyhedron()
-    #         PolyClipper.initializePolyhedron(PCpoly, points, neighbors)
-    #         tets = PolyClipper.splitIntoTetrahedra(PCpoly)
-    #         vol0, centroid0 = PolyClipper.moments(PCpoly)
+    #         PCpoly = Polyhedron()
+    #         initializePolyhedron(PCpoly, points, neighbors)
+    #         tets = splitIntoTetrahedra(PCpoly)
+    #         vol0, centroid0 = moments(PCpoly)
     #         volTets = 0.0
     #         centroidTets = Vector3d()
     #         for inds in tets:
