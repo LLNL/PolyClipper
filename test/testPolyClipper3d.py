@@ -235,188 +235,160 @@ class TestPolyhedronClipping(unittest.TestCase):
                 self.failUnless(success, "Plane clipping summing to wrong volumes: %s + %s = %s != %s" % (v1, v2, v1 + v2, v0))
         return
 
-    # #---------------------------------------------------------------------------
-    # # Clip with the same plane repeatedly.
-    # #---------------------------------------------------------------------------
-    # def testRedundantClip(self):
-    #     for points, neighbors, facets in self.polyData:
-    #         poly = Polyhedron(points, facets)
-    #         PCpoly = Polyhedron()
-    #         convertToPolyhedron(PCpoly, poly)
-    #         for i in xrange(self.ntests):
-    #             planes1, planes2 = [], []
-    #             p0 = Vector3d(rangen.uniform(0.0, 1.0),
-    #                         rangen.uniform(0.0, 1.0))
-    #             phat = Vector3d(rangen.uniform(-1.0, 1.0), 
-    #                           rangen.uniform(-1.0, 1.0)).unitVector()
-    #             planes1.append(Plane3d(p0,  phat))
-    #             planes2.append(Plane3d(p0,  phat))
-    #             planes2.append(Plane3d(p0,  phat))
-    #             PCchunk1 = Polyhedron(PCpoly)
-    #             PCchunk2 = Polyhedron(PCpoly)
-    #             clipPolyhedron(PCchunk1, planes1)
-    #             clipPolyhedron(PCchunk2, planes2)
-    #             chunk1 = Polyhedron()
-    #             chunk2 = Polyhedron()
-    #             convertFromPolyhedron(chunk1, PCchunk1)
-    #             convertFromPolyhedron(chunk2, PCchunk2)
-    #             success = fuzzyEqual(chunk1.volume, chunk2.volume)
-    #             if not success:
-    #                 print "Failed on pass ", i
-    #                 print "Plane: ", p0, phat
-    #                 print "Poly:\n", poly
-    #                 print "Chunk 1:\n ", chunk1
-    #                 print "Chunk 2:\n ", chunk2
-    #                 vol1, cent1 = moments(PCchunk1)
-    #                 vol2, cent2 = moments(PCchunk2)
-    #                 print "Vol check: %g = %g" % (vol1, vol2)
-    #                 writePolyhedronOBJ(poly, "poly.obj")
-    #                 writePolyhedronOBJ(chunk1, "chunk_ONE.obj")
-    #                 writePolyhedronOBJ(chunk2, "chunk_TWO.obj")
-    #             self.failUnless(success,
-    #                             "Redundant plane clipping wrong volumes: %s != %s" % (chunk1.volume,
-    #                                                                                   chunk2.volume))
-    #     return
+    #---------------------------------------------------------------------------
+    # Clip with the same plane repeatedly.
+    #---------------------------------------------------------------------------
+    def testRedundantClip(self):
+        for points, neighbors, facets in self.polyData:
+            poly = Polyhedron()
+            initializePolyhedron(poly, points, neighbors)
+            for i in xrange(self.ntests):
+                planes1, planes2 = [], []
+                p0 = Vector3d(rangen.uniform(0.0, 1.0),
+                              rangen.uniform(0.0, 1.0),
+                              rangen.uniform(0.0, 1.0))
+                phat = Vector3d(rangen.uniform(-1.0, 1.0), 
+                                rangen.uniform(-1.0, 1.0),
+                                rangen.uniform(-1.0, 1.0)).unitVector()
+                planes1.append(Plane3d(p0,  phat))
+                planes2.append(Plane3d(p0,  phat))
+                planes2.append(Plane3d(p0,  phat))
+                chunk1 = Polyhedron(poly)
+                chunk2 = Polyhedron(poly)
+                clipPolyhedron(chunk1, planes1)
+                clipPolyhedron(chunk2, planes2)
+                v0, c0 = moments(poly)
+                v1, c1 = moments(chunk1)
+                v2, c2 = moments(chunk2)
+                success = fuzzyEqual(v1, v2)
+                if not success:
+                    print "Failed on pass ", i
+                    print "Plane: ", p0, phat
+                    print "Poly:\n", list(poly)
+                    print "Chunk 1:\n ", list(chunk1)
+                    print "Chunk 2:\n ", list(chunk2)
+                    print moments(chunk1)
+                    print moments(chunk2)
+                    print "Vol check: %g = %g" % (v1, v2)
+                self.failUnless(success,
+                                "Redundant plane clipping wrong volumes: %s != %s" % (v1, v2))
+        return
 
-    # #---------------------------------------------------------------------------
-    # # Clip with planes passing outside the polyhedron -- null test.
-    # #---------------------------------------------------------------------------
-    # def testNullClipOnePlane(self):
-    #     for points, neighbors, facets in self.polyData:
-    #         poly = Polyhedron(points, facets)
-    #         for i in xrange(self.ntests):
-    #             r = rangen.uniform(2.0, 100.0) * (poly.xmax - poly.xmin).magnitude()
-    #             theta = rangen.uniform(0.0, 2.0*pi)
-    #             phat = Vector3d(cos(theta), sin(theta))
-    #             p0 = poly.centroid + r*phat
-    #             planes = []
-    #             planes.append(Plane3d(p0, -phat))
-    #             PCchunk = Polyhedron()
-    #             convertToPolyhedron(PCchunk, poly)
-    #             clipPolyhedron(PCchunk, planes)
-    #             chunk = Polyhedron()
-    #             convertFromPolyhedron(chunk, PCchunk)
-    #             success = (chunk.volume == poly.volume)
-    #             if not success:
-    #                 writePolyhedronOBJ(poly, "poly.obj")
-    #                 writePolyhedronOBJ(chunk, "chunk.obj")
-    #             self.failUnless(success,
-    #                             "Null plane clipping failure: %s != %s" % (chunk.volume, poly.volume))
-    #     return
+    #---------------------------------------------------------------------------
+    # Clip with planes passing outside the polyhedron -- null test.
+    #---------------------------------------------------------------------------
+    def testNullClipOnePlane(self):
+        for points, neighbors, facets in self.polyData:
+            poly = Polyhedron()
+            initializePolyhedron(poly, points, neighbors)
+            v0, c0 = moments(poly)
+            for i in xrange(self.ntests):
+                r = rangen.uniform(2.0, 100.0) * max_chord(poly)
+                theta = rangen.uniform(0.0, 2.0*pi)
+                phi = rangen.uniform(0.0, pi)
+                phat = Vector3d(cos(theta)*sin(phi),
+                                sin(theta)*sin(phi),
+                                cos(phi))
+                p0 = c0 + r*phat
+                planes = [Plane3d(p0, -phat)]
+                chunk = Polyhedron(poly)
+                clipPolyhedron(chunk, planes)
+                v1, c1 = moments(chunk)
+                self.failUnless(v1 == v0,
+                                "Null plane clipping failure: %s != %s" % (v1, v0))
+        return
 
-    # #---------------------------------------------------------------------------
-    # # Clip with planes passing outside the polyhedron and rejecting the whole thing.
-    # #---------------------------------------------------------------------------
-    # def testFullClipOnePlane(self):
-    #     for points, neighbors, facets in self.polyData:
-    #         poly = Polyhedron(points, facets)
-    #         for i in xrange(self.ntests):
-    #             planes = []
-    #             r = rangen.uniform(2.0, 100.0) * (poly.xmax - poly.xmin).magnitude()
-    #             theta = rangen.uniform(0.0, 2.0*pi)
-    #             phat = Vector3d(cos(theta), sin(theta))
-    #             p0 = poly.centroid + r*phat
-    #             planes.append(Plane3d(p0, phat))
-    #             PCchunk = Polyhedron()
-    #             convertToPolyhedron(PCchunk, poly)
-    #             clipPolyhedron(PCchunk, planes)
-    #             chunk = Polyhedron()
-    #             convertFromPolyhedron(chunk, PCchunk)
-    #             success = (chunk.volume == 0.0)
-    #             if not success:
-    #                 writePolyhedronOBJ(poly, "poly.obj")
-    #                 writePolyhedronOBJ(chunk, "chunk.obj")
-    #             self.failUnless(success,
-    #                             "Full plane clipping failure: %s != %s" % (chunk.volume, poly.volume))
-    #     return
+    #---------------------------------------------------------------------------
+    # Clip with planes passing outside the polyhedron and rejecting the whole thing.
+    #---------------------------------------------------------------------------
+    def testFullClipOnePlane(self):
+        for points, neighbors, facets in self.polyData:
+            poly = Polyhedron()
+            initializePolyhedron(poly, points, neighbors)
+            v0, c0 = moments(poly)
+            for i in xrange(self.ntests):
+                r = rangen.uniform(2.0, 100.0) * max_chord(poly)
+                theta = rangen.uniform(0.0, 2.0*pi)
+                phi = rangen.uniform(0.0, pi)
+                phat = Vector3d(cos(theta)*sin(phi),
+                                sin(theta)*sin(phi),
+                                cos(phi))
+                p0 = c0 + r*phat
+                planes = [Plane3d(p0, phat)]
+                chunk = Polyhedron(poly)
+                clipPolyhedron(chunk, planes)
+                v1, c1 = moments(chunk)
+                self.failUnless(v1 == 0.0,
+                                "Full plane clipping failure: %s != %s" % (v1, 0.0))
+        return
 
-    # #---------------------------------------------------------------------------
-    # # Clip with planes passing through the polyhedron.
-    # #---------------------------------------------------------------------------
-    # def testClipInternalTwoPlanes(self):
-    #     for points, neighbors, facets in self.polyData:
-    #         poly = Polyhedron(points, facets)
-    #         PCpoly = Polyhedron()
-    #         convertToPolyhedron(PCpoly, poly)
-    #         for i in xrange(self.ntests):
-    #             p0 = Vector3d(rangen.uniform(0.0, 1.0),
-    #                         rangen.uniform(0.0, 1.0),
-    #                         rangen.uniform(0.0, 1.0))
-    #             norm1 = Vector3d(rangen.uniform(-1.0, 1.0), 
-    #                            rangen.uniform(-1.0, 1.0),
-    #                            rangen.uniform(-1.0, 1.0)).unitVector3d()
-    #             norm2 = Vector3d(rangen.uniform(-1.0, 1.0), 
-    #                            rangen.uniform(-1.0, 1.0),
-    #                            rangen.uniform(-1.0, 1.0)).unitVector3d()
-    #             planes1 = []
-    #             planes1.append(Plane3d(p0,  norm1))
-    #             planes1.append(Plane3d(p0,  norm2))
-    #             planes2 = []
-    #             planes2.append(Plane3d(p0,  norm1))
-    #             planes2.append(Plane3d(p0, -norm2))
-    #             planes3 = []
-    #             planes3.append(Plane3d(p0, -norm1))
-    #             planes3.append(Plane3d(p0,  norm2))
-    #             planes4 = []
-    #             planes4.append(Plane3d(p0, -norm1))
-    #             planes4.append(Plane3d(p0, -norm2))
-    #             PCchunk1 = Polyhedron(PCpoly)
-    #             PCchunk2 = Polyhedron(PCpoly)
-    #             PCchunk3 = Polyhedron(PCpoly)
-    #             PCchunk4 = Polyhedron(PCpoly)
-    #             clipPolyhedron(PCchunk1, planes1)
-    #             clipPolyhedron(PCchunk2, planes2)
-    #             clipPolyhedron(PCchunk3, planes3)
-    #             clipPolyhedron(PCchunk4, planes4)
-    #             chunk1 = Polyhedron(poly)
-    #             chunk2 = Polyhedron(poly)
-    #             chunk3 = Polyhedron(poly)
-    #             chunk4 = Polyhedron(poly)
-    #             convertFromPolyhedron(chunk1, PCchunk1)
-    #             convertFromPolyhedron(chunk2, PCchunk2)
-    #             convertFromPolyhedron(chunk3, PCchunk3)
-    #             convertFromPolyhedron(chunk4, PCchunk4)
-    #             success = fuzzyEqual(chunk1.volume + chunk2.volume + chunk3.volume + chunk4.volume, poly.volume)
-    #             if not success:
-    #                 writePolyhedronOBJ(poly, "poly.obj")
-    #                 writePolyhedronOBJ(chunk1, "chunk_1ONE_TWOPLANES.obj")
-    #                 writePolyhedronOBJ(chunk2, "chunk_2TWO_TWOPLANES.obj")
-    #                 writePolyhedronOBJ(chunk3, "chunk_3THREE_TWOPLANES.obj")
-    #                 writePolyhedronOBJ(chunk4, "chunk_4FOUR_TWOPLANES.obj")
-    #             self.failUnless(success,
-    #                             "Two plane clipping summing to wrong volumes: %s + %s + %s + %s = %s != %s" % (chunk1.volume,
-    #                                                                                                            chunk2.volume,
-    #                                                                                                            chunk3.volume,
-    #                                                                                                            chunk4.volume,
-    #                                                                                                            chunk1.volume + chunk2.volume + chunk3.volume + chunk4.volume,
-    #                                                                                                            poly.volume))
-    #     return
+    #---------------------------------------------------------------------------
+    # Clip with planes passing through the polyhedron.
+    #---------------------------------------------------------------------------
+    def testClipInternalTwoPlanes(self):
+        for points, neighbors, facets in self.polyData:
+            poly = Polyhedron()
+            initializePolyhedron(poly, points, neighbors)
+            v0, c0 = moments(poly)
+            for i in xrange(self.ntests):
+                p0 = Vector3d(rangen.uniform(0.0, 1.0),
+                              rangen.uniform(0.0, 1.0),
+                              rangen.uniform(0.0, 1.0))
+                norm1 = Vector3d(rangen.uniform(-1.0, 1.0), 
+                                 rangen.uniform(-1.0, 1.0),
+                                 rangen.uniform(-1.0, 1.0)).unitVector()
+                norm2 = Vector3d(rangen.uniform(-1.0, 1.0), 
+                                 rangen.uniform(-1.0, 1.0),
+                                 rangen.uniform(-1.0, 1.0)).unitVector()
+                planes1 = [Plane3d(p0,  norm1),
+                           Plane3d(p0,  norm2)]
+                planes2 = [Plane3d(p0,  norm1),
+                           Plane3d(p0, -norm2)]
+                planes3 = [Plane3d(p0, -norm1),
+                           Plane3d(p0,  norm2)]
+                planes4 = [Plane3d(p0, -norm1),
+                           Plane3d(p0, -norm2)]
+                chunk1 = Polyhedron(poly)
+                chunk2 = Polyhedron(poly)
+                chunk3 = Polyhedron(poly)
+                chunk4 = Polyhedron(poly)
+                clipPolyhedron(chunk1, planes1)
+                clipPolyhedron(chunk2, planes2)
+                clipPolyhedron(chunk3, planes3)
+                clipPolyhedron(chunk4, planes4)
+                v1, c1 = moments(chunk1)
+                v2, c2 = moments(chunk2)
+                v3, c3 = moments(chunk3)
+                v4, c4 = moments(chunk4)
+                self.failUnless(fuzzyEqual(v1 + v2 + v3 + v4, v0),
+                                "Two plane clipping summing to wrong volumes: %s + %s + %s + %s = %s != %s" % (v1, v2, v3, v4, v1 + v2 + v3 + v4, v0))
+        return
 
-    # #---------------------------------------------------------------------------
-    # # Split a (convex) polyhedron into tetrahedra.
-    # #---------------------------------------------------------------------------
-    # def testSplitIntoTetrahedra(self):
-    #     for points, neighbors, facets in self.convexPolyData:
-    #         PCpoly = Polyhedron()
-    #         initializePolyhedron(PCpoly, points, neighbors)
-    #         tets = splitIntoTetrahedra(PCpoly)
-    #         vol0, centroid0 = moments(PCpoly)
-    #         volTets = 0.0
-    #         centroidTets = Vector3d()
-    #         for inds in tets:
-    #             assert len(inds) == 4
-    #             v0 = PCpoly[inds[0]].position
-    #             v1 = PCpoly[inds[1]].position
-    #             v2 = PCpoly[inds[2]].position
-    #             v3 = PCpoly[inds[3]].position
-    #             V = (v1 - v0).dot((v2 - v0).cross(v3 - v0))
-    #             assert V >= 0.0
-    #             volTets += V
-    #             centroidTets += V*(v0 + v1 + v2 + v3)
-    #         volTets /= 6.0
-    #         centroidTets /= 24.0*volTets
-    #         assert abs(volTets - vol0) < 1.0e-20
-    #         assert (centroidTets - centroid0).magnitude() < 1.0e-20
+    #---------------------------------------------------------------------------
+    # Split a (convex) polyhedron into tetrahedra.
+    #---------------------------------------------------------------------------
+    def testSplitIntoTetrahedra(self):
+        for points, neighbors, facets in self.convexPolyData:
+            poly = Polyhedron()
+            initializePolyhedron(poly, points, neighbors)
+            tets = splitIntoTetrahedra(poly)
+            vol0, centroid0 = moments(poly)
+            volTets = 0.0
+            centroidTets = Vector3d()
+            for inds in tets:
+                assert len(inds) == 4
+                v0 = poly[inds[0]].position
+                v1 = poly[inds[1]].position
+                v2 = poly[inds[2]].position
+                v3 = poly[inds[3]].position
+                V = (v1 - v0).dot((v2 - v0).cross(v3 - v0))
+                assert V >= 0.0
+                volTets += V
+                centroidTets += V*(v0 + v1 + v2 + v3)
+            volTets /= 6.0
+            centroidTets /= 24.0*volTets
+            assert abs(volTets - vol0) < 1.0e-20
+            assert (centroidTets - centroid0).magnitude() < 1.0e-20
 
 if __name__ == "__main__":
     unittest.main()
