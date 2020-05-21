@@ -21,9 +21,16 @@ Generally building PolyClipper on a Unix-like system is as simple as::
   mkdir build
   cd build
   cmake -DPOLYCLIPPER_INSTALL_DIR=<some_path> ..
+  make
   make install
 
 If you also want these documentation files to be built you need to specify a Sphinx executable, and optionally a theme if you don't have/want the ``readthedocs`` Sphinx theme.  Useful Cmake options that can be specified on the configuration line include:
+
+Cmake variables
+--------------------
+
+CMAKE_BUILD_TYPE : (Debug, Release, RelWithDebInfo, MinSizeRel)
+  Choose the type of build -- for more information see the `Cmake documentation <https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html>`_.
 
 POLYCLIPPER_INSTALL_DIR
   The top-level path for installing PolyClipper include files, libraries, and any Python modules or documentation.
