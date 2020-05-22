@@ -42,7 +42,3 @@ for (int i = 0; i < nfaces; ++i) {
   a = b;
   verts.push(b);
 }
-
-// dot(verts[vann-1], red+linewidth(dot_size));
-// dot(verts[vann],   blue+linewidth(dot_size));
-// dot(verts[vann+1], red+linewidth(dot_size));
