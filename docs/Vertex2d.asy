@@ -16,7 +16,6 @@ pair[] verts = {a};
 for (int i = 0; i < nfaces; ++i) {
   real theta = i*dtheta;
   pair b = a + (A*cos(theta), A*sin(theta));
-  string lab = format(i);
 
   // Draw the arrow
   if (i >= vann-1 && i <= vann) {
