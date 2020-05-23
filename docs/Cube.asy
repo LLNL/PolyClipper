@@ -1,8 +1,9 @@
 // This example shows a cube in PolyClipper topology
 
-size(150);
 import geometry;
 import three;
+
+size3(150);
 
 real A = 1;       // edge length
 int vann = 6;     // Vertex we're going to call out
@@ -61,3 +62,8 @@ for (int i = 0; i < coords.length; ++i) {
   }
 }
 
+// Draw a directional indicator for how we specify points around a vertex.
+triple[] pts = {0.6*coords[vann] + 0.4*coords[cube_neighbors[vann][0]],
+                0.6*coords[vann] + 0.4*coords[cube_neighbors[vann][1]],
+                0.6*coords[vann] + 0.4*coords[cube_neighbors[vann][2]]};
+draw(pts[0]..pts[1]..pts[2], Arrow3);
