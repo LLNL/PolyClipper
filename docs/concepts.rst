@@ -12,6 +12,14 @@ Collections of vertices encapsulate all the necessary information to specify Pol
 
 The ``Vertex2d`` PolyClipper structure for vertex 2 includes the links to vertices (1, 3) as neighbors in counterclockwise order.
 
+Similarly a cube can be represented as a collection of ``Vertex3d``:
+
+.. image:: Cube.*
+   :width: 200
+   :alt: You should see a labeled cube here
+
+In this case the neighbors of vertex 6 will be (5, 2, 7), listed counterclockwise as viewed from the exterior of the polyhedron.
+
 ----------
 Vector2d
 ----------
