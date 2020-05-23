@@ -1,5 +1,5 @@
 ########################################
-PolyClipper concepts and data types
+PolyClipper concepts
 ########################################
 
 PolyClipper only has a few data types ``Vector2d``, ``Vector3d``, ``Plane2d``, ``Plane3d``, ``Vertex2d``, and ``Vertex3d``, all defined inside the C++ namespace ``PolyClipper``.  There are also ``Polygon`` and ``Polyhedron`` types defined, but these are simply aliases for ``std::vector<PolyClipper::Vertex2d>`` and ``std::vector<PolyClipper::Vertex3d>``.
@@ -18,15 +18,15 @@ Similarly a cube can be represented as a collection of ``Vertex3d``:
    :width: 200
    :alt: You should see a labeled cube here
 
-In this case the neighbors of vertex 6 will be (5, 2, 7), listed counterclockwise as viewed from the exterior of the polyhedron.
+In this case the neighbors of vertex 6 will be (5, 2, 7), listed counterclockwise as viewed from the exterior of the polyhedron.  Note vertices of Polyhedra can have 3 or more neighbors -- as a simple example consider a pyramid:
 
-----------
-Vector2d
-----------
+.. image:: Pyramid.*
+   :width: 200
+   :alt: You should see a labeld pyramid here
 
-Vector2d represents a 2D vector coordinate in space, :math:`(x,y)`.  It supports a small number of simple vector manipulation operations:
+Here we can see that vertex 4 will have 4 neighbors: (0, 1, 2, 3).
 
-..
-   .. module:: PolyClipper
-   .. autoclass:: Vector2d
-      :members:
+Clipping operations
+--------------------
+
+PolyClippers main functionality is the clipping of Polygons/Polyhedra by arbitray planes.  Planes are defined by a unit normal and distance from the plane to the origin, :math:`(\hat{n}, d)`.  Note given some point :math:`\vec{p}` in the plane, :math:`d = -\hat{n}\cdot\vec{p}`.
