@@ -125,10 +125,10 @@ Similarly we can clip by multiple planes simultaneously::
 
 and the vertices are now::
 
-  Double clip:  [{pos=(3.000000 2.000000), neighbors=(3 4), ID=0, clips=( 20 )}, 
+  Double clip:  [{pos=(3.000000 2.000000), neighbors=(3 4), ID=0, clips=( )}, 
                  {pos=(1.000000 2.000000), neighbors=(5 2), ID=1, clips=( )}, 
                  {pos=(0.000000 2.000000), neighbors=(1 6), ID=2, clips=( )}, 
-                 {pos=(3.500000 2.000000), neighbors=(7 0), ID=3, clips=( 10 20 )}, 
+                 {pos=(3.500000 2.000000), neighbors=(7 0), ID=3, clips=( 10 )}, 
                  {pos=(2.083333 1.083333), neighbors=(0 7), ID=4, clips=( 30 )}, 
                  {pos=(1.875000 1.125000), neighbors=(6 1), ID=5, clips=( 30 )}, 
                  {pos=(0.000000 1.500000), neighbors=(2 5), ID=6, clips=( 30 )}, 

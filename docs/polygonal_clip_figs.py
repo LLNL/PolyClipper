@@ -32,6 +32,7 @@ print "Starting poly: ", list(poly)
 #-------------------------------------------------------------------------------
 # Clip 1
 #-------------------------------------------------------------------------------
+poly = Polygon()
 initializePolygon(poly, notched_points, notched_neighbors)
 planes = [Plane2d(Vector2d(3, 1), Vector2d(-1, 0.5).unitVector(), 10)]
 clipPolygon(poly, planes)
@@ -41,6 +42,7 @@ print "Single clip: ", list(poly)
 #-------------------------------------------------------------------------------
 # Clip 2
 #-------------------------------------------------------------------------------
+poly = Polygon()
 initializePolygon(poly, notched_points, notched_neighbors)
 planes = [Plane2d(Vector2d(3, 1), Vector2d(1, -0.5).unitVector(), 20)]
 clipPolygon(poly, planes)
@@ -50,6 +52,7 @@ print "Reverse clip: ", list(poly)
 #-------------------------------------------------------------------------------
 # Clip 3
 #-------------------------------------------------------------------------------
+poly = Polygon()
 initializePolygon(poly, notched_points, notched_neighbors)
 planes = [Plane2d(Vector2d(3, 1), Vector2d(-1, 0.5).unitVector(), 10),
           Plane2d(Vector2d(2, 1.1), Vector2d(1, 5).unitVector(), 30)]
