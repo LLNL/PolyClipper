@@ -3,9 +3,16 @@
 //
 // We use the convention that any portion of the faceted volume "below" the 
 // plane is clipped, i.e., only the portion of the faceted volume "above" the 
-// plane
-//    plane.compare(point) >= 0
-// is retained.
+// plane is retained.  Above here is taken to mean the direction the plane
+// normal points in.  This can also be defined in terms of a signed distance.
+//
+// We can define a plane by either a unit normal and point in the plane (n, p0),
+// or the plane normal and distance from the plane to the origin (n, d0).  The
+// signed distance of a point (p) from the plane is then given by
+//
+//   d_s = (p - p0).dot(n) = d0 + p.dot(n)
+//
+// The the volume with d_s > 0 is above the plane, while d_s < 0 is below.
 //
 // The algorithms herein are based on R3D as outlined in 
 // Powell, D., & Abel, T. (2015). An exact general remeshing scheme applied to 
