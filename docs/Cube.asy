@@ -66,4 +66,4 @@ for (int i = 0; i < coords.length; ++i) {
 triple[] pts = {0.6*coords[vann] + 0.4*coords[cube_neighbors[vann][0]],
                 0.6*coords[vann] + 0.4*coords[cube_neighbors[vann][1]],
                 0.6*coords[vann] + 0.4*coords[cube_neighbors[vann][2]]};
-draw(pts[0]..pts[1]..pts[2], Arrow3);
+draw(pts[0]..pts[1]..pts[2], Arrow3(20));
