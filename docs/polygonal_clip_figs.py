@@ -27,32 +27,32 @@ notched_neighbors = [[(i - 1) % n, (i + 1) % n] for i in xrange(n)]
 poly = Polygon()
 initializePolygon(poly, notched_points, notched_neighbors)
 writePolyOBJ(poly, "notched_polygon.obj")
-print "Starting poly: ", poly
+print "Starting poly: ", list(poly)
 
 #-------------------------------------------------------------------------------
 # Clip 1
 #-------------------------------------------------------------------------------
 initializePolygon(poly, notched_points, notched_neighbors)
-planes = [Plane2d(2.5, Vector2d(-1, 0.5).unitVector(), 10)]
+planes = [Plane2d(Vector2d(3, 1), Vector2d(-1, 0.5).unitVector(), 10)]
 clipPolygon(poly, planes)
 writePolyOBJ(poly, "notched_polygon_clip1.obj")
-print "Single clip: ", poly
+print "Single clip: ", list(poly)
 
 #-------------------------------------------------------------------------------
 # Clip 2
 #-------------------------------------------------------------------------------
 initializePolygon(poly, notched_points, notched_neighbors)
-planes = [Plane2d(-2.5, Vector2d(1, -0.5).unitVector(), 20)]
+planes = [Plane2d(Vector2d(3, 1), Vector2d(1, -0.5).unitVector(), 20)]
 clipPolygon(poly, planes)
 writePolyOBJ(poly, "notched_polygon_clip2.obj")
-print "Reverse clip: ", poly
+print "Reverse clip: ", list(poly)
 
 #-------------------------------------------------------------------------------
 # Clip 3
 #-------------------------------------------------------------------------------
 initializePolygon(poly, notched_points, notched_neighbors)
-planes = [Plane2d(2.5, Vector2d(-1, 0.5).unitVector(), 10),
-          Plane2d(-1.5, Vector2d(1, 5).unitVector(), 30)]
+planes = [Plane2d(Vector2d(3, 1), Vector2d(-1, 0.5).unitVector(), 10),
+          Plane2d(Vector2d(2, 1.1), Vector2d(1, 5).unitVector(), 30)]
 clipPolygon(poly, planes)
 writePolyOBJ(poly, "notched_polygon_clip3.obj")
-print "Double clip: ", poly
+print "Double clip: ", list(poly)
