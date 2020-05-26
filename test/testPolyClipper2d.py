@@ -18,9 +18,8 @@ rangen = random.Random()
 #   |    |
 #   |----|
 #   0    1
-square_points = []
-for coords in [(0,0), (10,0), (10,10), (0,10)]:
-    square_points.append(Vector2d(*coords))
+square_points = [Vector2d(*coords) 
+                 for coords in [(0,0), (10,0), (10,10), (0,10)]]
 
 #-------------------------------------------------------------------------------
 # Make a non-convex notched thingy.
@@ -32,9 +31,8 @@ for coords in [(0,0), (10,0), (10,10), (0,10)]:
 #    |                             |
 #    |------------------------------
 #    0                             1
-notched_points = []
-for coords in [(0,0), (4,0), (4,2), (3,2), (2,1), (1,2), (0,2)]:
-    notched_points.append(Vector2d(*coords))
+notched_points = [Vector2d(*coords)
+                  for coords in [(0,0), (4,0), (4,2), (3,2), (2,1), (1,2), (0,2)]]
 
 #-------------------------------------------------------------------------------
 # A degenerate square
@@ -43,9 +41,8 @@ for coords in [(0,0), (4,0), (4,2), (3,2), (2,1), (1,2), (0,2)]:
 #   |    |
 #   |----|2
 #   0    1
-degenerate_square_points = []
-for coords in [(0,0), (1,0), (1,0), (1,1), (0,1), (0,1)]:
-    degenerate_square_points.append(Vector2d(*coords))
+degenerate_square_points = [Vector2d(*coords)
+                            for coords in [(0,0), (1,0), (1,0), (1,1), (0,1), (0,1)]]
 
 #-------------------------------------------------------------------------------
 # Compute the answer for zeroth and first moments
