@@ -13,6 +13,7 @@ Welcome to PolyClipper's documentation!
    intro.rst
    building.rst
    concepts.rst
+   datatypes.rst
 
 Indices and tables
 ==================
