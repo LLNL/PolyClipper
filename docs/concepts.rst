@@ -136,3 +136,61 @@ and the vertices are now::
 
 Note in this case we have created two independent loop of vertices in our resulting Polygon.
 
+3D Polyhedral clipping
+-----------------------
+
+The interface for clipping polyhedra in 3D is very similar to the 2D polygonal examples above.  For instance, if we extrude the non-convex polygonal example in in the :math:`z` direction for our initial polyhedron using the following Python code::
+
+  notched_points = [Vector3d(*coords)
+                    for coords in [(0,0,0), (4,0,0), (4,2,0), (3,2,0), (2,1,0), (1,2,0), (0,2,0),
+                                   (0,0,1), (4,0,1), (4,2,1), (3,2,1), (2,1,1), (1,2,1), (0,2,1)]]
+  notched_neighbors = [[7, 6, 1],   # 0
+                       [0, 2, 8],   # 1
+                       [1, 3, 9],   # 2
+                       [4, 10, 2],  # 3
+                       [5, 11, 3],  # 4
+                       [6, 12, 4],  # 5
+                       [13, 5, 0],  # 6
+                       [8, 13, 0],  # 7
+                       [1, 9, 7],   # 8
+                       [2, 10, 8],  # 9
+                       [9, 3, 11],  # 10
+                       [10, 4, 12], # 11
+                       [11, 5, 13], # 12
+                       [7, 12, 6]]  # 13
+  poly = Polyhedron()
+  initializePolyhedron(poly, notched_points, notched_neighbors)
+
+we get the following polyhedron:
+
+.. image:: notched_polyhedron.*
+           :width: 400
+           :alt: You should see a clipped polyhedron
+
+We can clip this example with a pair of planes::
+
+  planes = [Plane3d(Vector3d(3, 1, 0), Vector3d(-1, 0.5, -1.5).unitVector(), 10),
+            Plane3d(Vector3d(1, 1, 0), Vector3d(1, 0, -1).unitVector(), 30)]
+  clipPolyhedron(poly, planes)
+  print "Double clip: ", list(poly)
+
+yielding a shape of:
+
+.. image:: notched_polyhedron_clip3.*
+           :width: 400
+           :alt: You should see a clipped polyhedron
+
+and vertex output::
+
+  Double clip:  [{pos=(3.000000 2.000000 0.000000), neighbors=( 1 4 5 ), ID=0, clips=( )}, 
+                 {pos=(2.000000 1.000000 0.000000), neighbors=( 2 6 0 ), ID=1, clips=( )}, 
+                 {pos=(1.000000 2.000000 0.000000), neighbors=( 7 8 1 ), ID=2, clips=( )}, 
+                 {pos=(2.500000 0.000000 0.000000), neighbors=( 5 9 10 ), ID=3, clips=( 10 )}, 
+                 {pos=(3.000000 2.000000 0.333333), neighbors=( 6 5 0 ), ID=4, clips=( 10 )}, 
+                 {pos=(3.500000 2.000000 0.000000), neighbors=( 4 3 0 ), ID=5, clips=( 10 )}, 
+                 {pos=(2.000000 1.000000 0.666667), neighbors=( 11 4 1 ), ID=6, clips=( 10 )}, 
+                 {pos=(1.000000 2.000000 0.000000), neighbors=( 10 8 2 ), ID=7, clips=( 30 )}, 
+                 {pos=(1.000000 2.000000 0.000000), neighbors=( 7 11 2 ), ID=8, clips=( 30 )}, 
+                 {pos=(1.600000 0.000000 0.600000), neighbors=( 11 10 3 ), ID=9, clips=( 10 30 )}, 
+                 {pos=(1.000000 0.000000 0.000000), neighbors=( 9 7 3 ), ID=10, clips=( 30 )}, 
+                 {pos=(1.833333 1.166667 0.833333), neighbors=( 8 9 6 ), ID=11, clips=( 10 30 )}]
