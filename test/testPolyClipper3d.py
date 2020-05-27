@@ -63,10 +63,9 @@ cube_facets = [[4, 5, 6, 7],
 #    |------------------------------/
 #    7                             8
 
-notched_points = []
-for coords in [(0,0,0), (4,0,0), (4,2,0), (3,2,0), (2,1,0), (1,2,0), (0,2,0),
-               (0,0,1), (4,0,1), (4,2,1), (3,2,1), (2,1,1), (1,2,1), (0,2,1)]:
-    notched_points.append(Vector3d(*coords))
+notched_points = [Vector3d(*coords)
+                  for coords in [(0,0,0), (4,0,0), (4,2,0), (3,2,0), (2,1,0), (1,2,0), (0,2,0),
+                                 (0,0,1), (4,0,1), (4,2,1), (3,2,1), (2,1,1), (1,2,1), (0,2,1)]]
 notched_neighbors = [[7, 6, 1],   # 0
                      [0, 2, 8],   # 1
                      [1, 3, 9],   # 2
@@ -93,16 +92,14 @@ notched_facets = [[6, 5, 4, 3, 2, 1, 0],
 
 #-------------------------------------------------------------------------------
 # A degenerate pyramid.  Just reuse the cube, but collapse one face.
-degenerate_cube_points1 = []
-for coords in [(0,0,0), (1,0,0), (1,1,0), (0,1,0),
-               (0,0,1), (0,0,1), (0,0,1), (0,0,1)]:
-    degenerate_cube_points1.append(Vector3d(*coords))
+degenerate_cube_points1 = [Vector3d(*coords)
+                           for coords in [(0,0,0), (1,0,0), (1,1,0), (0,1,0),
+                                          (0,0,1), (0,0,1), (0,0,1), (0,0,1)]]
 
 # Another one collapsing a different vertex.
-degenerate_cube_points2 = []
-for coords in [(0,0,0),  (10,0,0),  (10,10,0),  (10,10,0),
-               (0,0,10), (10,0,10), (10,10,0), (10,10,0)]:
-    degenerate_cube_points2.append(Vector3d(*coords))
+degenerate_cube_points2 = [Vector3d(*coords)
+                           for coords in [(0,0,0),  (10,0,0),  (10,10,0),  (10,10,0),
+                                          (0,0,10), (10,0,10), (10,10,0), (10,10,0)]]
 
 #-------------------------------------------------------------------------------
 # Compute the answer for zeroth and first moments
