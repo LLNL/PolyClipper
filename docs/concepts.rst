@@ -18,7 +18,7 @@ Similarly a cube can be represented as a collection of ``Vertex3d``:
    :width: 200
    :alt: You should see a labeled cube here
 
-In this case the neighbors of vertex 6 will be (5, 2, 7), listed counterclockwise as viewed from the exterior of the polyhedron.  Note vertices of Polyhedra can have 3 or more neighbors -- as a simple example consider a pyramid:
+In this case the neighbors of vertex 6 will be (5, 2, 7), listed counterclockwise as viewed from the exterior of the polyhedron.  Note while vertices of Polygons will always have 2 neighbors, vertices of Polyhedra can have 3 or more neighbors.  A pyramid is a simple example of this:
 
 .. image:: Pyramid.*
    :width: 200
@@ -34,9 +34,9 @@ PolyClippers main functionality is the clipping of Polygons/Polyhedra by arbitra
 Points are defined as above a plane when they are on the side the plane normal :math:`\hat{n}` points toward, and below if on the opposite side.  This can be defined mathematically in terms of the signed distance of a point :math:`\vec{p}` from the plane:
 
 .. math::
-   d_s(\vec{p}) = (\vec{p} - \vec{p}_0) \cdot \hat{n} = d + \vec{p} \cdot \hat{n}.
+   d_s(\vec{p}) = (\vec{p} - \vec{p}_0) \cdot \hat{n} = d + \vec{p} \cdot \hat{n},
 
-Now if :math:`d_s(\vec{p}) > 0` then :math:`\vec{p}` is above the plane, while :math:`d_s(\vec{p}) < 0` implies it is below.
+where again :math:`\vec{p}_0` is some point in the plane.  Now if :math:`d_s(\vec{p}) > 0` then :math:`\vec{p}` is above the plane, while :math:`d_s(\vec{p}) < 0` implies it is below.
 
 Clipping a Polygon/Polyhedron in PolyClipper is defined such that the portion of the volume above the plane is retained, while that below is clipped and removed.  Consider for instance a non-convex polygon:
 
