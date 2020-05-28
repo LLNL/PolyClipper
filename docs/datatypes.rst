@@ -215,19 +215,61 @@ Plane classes
 
   .. cpp:function:: Plane2d()
 
-     Default constructor -- implies :math:`(\hat{n}, d) = (1,0,0), 0.0)`, ID = std::numeric_limits<int>::min().
+     Default constructor -- implies {:math:`\hat{n}, d`, ID} = {(1,0), 0.0, std::numeric_limits<int>::min()}
 
   .. cpp:function:: Plane2d(const double d, const Vector2d& nhat)
 
-     Construct with :math:`(\hat{n}, d)` = (nhat, d), ID = std::numeric_limits<int>::min().
+     Construct with {:math:`\hat{n}, d`, ID} = {nhat, d, std::numeric_limits<int>::min()}
 
   .. cpp:function:: Plane2d(const Vector2d& p, const Vector2d& nhat)
 
-     Construct with :math:`(\hat{n}, d)` = (nhat, :math:`-p\cdot\hat{n}`), ID = std::numeric_limits<int>::min().
+     Construct specifying the normal and a point in the plane, so {:math:`\hat{n}, d`, ID} = {nhat, :math:`-p\cdot\hat{n}`, std::numeric_limits<int>::min()}
 
   .. cpp:function:: Plane2d(const Vector2d& p, const Vector2d& nhat, const int id)
 
-     Construct with :math:`(\hat{n}, d)` = (nhat, :math:`-p\cdot \hat{n}`), ID = id.
+     Construct specifying the normal, a point in the plane, and ID, so {:math:`\hat{n}, d`, ID} = {nhat, :math:`-p\cdot\hat{n}`, id}
+
+..
+  ------------------------------------------------------------------------------
+  Plane3d
+  ------------------------------------------------------------------------------
+
+.. cpp:class:: Plane3d
+
+   Plane3d represents a plane in the :math:`(x,y,z)` coordinate system for clipping Polyhedra.  A plane is stored as a unit normal and closest signed distance from the plane to the origin: :math:`(\hat{n}, d)`.  The signed distance from the plane to any point :math:`\vec{p}` is
+
+  .. math::
+     d_s(\vec{p}) = (\vec{p} - \vec{p}_0) \cdot \hat{n} = d + \vec{p} \cdot \hat{n},
+
+  where :math:`\vec{p}_0` is any point in the plane.  Note with this definition the :math:`d` parameter defining the plane is :math:`d = -\vec{p}_0 \cdot \hat{n}`.
+
+  .. cpp:member:: Vector3d normal
+
+     The unit normal to the plane :math:`\hat{n}`.
+
+  .. cpp:member:: double dist
+
+     The minimum signed distance from the origin to the plane :math:`d`.
+
+  .. cpp:member:: int ID
+
+     An optional integer identification number for the plane.  This is used by Vertex3d to record which plane(s) are responsible for creating the vertex.
+
+  .. cpp:function:: Plane3d()
+
+     Default constructor -- implies {:math:`\hat{n}, d`, ID} = {(1,0,0), 0.0, std::numeric_limits<int>::min()}
+
+  .. cpp:function:: Plane3d(const double d, const Vector3d& nhat)
+
+     Construct with {:math:`\hat{n}, d`, ID} = {nhat, d, std::numeric_limits<int>::min()}
+
+  .. cpp:function:: Plane3d(const Vector3d& p, const Vector3d& nhat)
+
+     Construct specifying the normal and a point in the plane, so {:math:`\hat{n}, d`, ID} = {nhat, :math:`-p\cdot\hat{n}`, std::numeric_limits<int>::min()}
+
+  .. cpp:function:: Plane3d(const Vector3d& p, const Vector3d& nhat, const int id)
+
+     Construct specifying the normal, a point in the plane, and ID, so {:math:`\hat{n}, d`, ID} = {nhat, :math:`-p\cdot\hat{n}`, id}
 
 Vertex classes
 --------------------
@@ -238,4 +280,77 @@ Vertex classes
 
 .. cpp:class:: Vertex2d
 
-  Vertex2d is used to encode Polygons in 2d.  A vertex includes a position and the connectivity to neighboring vertices in the Polygon.  In this 2d case, the connectivity is always 2 vertices, ordered such that going from the first neighbor, to this vertex, and on to the last neighbor goes around the Polygon in the counter-clockwise direction.
+  Vertex2d is used to encode Polygons in 2d.  A vertex includes a position and the connectivity to neighboring vertices in the Polygon.  In this 2d case, the connectivity is always 2 vertices, ordered such that going from the first neighbor, to this vertex, and on to the last neighbor goes around the Polygon in the counter-clockwise direction.  This is illustrated in the Polygon examples in :ref:`PolyClipper concepts`.
+
+  .. cpp:member:: Vector2d position
+
+     The position of the vertex in :math:`(x,y)` coordinates.
+
+  .. cpp:member:: std::pair<int, int> neighbors
+
+     The neighbor vertices this vertex is connected too.  These should be listed in counter-clockwise order going around the Polygon, so that ``neighbors.first`` is clockwise and ``neighbors.second`` is counter-clockwise from this vertex.
+
+  .. cpp:member:: int comp
+
+     An internal state integer, for comparing this vertex to planes.  Used and overwritten during clipping operations.
+
+  .. cpp:member:: int ID
+
+     An optional ID index for this vertex.  Used and overwritten during clipping operations.
+
+  .. cpp:member:: std::set<int> clips
+
+     The set of Plane2d ID's responsible for creating this vertex during clipping operations.  Used and overwritten during clipping operations.
+
+  .. cpp:function:: Vertex2d()
+
+     Default constructor, sets member data to {position, neighbors, comp, ID, clips} = {(0,0), (), 1, -1, {}}
+
+  .. cpp:function:: Vertex2d(const Vector2d& pos)
+
+     Construct with just the position
+
+  .. cpp:function:: Vertex2d(const Vector2d& pos, const int c)
+
+     Construct with {position, comp} = {pos, c}
+
+..
+  ------------------------------------------------------------------------------
+  Vertex3d
+  ------------------------------------------------------------------------------
+
+.. cpp:class:: Vertex3d
+
+  Vertex3d is used to encode Polyhedra in 3d.  A vertex includes a position and the connectivity to neighboring vertices in the Polyhedron.  For Polyhedra, the neighbor connectivity should be 3 or more neighbors, listed counter-clockwise as viewed from the exterior side of the vertex (see the illustrations in :ref:`PolyClipper concepts` for examples).
+
+  .. cpp:member:: Vector3d position
+
+     The position of the vertex in :math:`(x,y,z)` coordinates.
+
+  .. cpp:member:: std::vector<int> neighbors
+
+     The neighbor vertices this vertex is connected too, listed in counter-clockwise order as viewed from the exterior of the Polyhedron.
+
+  .. cpp:member:: int comp
+
+     An internal state integer, for comparing this vertex to planes.  Used and overwritten during clipping operations.
+
+  .. cpp:member:: int ID
+
+     An optional ID index for this vertex.  Used and overwritten during clipping operations.
+
+  .. cpp:member:: std::set<int> clips
+
+     The set of Plane3d ID's responsible for creating this vertex during clipping operations.  Used and overwritten during clipping operations.
+
+  .. cpp:function:: Vertex3d()
+
+     Default constructor, sets member data to {position, neighbors, comp, ID, clips} = {(0,0,0), (), 1, -1, {}}
+
+  .. cpp:function:: Vertex3d(const Vector3d& pos)
+
+     Construct with just the position
+
+  .. cpp:function:: Vertex3d(const Vector3d& pos, const int c)
+
+     Construct with {position, comp} = {pos, c}
