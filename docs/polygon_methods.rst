@@ -10,6 +10,8 @@ These are the methods provided in the PolyClipper namespace (C++) and/or PolyCli
 
    Initialize a PolyClipper::Polygon by constructing the necessary PolyClipper::Vertex2d objects described by the ``positions`` and ``neighbors``.  Note that the length of these arrays should be identical (i.e., the number of vertices in the resulting Polygon).  Each element of the ``neighbors`` array should be 2 elements long, listing the (clockwise, counterclockwise) neighbors for the vertex at the corresponding index in the ``positions`` array.
 
+   See the examples in :ref:`PolyClipper concepts`.
+
 .. cpp:function:: std::string polygon2string(const Polygon& poly)
 
    Creates a human-readable string representation of the Polygon.
@@ -20,11 +22,19 @@ These are the methods provided in the PolyClipper namespace (C++) and/or PolyCli
 
    .. Note::
 
+      In Python this method has a different signature, as the moments are returned as a Python tuple:
+
+      .. py:function:: moments(polygon) -> (double, Vector2d)
+
+   .. Note::
+
       While the area returned in this function is always correct, the centroid is only correct for convex polygons.  This is planned to be generalized to work for all polygons in a future release.
 
 .. cpp:function:: void clipPolygon(Polygon& poly, const std::vector<Plane2d>& planes)
 
-   Clip a Polygon by a set of planes in place.  Examples are shown in :ref:`Clipping operations`.  The region of the Polygon above the each plane (in the direction of the plane normal) is retained.  After clipping the ``Vertex2d::ID`` and ``Vertex2d::clips`` attribute of the vertices in the Polygon are modified, such that ID holds a unique identifier for each remaining vertex, and clips holds the ID's of any planes used to create the vertex.
+   Clip a Polygon by a set of planes in place.  Examples are shown in :ref:`Clipping operations`.  The region of the Polygon above the each plane (in the direction of the plane normal) is retained.
+
+   After clipping, the ``Vertex2d::ID`` and ``Vertex2d::clips`` attribute of the vertices in the Polygon are modified, such that ID holds a unique identifier for each remaining vertex, and clips holds the ID's of any planes used to create the vertex.
 
 .. cpp:function:: void collapseDegenerates(Polygon& poly, const double tol)
 

@@ -203,7 +203,7 @@ Plane classes
 
   .. cpp:type:: Vector2d Plane2d::Vector
 
-  .. cpp:member:: Vector Plane2d::normal
+  .. cpp:member:: Vector2d Plane2d::normal
 
      The unit normal to the plane :math:`\hat{n}`.
 

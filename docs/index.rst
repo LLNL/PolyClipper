@@ -15,6 +15,7 @@ Welcome to PolyClipper's documentation!
    concepts.rst
    datatypes.rst
    polygon_methods.rst
+   polyhedron_methods.rst
 
 Indices and tables
 ==================
