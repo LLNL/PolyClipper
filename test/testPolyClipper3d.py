@@ -171,6 +171,29 @@ class TestPolyhedronClipping(unittest.TestCase):
                             "Centroid comparison failure: %s != %s" % (m1, M1))
 
     #---------------------------------------------------------------------------
+    # moments (shift -- moments should be invariant to shifting frame)
+    #---------------------------------------------------------------------------
+    def test_shiftMoments(self):
+        for points, neighbors, facets in self.polyData:
+            poly0 = Polyhedron()
+            initializePolyhedron(poly0, points, neighbors)
+            vol0, centroid0 = moments(poly0)
+
+            # Now shift by some random amount
+            delta = Vector3d(rangen.uniform(-1.0, 1.0),
+                             rangen.uniform(-1.0, 1.0),
+                             rangen.uniform(-1.0, 1.0)) * rangen.uniform(0.1, 10.0)
+            poly1 = Polyhedron()
+            points1 = [p + delta for p in points]
+            initializePolyhedron(poly1, points1, neighbors)
+            vol1, centroid1 = moments(poly1)
+
+            self.failUnless(fuzzyEqual(vol0, vol1),
+                            "Volume comparison failure: %g != %g" % (vol0, vol1))
+            self.failUnless(fuzzyEqual((centroid1 - (centroid0 + delta)).magnitude(), 0.0),
+                            "Centroid comparison failure: %s != %s" % (centroid0, centroid1 + delta))
+
+    #---------------------------------------------------------------------------
     # collapseDegenerates
     #---------------------------------------------------------------------------
     def test_collapseDegenerates(self):

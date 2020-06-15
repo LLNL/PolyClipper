@@ -119,6 +119,28 @@ class TestPolyClipper2d(unittest.TestCase):
                             "Centroid comparison failure: %s != %s" % (centroid, centroid0))
 
     #---------------------------------------------------------------------------
+    # moments (shift -- moments should be invariant to shifting frame)
+    #---------------------------------------------------------------------------
+    def test_shiftMoments(self):
+        for points in self.pointSets:
+            poly0 = Polygon()
+            initializePolygon(poly0, points, vertexNeighbors(points))
+            vol0, centroid0 = moments(poly0)
+
+            # Now shift by some random amount
+            delta = Vector2d(rangen.uniform(-1.0, 1.0),
+                             rangen.uniform(-1.0, 1.0)) * rangen.uniform(0.1, 10.0)
+            poly1 = Polygon()
+            points1 = [p + delta for p in points]
+            initializePolygon(poly1, points1, vertexNeighbors(points1))
+            vol1, centroid1 = moments(poly1)
+
+            self.failUnless(fuzzyEqual(vol0, vol1),
+                            "Volume comparison failure: %g != %g" % (vol0, vol1))
+            self.failUnless(fuzzyEqual((centroid1 - (centroid0 + delta)).magnitude(), 0.0),
+                            "Centroid comparison failure: %s != %s" % (centroid0, centroid1 + delta))
+
+    #---------------------------------------------------------------------------
     # collapseDegenerates
     #---------------------------------------------------------------------------
     def test_collapseDegenerates(self):
