@@ -20,7 +20,7 @@
 # -- Project information -----------------------------------------------------
 
 project = u'PolyClipper'
-copyright = u'2018, LLNS'
+copyright = u'2020, LLNS'
 author = u'J. Michael Owen'
 
 # The short X.Y version
