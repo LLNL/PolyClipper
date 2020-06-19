@@ -155,7 +155,7 @@ man_pages = [
 #  dir menu entry, description, category)
 texinfo_documents = [
     (master_doc, 'PolyClipper', u'PolyClipper Documentation',
-     author, 'PolyClipper', 'One line description of project.',
+     author, 'J. Michael Owen', 'One line description of project.',
      'Miscellaneous'),
 ]
 
