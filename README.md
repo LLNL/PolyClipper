@@ -29,7 +29,7 @@ Contributions are welcome, and should be provided as pull requests to the main r
 License
 -------
 
-PolyClipper is released under the [BSD license](https://github.com/jmikeowen/PYB11Generator/blob/master/LICENSE).
+PolyClipper is released under the [BSD license](https://github.com/LLNL/PolyClipper/blob/master/LICENSE).
 
 LLNL-CODE-811676
 

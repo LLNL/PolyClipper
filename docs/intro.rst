@@ -14,3 +14,12 @@ PolyClipper reimplements these clipping operations from R3D for two reasons:
 Note PolyClipper currently does not provide the generalized voxelization or arbitrary integrals over polygons/polyhedra as provided in R3D.   These would be straightforward to add, but were not necessary for the authors needs from the library, which is to generalize the clipping algorithms.  The only method of this sort provided by PolyClipper is the ability to do the zeroth and first moment integrals over the polygons/polyhedra.
 
 PolyClipper currently provides both C++ and Python interfaces.
+
+License
+-------
+
+PolyClipper is released under the `BSD license <https://github.com/LLNL/PolyClipper/blob/master/LICENSE>`_.
+
+LLNL-CODE-811676
+
+SPDX-License-Identifier: BSD-3
