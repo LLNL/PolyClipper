@@ -17,7 +17,7 @@ PolyClipper currently provides both C++ and Python interfaces.
 Documentation
 -------------
 
-PolyClipper is documented at [readthedocs](https://polyclipper.readthedocs.io/en/latest/).
+PolyClipper is documented at [readthedocs](https://PolyClipper.readthedocs.io/en/latest/).
 
 Note the source for this documentation is embedded in the PolyClipper repository under docs/.
 
