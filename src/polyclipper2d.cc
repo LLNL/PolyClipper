@@ -300,6 +300,15 @@ void clipPolygon(Polygon& polygon,
       for (auto v = 0; v < nverts0; ++v) {
         std::tie(vprev, vnext) = polygon[v].neighbors;
 
+        // BCS XXX note that we are about to attempt to index into polygon.
+        // If vnext = -1, for example, this will be a memory error with the sanitizer.
+        //assert (vnext >= 0);
+        if (vnext < 0) throw std::logic_error("vnext < 0");
+        if (vprev < 0) throw std::logic_error("vprev < 0");
+        const auto nverts = polygon.size();
+        if (vnext >= nverts) throw std::logic_error("vnext >= nverts");
+        if (vprev >= nverts) throw std::logic_error("vprev >= nverts");
+
         if ((polygon[v].comp)*(polygon[vnext].comp) == -1) {
           // This pair straddles the plane and creates a new vertex.
           vnew = polygon.size();
@@ -340,7 +349,8 @@ void clipPolygon(Polygon& polygon,
       // For each hanging vertex, link to the neighbors that survive the clipping.
       // If there are more than two hanging vertices, we've clipped a non-convex face and need to check
       // how to hook up each section, possibly resulting in new faces.
-      assert (hangingVertices.size() % 2 == 0);
+      //assert (hangingVertices.size() % 2 == 0);
+      if (hangingVertices.size() % 2 != 0) throw std::logic_error("hangingVertices mod 2 is not zero");
       if (true) { //(hangingVertices.size() > 2) {
 
         // Yep, more than one new edge here.
@@ -449,7 +459,9 @@ void collapseDegenerates(Polygon& polygon,
       for (auto i = 0; i < n; ++i) {
         if (polygon[i].ID >= 0) {
           auto j = polygon[i].neighbors.second;
-          assert (polygon[j].ID >= 0);
+          //assert (polygon[j].ID >= 0);
+          if (j==i) throw std::logic_error("got vertex and neighbor identical in collapseDegenerates");
+          if (polygon[j].ID < 0) throw std::logic_error("polygon[j].ID is negative in collapseDegenerates");
           if ((polygon[i].position - polygon[j].position).magnitude2() < tol2) {
             done = false;
             active = true;
