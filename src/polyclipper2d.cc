@@ -28,6 +28,7 @@
 #include <map>
 #include <set>
 #include <iostream>
+#include <iomanip>
 #include <sstream>
 #include <iterator>
 #include <algorithm>
@@ -443,6 +444,9 @@ void clipPolygon(Polygon& polygon,
 void collapseDegenerates(Polygon& polygon,
                          const double tol) {
 
+  // Make a copy of the input polygon for debugging
+  //Polygon copyPoly = polygon;
+
   const auto tol2 = tol*tol;
   auto n = polygon.size();
   if (n > 0) {
@@ -454,11 +458,8 @@ void collapseDegenerates(Polygon& polygon,
     // removing any.
     auto done = false;
     auto active = false;
-    int numOuterLoops = 0;
     while (not done) {
       done = true;
-      ++numOuterLoops;
-      if (numOuterLoops > 100) throw std::runtime_error("caught numOuterLoops");
       for (auto i = 0; i < n; ++i) {
         if (polygon[i].ID >= 0) {
           auto j = polygon[i].neighbors.second;
@@ -469,12 +470,31 @@ void collapseDegenerates(Polygon& polygon,
             done = false;
             active = true;
             polygon[j].ID = -1;
-            int numInnerLoops = 0;
+            int numAttempts = 0;
             while (polygon[j].ID < 0) {
               polygon[i].clips.insert(polygon[j].clips.begin(), polygon[j].clips.end());
               j = polygon[j].neighbors.second;
-              ++numInnerLoops;
-              if (numInnerLoops > 100) throw std::runtime_error("caught numInnerLoops");
+              ++numAttempts;
+              // With the clang-xlf compiler, it's possible to get an infinite loop
+              // here if the neighbor patter of the input polygon is bad. It would
+              // be better to verify that the neighbor pattern is valid before attempting
+              // to collapse degenerates. This is a workaround.
+              if (numAttempts > 100) {
+                 /*
+                 for (int k=0; k<n; ++k) {
+                     std::cout << "  orig k = " << k << ", ID = " << copyPoly[k].ID
+                       << ", n first = " << copyPoly[k].neighbors.first
+                       << ", n second = " << copyPoly[k].neighbors.second
+                       << ", pos = ("
+                       << std::scientific << std::setprecision(15) << copyPoly[k].position.x
+                       << ", "
+                       << std::scientific << std::setprecision(15) << copyPoly[k].position.y
+                       << ") " << std::endl;
+                 }
+                 */
+
+                 throw std::logic_error("too many attempts in collapseDegenerates");
+              }
             }
             polygon[i].neighbors.second = j;
             polygon[j].neighbors.first  = i;
