@@ -454,8 +454,11 @@ void collapseDegenerates(Polygon& polygon,
     // removing any.
     auto done = false;
     auto active = false;
+    int numOuterLoops = 0;
     while (not done) {
       done = true;
+      ++numOuterLoops;
+      if (numOuterLoops > 100) throw std::runtime_error("caught numOuterLoops");
       for (auto i = 0; i < n; ++i) {
         if (polygon[i].ID >= 0) {
           auto j = polygon[i].neighbors.second;
@@ -466,9 +469,12 @@ void collapseDegenerates(Polygon& polygon,
             done = false;
             active = true;
             polygon[j].ID = -1;
+            int numInnerLoops = 0;
             while (polygon[j].ID < 0) {
               polygon[i].clips.insert(polygon[j].clips.begin(), polygon[j].clips.end());
               j = polygon[j].neighbors.second;
+              ++numInnerLoops;
+              if (numInnerLoops > 100) throw std::runtime_error("caught numInnerLoops");
             }
             polygon[i].neighbors.second = j;
             polygon[j].neighbors.first  = i;
