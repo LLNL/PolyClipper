@@ -19,7 +19,7 @@ Generally building PolyClipper on a Unix-like system is as simple as::
   cd <PolyClipper download directory>
   mkdir build
   cd build
-  cmake -DPOLYCLIPPER_INSTALL_DIR=<some_path> ..
+  cmake -DCMAKE_INSTALL_PREFIX=<some_path> ..
   make
   make install
 
@@ -31,11 +31,11 @@ Cmake variables
 CMAKE_BUILD_TYPE : (Debug, Release, RelWithDebInfo, MinSizeRel)
   Choose the type of build -- for more information see the `Cmake documentation <https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html>`_.
 
-POLYCLIPPER_INSTALL_DIR
+CMAKE_INSTALL_PREFIX
   The top-level path for installing PolyClipper include files, libraries, and any Python modules or documentation.
 
 POLYCLIPPER_PYTHON_INSTALL
-  Optionally specify a path for installing the PolyClipper Python module.  If not specified the Python module is installed to ``${POLYCLIPPER_INSTALL_DIR}/lib/python/site-packages/PolyClipper``.
+  Optionally specify a path for installing the PolyClipper Python module.  If not specified the Python module is installed to ``${CMAKE_INSTALL_PREFIX}/lib/python/site-packages/PolyClipper``.
 
 PYTHON_EXE
   Optionally specify a specific Python executable to use when building Python module.  If this is not given PolyClipper checks to see if a suitable Python can be found and used automatically.
