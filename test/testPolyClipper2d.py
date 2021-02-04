@@ -306,6 +306,105 @@ class TestPolyClipper2d(unittest.TestCase):
                 self.failUnless(fuzzyEqual(v1 + v2 + v3 + v4, v0),
                                 "Two plane clipping summing to wrong volumes: %s + %s + %s + %s = %s != %s" % (v1, v2, v3, v4, v1 + v2 + v3 + v4, v0))
 
+
+    #---------------------------------------------------------------------------
+    # Intersect two triangles with a small intersection
+    #---------------------------------------------------------------------------
+    def testIntersectTriangles(self):
+        # Make the clipping polygon
+        clipperTriVertices = [
+           Vector2d( 1.028506494059886700E+00,  2.999999990617289169E-01),
+           Vector2d( 1.028506493432178370E+00,  1.999999996863228713E-01),
+           Vector2d( 1.067486385958200890E+00,  2.499999991021088219E-01),
+        ]
+        clipperTri = Polygon()
+        initializePolygon(clipperTri, clipperTriVertices, [[2,1], [0,2], [1,0], ])
+
+        # Make the polygon that will be clipped
+        targetTriVertices = [
+           Vector2d( 1.011431130628088759E+00,  2.999999993207053683E-01),
+           Vector2d( 1.006141848526197480E+00,  2.999999991474828209E-01),
+           Vector2d( 1.106466278308764428E+00,  2.999999978793384536E-01),
+        ]
+        targetTri = Polygon()
+        initializePolygon(targetTri, targetTriVertices, [[2,1], [0,2], [1,0], ])
+
+        # Now turn the clipper triangle into list of clip planes
+        clipPlanes = []
+        clipperTriArea, clipperTriCentroid = moments(clipperTri)
+        for f in extractFaces(clipperTri):
+            v0 = clipperTri[f[0]].position
+            v1 = clipperTri[f[1]].position
+            edgeVector  = v1 - v0
+            halfEdgePos = 0.5*(v1 + v0)
+            unitVector = Vector2d( edgeVector.y, -edgeVector.x ).unitVector()
+
+            # Make sure the clipperTri face normal vectors point inward
+            centroidDir = clipperTriCentroid - halfEdgePos
+            if unitVector.dot(centroidDir) < 0.0:
+               unitVector *= -1.0
+
+            clipPlanes.append( Plane2d(v0, unitVector) )
+
+        # Test passes if clipping is successful
+        clipPolygon(targetTri, clipPlanes)
+
+    #---------------------------------------------------------------------------
+    # Create a pathological polygon by clipping, and then call collapseDegenerates
+    #---------------------------------------------------------------------------
+    def testIntersectAndCollapse(self):
+
+        # Make the clipping polygon
+        clipperTriVertices = [
+           Vector2d( 5.597115204949861672E-02, -9.699999999948993867E-01),
+           Vector2d( 6.000000004947565052E-02, -9.699999999914215021E-01),
+           Vector2d( 5.519423042922926015E-02, -9.659999999884136823E-01),
+        ]
+        clipperTri = Polygon()
+        initializePolygon(clipperTri, clipperTriVertices, [[2,1], [0,2], [1,0], ])
+
+        # Make the polygon that will be clipped
+        targetTriVertices = [
+           Vector2d( 5.000000000142665324E-02, -9.700000000000538192E-01),
+           Vector2d( 6.000000024821047079E-02, -9.699999999505402037E-01),
+           Vector2d( 5.000000001436286784E-02, -9.699999999987333199E-01),
+        ]
+        targetTri = Polygon()
+        initializePolygon(targetTri, targetTriVertices, [[2,1], [0,2], [1,0], ])
+
+        # Now turn the clipper triangle into list of clip planes
+        clipperTriArea, clipperTriCentroid = moments(clipperTri)
+
+        v0 = clipperTriVertices[0]
+        v1 = clipperTriVertices[1]
+        v2 = clipperTriVertices[2]
+
+        vc = (v0 + v1 + v2)*(1.0/3.0)
+
+        def getClipPlane(v0, v1, vc):
+            edgeVector  = v1 - v0
+            halfEdgePos = 0.5*(v1 + v0)
+            unitVector = Vector2d( edgeVector.y, -edgeVector.x ).unitVector()
+
+            # Make sure the clipperTri face normal vectors point inward
+            centroidDir = vc - halfEdgePos
+            if unitVector.dot(centroidDir) < 0.0:
+               unitVector *= -1.0
+
+            return Plane2d(v0, unitVector)
+
+        # note the funny order here. The error mode depends on the order.
+        clipPlanes = []
+        clipPlanes.append(getClipPlane(v0, v1, vc))
+        clipPlanes.append(getClipPlane(v2, v0, vc))
+        clipPlanes.append(getClipPlane(v1, v2, vc))
+
+        # clip the polygon
+        clipPolygon(targetTri, clipPlanes)
+
+        # test passes as long as collapseDegenerates doesn't throw
+        collapseDegenerates(targetTri, 1.0e-12)
+
     #---------------------------------------------------------------------------
     # Split a (convex) polygon into triangles.
     #---------------------------------------------------------------------------
