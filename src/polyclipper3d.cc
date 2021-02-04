@@ -72,7 +72,7 @@ int compare(const Plane3d& plane,
             const double xmax,
             const double ymax,
             const double zmax) {
-  typedef PolyClipper::Vector3d Vector;
+  using Vector = PolyClipper::Vector3d;
   const auto c1 = compare(plane, Vector(xmin, ymin, zmin));
   const auto c2 = compare(plane, Vector(xmax, ymin, zmin));
   const auto c3 = compare(plane, Vector(xmax, ymax, zmin));
@@ -215,7 +215,7 @@ void moments(double& zerothMoment, PolyClipper::Vector3d& firstMoment,
              const Polyhedron& polyhedron) {
 
   // Useful types.
-  typedef PolyClipper::Vector3d Vector;
+  using Vector = PolyClipper::Vector3d;
 
   // Clear the result for accumulation.
   zerothMoment = 0.0;
@@ -264,10 +264,17 @@ void clipPolyhedron(Polyhedron& polyhedron,
 
   // Pre-declare variables.  Normally I prefer local declaration, but this
   // seems to slightly help performance.
+  using Vector = PolyClipper::Vector3d;
   bool above, below;
   int nverts0, nverts, nneigh, i, j, k, jn, inew, iprev, inext, itmp;
   vector<int>::iterator nitr;
+  const double nearlyZero = 1.0e-15;
 
+  // Check the input.
+  double V0;
+  Vector C0;
+  moments(V0, C0, polyhedron);
+  if (V0 < nearlyZero) polyhedron.clear();
   // cerr << "Initial:\n" << polyhedron2string(polyhedron) << endl;
 
   // Find the bounding box of the polyhedron.
@@ -476,10 +483,15 @@ void clipPolyhedron(Polyhedron& polyhedron,
         }
       }
       polyhedron.erase(std::remove_if(polyhedron.begin(), polyhedron.end(), [](Vertex3d& v) { return v.comp < 0; }), polyhedron.end());
+      double V1;
+      Vector C1;
+      moments(V1, C1, polyhedron);
       // cerr << "After compression:\n" << polyhedron2string(polyhedron) << endl;
 
       // Is the polyhedron gone?
-      if (polyhedron.size() < 4) polyhedron.clear();
+      if (polyhedron.size() < 4 or
+          V1 < nearlyZero or
+          V1/V0 < 100.0*nearlyZero) polyhedron.clear();
     }
   }
 }
@@ -612,8 +624,8 @@ void collapseDegenerates(Polyhedron& polyhedron,
 vector<vector<int>>
 extractFaces(const Polyhedron& poly) {
 
-  typedef pair<int, int> Edge;
-  typedef vector<int> Face;
+  using Edge = pair<int, int>;
+  using Face = vector<int>;
 
   // Prepare the result.
   vector<vector<int>> faceVertices;

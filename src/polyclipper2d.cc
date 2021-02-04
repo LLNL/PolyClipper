@@ -68,7 +68,7 @@ int compare(const Plane2d& plane,
             const double ymin,
             const double xmax,
             const double ymax) {
-  typedef PolyClipper::Vector2d Vector;
+  using Vector = PolyClipper::Vector2d;
   const auto c1 = compare(plane, Vector(xmin, ymin));
   const auto c2 = compare(plane, Vector(xmax, ymin));
   const auto c3 = compare(plane, Vector(xmax, ymax));
@@ -216,7 +216,8 @@ void moments(double& zerothMoment, PolyClipper::Vector2d& firstMoment,
              const Polygon& polygon) {
 
   // Useful types.
-  typedef PolyClipper::Vector2d Vector;
+  using Vector = PolyClipper::Vector2d;
+  const double nearlyZero = 1.0e-15;
 
   // Clear the result for accumulation.
   zerothMoment = 0.0;
@@ -232,8 +233,7 @@ void moments(double& zerothMoment, PolyClipper::Vector2d& firstMoment,
       zerothMoment += triA;
       firstMoment += triA * (v1.position + v2.position - 2.0*v0.position);
     }
-    assert (zerothMoment != 0.0);
-    firstMoment = firstMoment/(3.0*zerothMoment) + v0.position;
+    firstMoment = firstMoment/(3.0*std::max(nearlyZero, zerothMoment)) + v0.position;
     zerothMoment *= 0.5;
   }
 }
@@ -245,9 +245,15 @@ void clipPolygon(Polygon& polygon,
                  const std::vector<Plane2d>& planes) {
 
   // Useful types.
-  typedef PolyClipper::Vector2d Vector;
+  using Vector = PolyClipper::Vector2d;
+  const double nearlyZero = 1.0e-15;
 
-  // cerr << "Initial polygon: " << polygon2string(polygon) << endl;
+  // Check the input.
+  double V0;
+  Vector C0;
+  moments(V0, C0, polygon);
+  if (V0 < nearlyZero) polygon.clear();
+  // cerr << "Initial polygon: " << polygon2string(polygon) << " " << V0 << endl;
 
   // Find the bounding box of the polygon.
   auto xmin = std::numeric_limits<double>::max(), xmax = std::numeric_limits<double>::lowest();
@@ -429,11 +435,16 @@ void clipPolygon(Polygon& polygon,
         }
         removeElements(polygon, verts2kill);
       }
+      double V1;
+      Vector C1;
+      moments(V1, C1, polygon);
 
-      // cerr << "After compression: " << polygon2string(polygon) << endl;
+      // cerr << "After compression: " << polygon2string(polygon) << " " << V1 << " " << V1/V0 << endl;
 
       // Is the polygon gone?
-      if (polygon.size() < 3) polygon.clear();
+      if (polygon.size() < 3 or
+          V1 < nearlyZero or
+          V1/V0 < 100.0*nearlyZero) polygon.clear();
     }
   }
 }
