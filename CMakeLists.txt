@@ -31,11 +31,12 @@ include(${POLYCLIPPER_BLT_DIR}/SetupBLT.cmake)
 #-------------------------------------------------------------------------------
 # Install
 #-------------------------------------------------------------------------------
-set(POLYCLIPPER_INSTALL_DIR "" CACHE STRING "Directory to install PolyClipper.")
-set(CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/PolyClipper)
-if (POLYCLIPPER_INSTALL_DIR)
-  set(CMAKE_INSTALL_PREFIX ${POLYCLIPPER_INSTALL_DIR})
-endif()
+# set(POLYCLIPPER_INSTALL_DIR "" CACHE STRING "Directory to install PolyClipper.")
+# set(CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/PolyClipper)
+# if (POLYCLIPPER_INSTALL_DIR)
+#   set(CMAKE_INSTALL_PREFIX ${POLYCLIPPER_INSTALL_DIR})
+# endif()
+set(POLYCLIPPER_INSTALL_DIR ${CMAKE_INSTALL_PREFIX})
 message("-- install path ${CMAKE_INSTALL_PREFIX}")
 
 #-------------------------------------------------------------------------------
