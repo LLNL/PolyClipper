@@ -106,4 +106,6 @@ add_subdirectory(src)
 #-------------------------------------------------------------------------------
 # Add the documentation
 #-------------------------------------------------------------------------------
-#add_subdirectory(docs)
+if (ENABLE_DOCS)
+  add_subdirectory(docs)
+endif()
