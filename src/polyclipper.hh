@@ -32,15 +32,48 @@
 namespace PolyClipper {
 
 //------------------------------------------------------------------------------
+// Trait class to use PolyClipper's native Vector types.
+// This is an example of the traits necessary to use your own Vector types
+// directly with PolyClipper.
+//------------------------------------------------------------------------------
+namespace internal {
+template<typename VectorType>
+struct VectorAdapter {
+  using VECTOR = VectorType;
+  static VECTOR Vector(double a, double b)                 { return VECTOR(a, b); }    // only 2D
+  static VECTOR Vector(double a, double b, double c)       { return VECTOR(a, b, c); } // only 3D
+  static bool equal(const VECTOR& a, const VECTOR& b)      { return a == b; }
+  static double& x(VECTOR& a)                              { return a.x; }
+  static double& y(VECTOR& a)                              { return a.y; }
+  static double& z(VECTOR& a)                              { return a.z; }
+  static double dot(const VECTOR& a, const VECTOR& b)      { return a.dot(b); }
+  static double crossmag(const VECTOR& a, const VECTOR& b) { return a.crossmag(b); }   // only 2D
+  static VECTOR cross(const VECTOR& a, const VECTOR& b)    { return a.cross(b); }      // only 3D
+  static double magnitude2(const VECTOR& a)                { return a.magnitude2(); }
+  static double magnitude(const VECTOR& a)                 { return a.magnitude(); }
+  static void imul(const VECTOR& a, const double b)        { a *= b; }
+  static void idiv(const VECTOR& a, const double b)        { a /= b; }
+  static void iadd(const VECTOR& a, const VECTOR& b)       { a += b; }
+  static void isub(const VECTOR& a, const VECTOR& b)       { a -= b; }
+  static VECTOR mul(const VECTOR& a, const double b)       { return a * b; }
+  static VECTOR div(const VECTOR& a, const double b)       { return a / b; }
+  static VECTOR add(const VECTOR& a, const VECTOR& b)      { return a + b; }
+  static VECTOR sub(const VECTOR& a, const VECTOR& b)      { return a - b; }
+  static VECTOR neg(const VECTOR& a)                       { return -a; }
+  static VECTOR unitVector(const VECTOR& a)                { return a.unitVector(); }
+};
+}
+
+//------------------------------------------------------------------------------
 // 2D Vector
 //------------------------------------------------------------------------------
 struct Vector2d {
   double x, y;
   Vector2d(): x(0.0), y(0.0) {}
-  Vector2d(double X, double Y): x(X), y(Y) {}
+  Vector2d(double X, double Y, double Z = 0.0)    : x(X), y(Y) {}  // Z dummied out for interface consistency with 3D
   bool      operator==(const Vector2d& rhs) const { return x == rhs.x and y == rhs.y; }
   double    dot(const Vector2d& rhs) const        { return x*rhs.x + y*rhs.y; }
-  double    cross(const Vector2d& rhs) const      { return x*rhs.y - y*rhs.x; }
+  double    crossmag(const Vector2d& rhs) const   { return x*rhs.y - y*rhs.x; }
   double    magnitude2() const                    { return x*x + y*y; }
   double    magnitude() const                     { return std::sqrt(x*x + y*y); }
   Vector2d& operator*=(const double rhs)          { x *= rhs; y *= rhs; return *this; }
@@ -92,62 +125,46 @@ struct Vector3d {
 inline Vector3d operator*(const double lhs, const Vector3d& rhs) { return rhs*lhs; }
 
 //------------------------------------------------------------------------------
-// 2D plane.
+// Plane.
 //------------------------------------------------------------------------------
-struct Plane2d {
-  typedef PolyClipper::Vector2d Vector;
+template<typename VectorType,
+         typename VA = internal::VectorAdapter<VectorType>>
+struct Plane {
+  using Vector = VectorType;
   double dist;                       // Signed distance to the origin
   Vector normal;                     // Unit normal
   int ID;                            // ID for the plane, used to label vertices
-  Plane2d()                                                  : dist(0.0), normal(1,0), ID(std::numeric_limits<int>::min()) {}
-  Plane2d(const double d, const Vector& nhat)                : dist(d), normal(nhat), ID(std::numeric_limits<int>::min()) {}
-  Plane2d(const Vector& p, const Vector& nhat)               : dist(-p.dot(nhat)), normal(nhat), ID(std::numeric_limits<int>::min()) {}
-  Plane2d(const Vector& p, const Vector& nhat, const int id) : dist(-p.dot(nhat)), normal(nhat), ID(id) {}
-  Plane2d(const Plane2d& rhs)                                : dist(rhs.dist), normal(rhs.normal), ID(rhs.ID) {}
-  Plane2d& operator=(const Plane2d& rhs)                     { dist = rhs.dist; normal = rhs.normal; ID = rhs.ID; return *this; }
-  bool operator==(const Plane2d& rhs) const                  { return (dist == rhs.dist and normal == rhs.normal); }
-  bool operator!=(const Plane2d& rhs) const                  { return not (*this == rhs); }
-  bool operator< (const Plane2d& rhs) const                  { return (dist < rhs.dist); }
-  bool operator> (const Plane2d& rhs) const                  { return (dist > rhs.dist); }
-};
-
-//------------------------------------------------------------------------------
-// 3D plane.
-//------------------------------------------------------------------------------
-struct Plane3d {
-  typedef PolyClipper::Vector3d Vector;
-  Vector normal;                     // Unit normal
-  double dist;                       // Signed distance to the origin
-  int ID;                            // ID for the plane, used to label vertices
-  Plane3d()                                                  : dist(0.0), normal(1,0,0), ID(std::numeric_limits<int>::min()) {}
-  Plane3d(const double d, const Vector& nhat)                : dist(d), normal(nhat), ID(std::numeric_limits<int>::min()) {}
-  Plane3d(const Vector& p, const Vector& nhat)               : dist(-p.dot(nhat)), normal(nhat), ID(std::numeric_limits<int>::min()) {}
-  Plane3d(const Vector& p, const Vector& nhat, const int id) : dist(-p.dot(nhat)), normal(nhat), ID(id) {}
-  Plane3d(const Plane3d& rhs)                                : dist(rhs.dist), normal(rhs.normal), ID(rhs.ID) {}
-  Plane3d& operator=(const Plane3d& rhs)                     { dist = rhs.dist; normal = rhs.normal; ID = rhs.ID; return *this; }
-  bool operator==(const Plane3d& rhs) const                  { return (dist == rhs.dist and normal == rhs.normal); }
-  bool operator!=(const Plane3d& rhs) const                  { return not (*this == rhs); }
-  bool operator< (const Plane3d& rhs) const                  { return (dist < rhs.dist); }
-  bool operator> (const Plane3d& rhs) const                  { return (dist > rhs.dist); }
+  Plane()                                                  : dist(0.0), normal(VA::VECTOR(1.0, 0.0, 0.0)), ID(std::numeric_limits<int>::min()) {}
+  Plane(const double d, const Vector& nhat)                : dist(d), normal(nhat), ID(std::numeric_limits<int>::min()) {}
+  Plane(const Vector& p, const Vector& nhat)               : dist(VA::dot(-p, nhat)), normal(nhat), ID(std::numeric_limits<int>::min()) {}
+  Plane(const Vector& p, const Vector& nhat, const int id) : dist(VA::dot(-p, nhat)), normal(nhat), ID(id) {}
+  Plane(const Plane2d& rhs)                                : dist(rhs.dist), normal(rhs.normal), ID(rhs.ID) {}
+  Plane& operator=(const Plane& rhs)                       { dist = rhs.dist; normal = rhs.normal; ID = rhs.ID; return *this; }
+  bool operator==(const Plane& rhs) const                  { return (dist == rhs.dist and VA::equal(normal, rhs.normal)); }
+  bool operator!=(const Plane& rhs) const                  { return not (*this == rhs); }
+  bool operator< (const Plane& rhs) const                  { return (dist < rhs.dist); }
+  bool operator> (const Plane& rhs) const                  { return (dist > rhs.dist); }
 };
 
 //------------------------------------------------------------------------------
 // The 2D vertex struct, which we use to encode polygons.
 //------------------------------------------------------------------------------
+template<typename VectorType = Vector2d,
+         typename VA = internal::VectorAdapter<Vector2d>>
 struct Vertex2d {
-  typedef PolyClipper::Vector2d Vector;
+  using Vector = VectorType;
   Vector position;
   std::pair<int, int> neighbors;
   int comp;
   mutable int ID;                            // convenient, but sneaky
   mutable std::set<int> clips;               // the planes (if any) that created this point
-  Vertex2d():                                  position(),    neighbors(), comp(1), ID(-1), clips() {}
-  Vertex2d(const Vector& pos):                 position(pos), neighbors(), comp(1), ID(-1), clips() {}
-  Vertex2d(const Vector& pos, const int c)   : position(pos), neighbors(), comp(c), ID(-1), clips() {}
+  Vertex2d()                                 : position(VA::VECTOR(0.0,0.0)), neighbors(), comp(1), ID(-1), clips() {}
+  Vertex2d(const Vector& pos)                : position(pos),                 neighbors(), comp(1), ID(-1), clips() {}
+  Vertex2d(const Vector& pos, const int c)   : position(pos),                 neighbors(), comp(c), ID(-1), clips() {}
   Vertex2d(const Vertex2d& rhs)              : position(rhs.position), neighbors(rhs.neighbors), comp(rhs.comp), ID(rhs.ID), clips(rhs.clips) {}
   Vertex2d& operator=(const Vertex2d& rhs)   { position = rhs.position; neighbors = rhs.neighbors; comp = rhs.comp; ID = rhs.ID; clips = rhs.clips; return *this; }
   bool operator==(const Vertex2d& rhs) const {
-    return (position  == rhs.position and
+    return (VA::equal(position, rhs.position) and
             neighbors == rhs.neighbors and
             comp      == rhs.comp and
             ID        == rhs.ID);
@@ -157,20 +174,22 @@ struct Vertex2d {
 //------------------------------------------------------------------------------
 // The 3D vertex struct, which we use to encode polyhedra.
 //------------------------------------------------------------------------------
+template<typename VectorType = Vector3d,
+         typename VA = internal::VectorAdapter<Vector3d>>
 struct Vertex3d {
-  typedef PolyClipper::Vector3d Vector;
+  using Vector = VectorType;
   Vector position;
   std::vector<int> neighbors;
   int comp;
   mutable int ID;                            // convenient, but sneaky
   mutable std::set<int> clips;               // the planes (if any) that created this point
-  Vertex3d():                                  position(),    neighbors(), comp(1), ID(-1), clips() {}
-  Vertex3d(const Vector& pos):                 position(pos), neighbors(), comp(1), ID(-1), clips() {}
-  Vertex3d(const Vector& pos, const int c):    position(pos), neighbors(), comp(c), ID(-1), clips() {}
+  Vertex3d()                                 : position(VA::VECTOR(0.0, 0.0, 0.0)), neighbors(), comp(1), ID(-1), clips() {}
+  Vertex3d(const Vector& pos)                : position(pos),                       neighbors(), comp(1), ID(-1), clips() {}
+  Vertex3d(const Vector& pos, const int c)   : position(pos),                       neighbors(), comp(c), ID(-1), clips() {}
   Vertex3d(const Vertex3d& rhs)              : position(rhs.position), neighbors(rhs.neighbors), comp(rhs.comp), ID(rhs.ID), clips(rhs.clips) {}
   Vertex3d& operator=(const Vertex3d& rhs)   { position = rhs.position; neighbors = rhs.neighbors; comp = rhs.comp; ID = rhs.ID; clips = rhs.clips; return *this; }
   bool operator==(const Vertex3d& rhs) const {
-    return (position  == rhs.position and
+    return (VA::equal(position, rhs.position) and
             neighbors == rhs.neighbors and
             comp      == rhs.comp and
             ID        == rhs.ID);
@@ -180,58 +199,72 @@ struct Vertex3d {
 //------------------------------------------------------------------------------
 // 2D (polygon) methods.
 //------------------------------------------------------------------------------
-typedef std::vector<Vertex2d> Polygon;
-
-void initializePolygon(Polygon& poly,
-                       const std::vector<PolyClipper::Vector2d>& positions,
+template<typename VectorType = Vector2d,
+         typename VA = internal::VectorAdapter<Vector2d>>
+void initializePolygon(std::vector<Vertex2d<VectorType, VA>& poly,
+                       const std::vector<VectorType>& positions,
                        const std::vector<std::vector<int>>& neighbors);
 
-std::string polygon2string(const Polygon& poly);
+template<typename VectorType = Vector2d,
+         typename VA = internal::VectorAdapter<Vector2d>>
+std::string polygon2string(const std::vector<Vertex2d<VectorType, VA>>& poly);
 
-void moments(double& zerothMoment, PolyClipper::Vector2d& firstMoment,
-             const Polygon& polygon);
+template<typename VectorType = Vector2d,
+         typename VA = internal::VectorAdapter<Vector2d>>
+void moments(double& zerothMoment, VectorType& firstMoment,
+             const std::vector<Vertex2d<VectorType, VA>>& polygon);
 
-void clipPolygon(Polygon& poly,
-                 const std::vector<Plane2d>& planes);
+template<typename VectorType = Vector2d,
+         typename VA = internal::VectorAdapter<Vector2d>>
+void clipPolygon(std::vector<Vertex2d<VectorType, VA>>& poly,
+                 const std::vector<Plane<VertexType, VA>>& planes);
 
-void collapseDegenerates(Polygon& poly,
+template<typename VectorType = Vector2d,
+         typename VA = internal::VectorAdapter<Vector2d>>
+void collapseDegenerates(std::vector<Vertex2d<VectorType, VA>>& poly,
                          const double tol);
 
-std::vector<std::vector<int>> extractFaces(const Polygon& poly);
+template<typename VectorType = Vector2d,
+         typename VA = internal::VectorAdapter<Vector2d>>
+std::vector<std::vector<int>> extractFaces(const std::vector<Vertex2d<VectorType, VA>>& poly);
 
-std::vector<std::set<int>> commonFaceClips(const Polygon& poly,
+template<typename VectorType = Vector2d,
+         typename VA = internal::VectorAdapter<Vector2d>>
+std::vector<std::set<int>> commonFaceClips(const std::vector<Vertex2d<VectorType, VA>>& poly,
                                            const std::vector<std::vector<int>>& faces);
 
-std::vector<std::vector<int>> splitIntoTriangles(const Polygon& poly,
+template<typename VectorType = Vector2d,
+         typename VA = internal::VectorAdapter<Vector2d>>
+std::vector<std::vector<int>> splitIntoTriangles(const std::vector<Vertex2d<VectorType, VA>>& poly,
                                                  const double tol = 0.0);
 
-//------------------------------------------------------------------------------
-// 3D (polyhedron) methods.
-//------------------------------------------------------------------------------
-typedef std::vector<Vertex3d> Polyhedron;
+// //------------------------------------------------------------------------------
+// // 3D (polyhedron) methods.
+// //------------------------------------------------------------------------------
+// typedef std::vector<Vertex3d> Polyhedron;
 
-void initializePolyhedron(Polyhedron& poly,
-                          const std::vector<PolyClipper::Vector3d>& positions,
-                          const std::vector<std::vector<int>>& neighbors);
+// void initializePolyhedron(Polyhedron& poly,
+//                           const std::vector<PolyClipper::Vector3d>& positions,
+//                           const std::vector<std::vector<int>>& neighbors);
 
-std::string polyhedron2string(const Polyhedron& poly);
+// std::string polyhedron2string(const Polyhedron& poly);
 
-void moments(double& zerothMoment, PolyClipper::Vector3d& firstMoment,
-              const Polyhedron& polyhedron);
+// void moments(double& zerothMoment, PolyClipper::Vector3d& firstMoment,
+//               const Polyhedron& polyhedron);
 
-void clipPolyhedron(Polyhedron& poly,
-                     const std::vector<Plane3d>& planes);
+// void clipPolyhedron(Polyhedron& poly,
+//                      const std::vector<Plane3d>& planes);
 
-void collapseDegenerates(Polyhedron& poly,
-                           const double tol);
+// void collapseDegenerates(Polyhedron& poly,
+//                            const double tol);
 
-std::vector<std::vector<int>> extractFaces(const Polyhedron& poly);
+// std::vector<std::vector<int>> extractFaces(const Polyhedron& poly);
 
-std::vector<std::set<int>> commonFaceClips(const Polyhedron& poly,
-                                           const std::vector<std::vector<int>>& faces);
+// std::vector<std::set<int>> commonFaceClips(const Polyhedron& poly,
+//                                            const std::vector<std::vector<int>>& faces);
 
-std::vector<std::vector<int>> splitIntoTetrahedra(const Polyhedron& poly, 
-                                                  const double tol = 0.0);
+// std::vector<std::vector<int>> splitIntoTetrahedra(const Polyhedron& poly, 
+//                                                   const double tol = 0.0);
 
 
 }
