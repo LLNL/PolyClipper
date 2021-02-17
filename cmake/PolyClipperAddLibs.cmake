@@ -2,21 +2,12 @@
 # polyclipper_add_cxx_library package_name
 #-------------------------------------------------------------------------------
 function(polyclipper_add_cxx_library package_name)
-  if(ENABLE_STATIC_CXXONLY)
-    blt_add_library(NAME        ${package_name}
-                    HEADERS     ${${package_name}_headers}
-                    SOURCES     ${${package_name}_sources}
-                    DEPENDS_ON  -Wl,--start-group ${polyclipper_blt_depends} -Wl,--end-group
-                    SHARED      FALSE
-                    )
-  else()
-    blt_add_library(NAME        ${package_name}
-                    HEADERS     ${${package_name}_headers}
-                    SOURCES     ${${package_name}_sources}
-                    DEPENDS_ON  -Wl,--start-group  ${polyclipper_blt_depends} -Wl,--end-group
-                    SHARED      TRUE
-                    )
-  endif()
+  blt_add_library(NAME        ${package_name}
+    HEADERS     ${${package_name}_headers}
+    SOURCES     ${${package_name}_sources}
+    DEPENDS_ON  -Wl,--start-group ${polyclipper_blt_depends} -Wl,--end-group
+    SHARED      FALSE
+    )
 
   # Are there any additional depends?
   if(polyclipper_depends)
