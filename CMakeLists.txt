@@ -97,7 +97,7 @@ else()
   message("-- Python module install path ${POLYCLIPPER_PYTHON_INSTALL}")
 endif()
 
-set(POLYCLIPPER_PYTHON_DEPENDS PolyClipper)
+set(POLYCLIPPER_PYTHON_DEPENDS )
 
 #-------------------------------------------------------------------------------
 # Prepare to build the src

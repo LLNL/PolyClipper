@@ -8,6 +8,7 @@
 
 #include "polyclipper_vector2d.hh"
 #include "polyclipper_vector3d.hh"
+#include "polyclipper_plane.hh"
 
 #include <ostream>
 
@@ -136,6 +137,33 @@ removeElements(std::vector<Value>& vec,
     // Resize vec to it's new size.
     vec.erase(vec.begin() + newSize, vec.end());
   }
+}
+
+//------------------------------------------------------------------------------
+// Compare a plane and point.
+//------------------------------------------------------------------------------
+template<typename VectorType, typename VA>
+inline
+int compare(const Plane<VectorType, VA>& plane,
+            const VectorType& point) {
+  const auto sgndist = plane.dist + VA::dot(plane.normal, point);
+  if (std::abs(sgndist) < 1.0e-10) return 0;
+  return sgn0(sgndist);
+}
+
+//------------------------------------------------------------------------------
+// Intersect a line-segment with a plane.
+//------------------------------------------------------------------------------
+template<typename VectorType, typename VA>
+inline
+VectorType
+segmentPlaneIntersection(const VectorType& a,                   // line-segment begin
+                         const VectorType& b,                   // line-segment end
+                         const Plane<VectorType, VA>& plane) {  // plane
+  const auto asgndist = plane.dist + VA::dot(plane.normal, a);
+  const auto bsgndist = plane.dist + VA::dot(plane.normal, b);
+  assert(asgndist != bsgndist);
+  return (a*bsgndist - b*asgndist)/(bsgndist - asgndist);
 }
 
 }

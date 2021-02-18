@@ -20,7 +20,6 @@
 //
 // Created by J. Michael Owen, Tue Nov 28 10:00:51 PST 2017
 //----------------------------------------------------------------------------//
-
 #include <list>
 #include <map>
 #include <set>
@@ -30,6 +29,7 @@
 #include <iterator>
 #include <algorithm>
 #include <assert.h>
+
 using std::vector;
 using std::list;
 using std::map;
@@ -41,18 +41,6 @@ using std::endl;
 namespace PolyClipper {
 
 namespace {    // anonymous methods
-
-//------------------------------------------------------------------------------
-// Compare a plane and point.
-//------------------------------------------------------------------------------
-template<typename VectorType, typename VA>
-inline
-int compare(const Plane<VectorType, VA>& plane,
-            const VectorType& point) {
-  const auto sgndist = plane.dist + VA::dot(plane.normal, point);
-  if (std::abs(sgndist) < 1.0e-10) return 0;
-  return sgn0(sgndist);
-}
 
 //------------------------------------------------------------------------------
 // Compare a plane and a box (defined by it's min/max coordinates).
@@ -81,21 +69,6 @@ int compare(const Plane<VectorType, VA>& plane,
   } else {
     return  0;
   }
-}
-
-//------------------------------------------------------------------------------
-// Intersect a line-segment with a plane.
-//------------------------------------------------------------------------------
-template<typename VectorType, typename VA>
-inline
-VectorType
-segmentPlaneIntersection(const VectorType& a,                   // line-segment begin
-                         const VectorType& b,                   // line-segment end
-                         const Plane<VectorType, VA>& plane) {  // plane
-  const auto asgndist = plane.dist + VA::dot(plane.normal, a);
-  const auto bsgndist = plane.dist + VA::dot(plane.normal, b);
-  assert(asgndist != bsgndist);
-  return (a*bsgndist - b*asgndist)/(bsgndist - asgndist);
 }
 
 //------------------------------------------------------------------------------
