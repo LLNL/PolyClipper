@@ -6,6 +6,9 @@
 #ifndef __polyclipper_utilities__
 #define __polyclipper_utilities__
 
+#include "polyclipper_vector2d.hh"
+#include "polyclipper_vector3d.hh"
+
 #include <ostream>
 
 namespace PolyClipper {

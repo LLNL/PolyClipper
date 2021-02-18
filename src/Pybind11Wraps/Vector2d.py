@@ -59,7 +59,7 @@ class Vector2d:
         return "double"
 
     @PYB11const
-    def cross(self, rhs="const Vector2d&"):
+    def crossmag(self, rhs="const Vector2d&"):
         "Return the z-value of the cross product as a scalar"
         return "double"
 

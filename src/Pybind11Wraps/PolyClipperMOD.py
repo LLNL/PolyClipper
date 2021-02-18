@@ -8,25 +8,41 @@ from PYB11Generator import *
 import types
 
 # Include files.
-PYB11includes = ['"polyclipper.hh"']
+PYB11includes = ['"polyclipper2d.hh"',
+                 '"polyclipper3d.hh"',
+                 '"polyclipper_vector2d.hh"',
+                 '"polyclipper_vector3d.hh"',
+                 '"polyclipper_plane.hh"']
 
 PYB11namespaces = ["PolyClipper"]
+
+PYB11preamble = """
+using Polygon = std::vector<PolyClipper::Vertex2d<>>;
+using Polyhedron = std::vector<PolyClipper::Vertex3d<>>;
+using Plane2d = PolyClipper::Plane<PolyClipper::Vector2d>;
+using Plane3d = PolyClipper::Plane<PolyClipper::Vector3d>;
+"""
 
 #-------------------------------------------------------------------------------
 # Import the types defined in this module
 #-------------------------------------------------------------------------------
 from Vector2d import *
 from Vector3d import *
-from Plane2d import *
-from Plane3d import *
 from Vertex2d import *
 from Vertex3d import *
+from Plane import *
 
 #-------------------------------------------------------------------------------
 # Polygon & Polyhedron
 #-------------------------------------------------------------------------------
-Polygon    = PYB11_bind_vector("PolyClipper::Vertex2d", opaque=True, local=True)
-Polyhedron = PYB11_bind_vector("PolyClipper::Vertex3d", opaque=True, local=True)
+Polygon    = PYB11_bind_vector("PolyClipper::Vertex2d<>", opaque=True, local=True)
+Polyhedron = PYB11_bind_vector("PolyClipper::Vertex3d<>", opaque=True, local=True)
+
+#-------------------------------------------------------------------------------
+# Plane
+#-------------------------------------------------------------------------------
+Plane2d = PYB11TemplateClass(Plane, template_parameters=("Vector2d", "internal::VectorAdapter<Vector2d>"))
+Plane3d = PYB11TemplateClass(Plane, template_parameters=("Vector3d", "internal::VectorAdapter<Vector3d>"))
 
 #-------------------------------------------------------------------------------
 # Polygon methods.
@@ -37,6 +53,7 @@ def initializePolygon(poly = "Polygon&",
     "Initialize a PolyClipper::Polygon from vertex positions and vertex neighbors."
     return "void"
 
+@PYB11cppname("polygon2string<>")
 def polygon2string(poly = "Polygon&"):
     "Return a formatted string representation for a PolyClipper::Polygon."
     return "std::string"
@@ -79,55 +96,55 @@ The result is returned as a vector<vector<int>>, where each inner vector is a tr
 ints representing vertex indices in the input Polygon."""
     return "std::vector<std::vector<int>>"
 
-#-------------------------------------------------------------------------------
-# Polyhedron methods.
-#-------------------------------------------------------------------------------
-def initializePolyhedron(poly = "Polyhedron&",
-                         positions = "const std::vector<Vector3d>&",
-                         neighbors = "const std::vector<std::vector<int>>&"):
-    "Initialize a PolyClipper::Polyhedron from vertex positions and vertex neighbors."
-    return "void"
+# #-------------------------------------------------------------------------------
+# # Polyhedron methods.
+# #-------------------------------------------------------------------------------
+# def initializePolyhedron(poly = "Polyhedron&",
+#                          positions = "const std::vector<Vector3d>&",
+#                          neighbors = "const std::vector<std::vector<int>>&"):
+#     "Initialize a PolyClipper::Polyhedron from vertex positions and vertex neighbors."
+#     return "void"
 
-def polyhedron2string(poly = "Polyhedron&"):
-    "Return a formatted string representation for a PolyClipper::Polyhedron."
-    return "std::string"
+# def polyhedron2string(poly = "Polyhedron&"):
+#     "Return a formatted string representation for a PolyClipper::Polyhedron."
+#     return "std::string"
 
-@PYB11implementation("""[](const Polyhedron& self) {
-                                                     double zerothMoment;
-                                                     Vector3d firstMoment;
-                                                     moments(zerothMoment, firstMoment, self);
-                                                     return py::make_tuple(zerothMoment, firstMoment);
-                                                   }""")
-@PYB11pycppname("moments")
-def momentsPolyhedron(poly = "const Polyhedron&"):
-    "Compute the zeroth and first moment of a PolyClipper::Polyhedron."
-    return "py::tuple"
+# @PYB11implementation("""[](const Polyhedron& self) {
+#                                                      double zerothMoment;
+#                                                      Vector3d firstMoment;
+#                                                      moments(zerothMoment, firstMoment, self);
+#                                                      return py::make_tuple(zerothMoment, firstMoment);
+#                                                    }""")
+# @PYB11pycppname("moments")
+# def momentsPolyhedron(poly = "const Polyhedron&"):
+#     "Compute the zeroth and first moment of a PolyClipper::Polyhedron."
+#     return "py::tuple"
 
-def clipPolyhedron(poly = "Polyhedron&",
-                   planes = "const std::vector<Plane3d>&"):
-    "Clip a PolyClipper::Polyhedron with a collection of planes."
-    return "void"
+# def clipPolyhedron(poly = "Polyhedron&",
+#                    planes = "const std::vector<Plane3d>&"):
+#     "Clip a PolyClipper::Polyhedron with a collection of planes."
+#     return "void"
 
-@PYB11pycppname("collapseDegenerates")
-def collapseDegeneratesPolyhedron(poly = "Polyhedron&",
-                                  tol = "const double"):
-    "Collapse edges in a PolyClipper::Polyhedron below the given tolerance."
-    return "void"
+# @PYB11pycppname("collapseDegenerates")
+# def collapseDegeneratesPolyhedron(poly = "Polyhedron&",
+#                                   tol = "const double"):
+#     "Collapse edges in a PolyClipper::Polyhedron below the given tolerance."
+#     return "void"
 
-@PYB11pycppname("extractFaces")
-def extractFacesPolyhedron(poly = "const Polyhedron&"):
-    "Compute the faces (as pairs of vertex indices) for the Polyhedron"
-    return "std::vector<std::vector<int>>"
+# @PYB11pycppname("extractFaces")
+# def extractFacesPolyhedron(poly = "const Polyhedron&"):
+#     "Compute the faces (as pairs of vertex indices) for the Polyhedron"
+#     return "std::vector<std::vector<int>>"
 
-@PYB11pycppname("commonFaceClips")
-def commonFaceClipsPolyhedron(poly = "const Polyhedron&",
-                              faces = "const std::vector<std::vector<int>>&"):
-    "Find the common clipping planes for each face"
-    return "std::vector<std::set<int>>"
+# @PYB11pycppname("commonFaceClips")
+# def commonFaceClipsPolyhedron(poly = "const Polyhedron&",
+#                               faces = "const std::vector<std::vector<int>>&"):
+#     "Find the common clipping planes for each face"
+#     return "std::vector<std::set<int>>"
 
-def splitIntoTetrahedra(poly = "const Polyhedron&",
-                        tol = ("const double", "0.0")):
-    """Split a PolyClipper::Polyhedron into tetrahedra.
-The result is returned as a vector<vector<int>>, where each inner vector is a set of four
-ints representing vertex indices in the input Polyhedron."""
-    return "std::vector<std::vector<int>>"
+# def splitIntoTetrahedra(poly = "const Polyhedron&",
+#                         tol = ("const double", "0.0")):
+#     """Split a PolyClipper::Polyhedron into tetrahedra.
+# The result is returned as a vector<vector<int>>, where each inner vector is a set of four
+# ints representing vertex indices in the input Polyhedron."""
+#     return "std::vector<std::vector<int>>"
