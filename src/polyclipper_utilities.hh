@@ -13,6 +13,7 @@
 #include <ostream>
 
 namespace PolyClipper {
+namespace internal {
 
 //------------------------------------------------------------------------------
 // Return the sign of the argument determined as follows:
@@ -166,6 +167,7 @@ segmentPlaneIntersection(const VectorType& a,                   // line-segment 
   return (a*bsgndist - b*asgndist)/(bsgndist - asgndist);
 }
 
+}
 }
 
 //------------------------------------------------------------------------------

@@ -56,10 +56,10 @@ int compare(const Plane<VectorType, VA>& plane,
             const double xmax,
             const double ymax) {
   using Vector = VectorType;
-  const auto c1 = compare(plane, VA::Vector(xmin, ymin));
-  const auto c2 = compare(plane, VA::Vector(xmax, ymin));
-  const auto c3 = compare(plane, VA::Vector(xmax, ymax));
-  const auto c4 = compare(plane, VA::Vector(xmin, ymax));
+  const auto c1 = internal::compare(plane, VA::Vector(xmin, ymin));
+  const auto c2 = internal::compare(plane, VA::Vector(xmax, ymin));
+  const auto c3 = internal::compare(plane, VA::Vector(xmax, ymax));
+  const auto c4 = internal::compare(plane, VA::Vector(xmin, ymax));
   const auto cmin = std::min(c1, std::min(c2, std::min(c3, c4)));
   const auto cmax = std::max(c1, std::max(c2, std::max(c3, c4)));
   if (cmin >= 0) {
@@ -89,10 +89,10 @@ segmentsIntersect(const VectorType& a,
   cdplane.dist = VA::dot(-c, cdplane.normal);
 
   // Does the (a,b) segment straddle the plane?
-  if (compare(cdplane, a)*compare(cdplane, b) == 1) return false;
+  if (internal::compare(cdplane, a)*internal::compare(cdplane, b) == 1) return false;
 
   // Is the point where (a,b) intersects the plane between (c,d)?
-  const auto g = segmentPlaneIntersection(a, b, cdplane);
+  const auto g = internal::segmentPlaneIntersection(a, b, cdplane);
   return VA::dot(VA::sub(c, g), VA::sub(d, g)) <= 0;
 }
 
@@ -264,7 +264,7 @@ void clipPolygon(std::vector<Vertex2d<VectorType, VA>>& polygon,
     // Check the current set of vertices against this plane.
     if (not (above or below)) {
       for (auto& v: polygon) {
-        v.comp = compare(plane, v.position);
+        v.comp = internal::compare(plane, v.position);
         if (v.comp == 1) {
           below = false;
         } else if (v.comp == -1) {
@@ -302,9 +302,9 @@ void clipPolygon(std::vector<Vertex2d<VectorType, VA>>& polygon,
         if ((polygon[v].comp)*(polygon[vnext].comp) == -1) {
           // This pair straddles the plane and creates a new vertex.
           vnew = polygon.size();
-          polygon.push_back(Vertex(segmentPlaneIntersection(polygon[v].position,
-                                                            polygon[vnext].position,
-                                                            plane),
+          polygon.push_back(Vertex(internal::segmentPlaneIntersection(polygon[v].position,
+                                                                      polygon[vnext].position,
+                                                                      plane),
                                    2));         // 2 indicates new vertex
           polygon[vnew].neighbors = {v, vnext};
           polygon[vnew].clips.insert(plane.ID);
@@ -416,7 +416,7 @@ void clipPolygon(std::vector<Vertex2d<VectorType, VA>>& polygon,
             polygon[k].neighbors.second = polygon[polygon[k].neighbors.second].ID;
           }
         }
-        removeElements(polygon, verts2kill);
+        internal::removeElements(polygon, verts2kill);
       }
       double V1;
       Vector C1;

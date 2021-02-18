@@ -62,14 +62,14 @@ int compare(const Plane<VectorType, VA>& plane,
             const double ymax,
             const double zmax) {
   using Vector = VectorType;
-  const auto c1 = compare(plane, VA::Vector(xmin, ymin, zmin));
-  const auto c2 = compare(plane, VA::Vector(xmax, ymin, zmin));
-  const auto c3 = compare(plane, VA::Vector(xmax, ymax, zmin));
-  const auto c4 = compare(plane, VA::Vector(xmin, ymax, zmin));
-  const auto c5 = compare(plane, VA::Vector(xmin, ymin, zmax));
-  const auto c6 = compare(plane, VA::Vector(xmax, ymin, zmax));
-  const auto c7 = compare(plane, VA::Vector(xmax, ymax, zmax));
-  const auto c8 = compare(plane, VA::Vector(xmin, ymax, zmax));
+  const auto c1 = internal::compare(plane, VA::Vector(xmin, ymin, zmin));
+  const auto c2 = internal::compare(plane, VA::Vector(xmax, ymin, zmin));
+  const auto c3 = internal::compare(plane, VA::Vector(xmax, ymax, zmin));
+  const auto c4 = internal::compare(plane, VA::Vector(xmin, ymax, zmin));
+  const auto c5 = internal::compare(plane, VA::Vector(xmin, ymin, zmax));
+  const auto c6 = internal::compare(plane, VA::Vector(xmax, ymin, zmax));
+  const auto c7 = internal::compare(plane, VA::Vector(xmax, ymax, zmax));
+  const auto c8 = internal::compare(plane, VA::Vector(xmin, ymax, zmax));
   const auto cmin = min(c1, min(c2, min(c3, min(c4, min(c5, min(c6, min(c7, c8)))))));
   const auto cmax = max(c1, max(c2, max(c3, max(c4, max(c5, max(c6, max(c7, c8)))))));
   if (cmin >= 0) {
@@ -231,7 +231,7 @@ void moments(double& zerothMoment, VectorType& firstMoment,
       }
     }
     zerothMoment /= 6.0;
-    VA::imul(firstMoment, safeInv(24.0*zerothMoment));
+    VA::imul(firstMoment, internal::safeInv(24.0*zerothMoment));
     VA::iadd(firstMoment, origin);
   }
 }
@@ -289,7 +289,7 @@ void clipPolyhedron(std::vector<Vertex3d<VectorType, VA>>& polyhedron,
     // Also keep track of any vertices that landed exactly in-plane.
     if (not (above or below)) {
       for (auto& v: polyhedron) {
-        v.comp = compare(plane, v.position);
+        v.comp = internal::compare(plane, v.position);
         if (v.comp == 1) {
           below = false;
         } else if (v.comp == -1) {
@@ -323,9 +323,9 @@ void clipPolyhedron(std::vector<Vertex3d<VectorType, VA>>& polyhedron,
 
               // This edge straddles the clip plane, so insert a new vertex.
               inew = polyhedron.size();
-              polyhedron.push_back(Vertex(segmentPlaneIntersection(polyhedron[i].position,
-                                                                   polyhedron[jn].position,
-                                                                   plane),
+              polyhedron.push_back(Vertex(internal::segmentPlaneIntersection(polyhedron[i].position,
+                                                                             polyhedron[jn].position,
+                                                                             plane),
                                           2));         // 2 indicates new vertex
               assert (polyhedron.size() == inew + 1);
               polyhedron[inew].neighbors = vector<int>({jn, i});
