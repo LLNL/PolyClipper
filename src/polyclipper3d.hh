@@ -40,10 +40,9 @@ namespace PolyClipper {
 // The 3D vertex struct, which we use to encode polyhedra, i.e., 
 // polyhedra are specified as std::vector<Vertex3d>.
 //------------------------------------------------------------------------------
-template<typename VectorType = Vector3d,
-         typename VA = internal::VectorAdapter<Vector3d>>
+template<typename VA = internal::VectorAdapter<Vector3d>>
 struct Vertex3d {
-  using Vector = VectorType;
+  using Vector = typename VA::VECTOR;
   Vector position;
   std::vector<int> neighbors;
   int comp;
@@ -65,41 +64,36 @@ struct Vertex3d {
 //------------------------------------------------------------------------------
 // Initialize a polyhedron given the vertex coordinates and connectivity.
 //------------------------------------------------------------------------------
-template<typename VectorType = Vector3d,
-         typename VA = internal::VectorAdapter<Vector3d>>
-void initializePolyhedron(std::vector<Vertex3d<VectorType, VA>>& poly,
-                          const std::vector<VectorType>& positions,
+template<typename VA = internal::VectorAdapter<Vector3d>>
+void initializePolyhedron(std::vector<Vertex3d<VA>>& poly,
+                          const std::vector<typename VA::VECTOR>& positions,
                           const std::vector<std::vector<int>>& neighbors);
 
 //------------------------------------------------------------------------------
 // Return a nicely formatted string representing the polyhedron.
 //------------------------------------------------------------------------------
-template<typename VectorType = Vector3d,
-         typename VA = internal::VectorAdapter<Vector3d>>
-std::string polyhedron2string(const std::vector<Vertex3d<VectorType, VA>>& poly);
+template<typename VA = internal::VectorAdapter<Vector3d>>
+std::string polyhedron2string(const std::vector<Vertex3d<VA>>& poly);
 
 //------------------------------------------------------------------------------
 // Compute the zeroth and first moment of a Polyhedron.
 //------------------------------------------------------------------------------
-template<typename VectorType = Vector3d,
-         typename VA = internal::VectorAdapter<Vector3d>>
-void moments(double& zerothMoment, VectorType& firstMoment,
-             const std::vector<Vertex3d<VectorType, VA>>& polyhedron);
+template<typename VA = internal::VectorAdapter<Vector3d>>
+void moments(double& zerothMoment, typename VA::VECTOR& firstMoment,
+             const std::vector<Vertex3d<VA>>& polyhedron);
 
 //------------------------------------------------------------------------------
 // Clip a polyhedron by planes.
 //------------------------------------------------------------------------------
-template<typename VectorType = Vector3d,
-         typename VA = internal::VectorAdapter<Vector3d>>
-void clipPolyhedron(std::vector<Vertex3d<VectorType, VA>>& poly,
-                    const std::vector<Plane<VectorType, VA>>& planes);
+template<typename VA = internal::VectorAdapter<Vector3d>>
+void clipPolyhedron(std::vector<Vertex3d<VA>>& poly,
+                    const std::vector<Plane<VA>>& planes);
 
 //------------------------------------------------------------------------------
 // Collapse degenerate vertices.
 //------------------------------------------------------------------------------
-template<typename VectorType = Vector3d,
-         typename VA = internal::VectorAdapter<Vector3d>>
-void collapseDegenerates(std::vector<Vertex3d<VectorType, VA>>& poly,
+template<typename VA = internal::VectorAdapter<Vector3d>>
+void collapseDegenerates(std::vector<Vertex3d<VA>>& poly,
                          const double tol);
 
 //------------------------------------------------------------------------------
@@ -107,24 +101,21 @@ void collapseDegenerates(std::vector<Vertex3d<VectorType, VA>>& poly,
 // Implicitly uses the convention that neighbors for each vertex are arranged
 // counter-clockwise viewed from the exterior.
 //------------------------------------------------------------------------------
-template<typename VectorType = Vector3d,
-         typename VA = internal::VectorAdapter<Vector3d>>
-std::vector<std::vector<int>> extractFaces(const std::vector<Vertex3d<VectorType, VA>>& poly);
+template<typename VA = internal::VectorAdapter<Vector3d>>
+std::vector<std::vector<int>> extractFaces(const std::vector<Vertex3d<VA>>& poly);
 
 //------------------------------------------------------------------------------
 // Compute the set of clips common to each face.
 //------------------------------------------------------------------------------
-template<typename VectorType = Vector3d,
-         typename VA = internal::VectorAdapter<Vector3d>>
-std::vector<std::set<int>> commonFaceClips(const std::vector<Vertex3d<VectorType, VA>>& poly,
+template<typename VA = internal::VectorAdapter<Vector3d>>
+std::vector<std::set<int>> commonFaceClips(const std::vector<Vertex3d<VA>>& poly,
                                            const std::vector<std::vector<int>>& faces);
 
 //------------------------------------------------------------------------------
 // Split a polyhedron into a set of tetrahedra.
 //------------------------------------------------------------------------------
-template<typename VectorType = Vector3d,
-         typename VA = internal::VectorAdapter<Vector3d>>
-std::vector<std::vector<int>> splitIntoTetrahedra(const std::vector<Vertex3d<VectorType, VA>>& poly, 
+template<typename VA = internal::VectorAdapter<Vector3d>>
+std::vector<std::vector<int>> splitIntoTetrahedra(const std::vector<Vertex3d<VA>>& poly, 
                                                   const double tol = 0.0);
 
 

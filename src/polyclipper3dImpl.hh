@@ -52,24 +52,24 @@ namespace {    // anonymous methods
 //    0 ==> plane cuts through box
 //    1 ==> box above plane
 //------------------------------------------------------------------------------
-template<typename VectorType, typename VA>
+template<typename VA>
 inline
-int compare(const Plane<VectorType, VA>& plane,
+int compare(const Plane<VA>& plane,
             const double xmin,
             const double ymin,
             const double zmin,
             const double xmax,
             const double ymax,
             const double zmax) {
-  using Vector = VectorType;
-  const auto c1 = internal::compare(plane, VA::Vector(xmin, ymin, zmin));
-  const auto c2 = internal::compare(plane, VA::Vector(xmax, ymin, zmin));
-  const auto c3 = internal::compare(plane, VA::Vector(xmax, ymax, zmin));
-  const auto c4 = internal::compare(plane, VA::Vector(xmin, ymax, zmin));
-  const auto c5 = internal::compare(plane, VA::Vector(xmin, ymin, zmax));
-  const auto c6 = internal::compare(plane, VA::Vector(xmax, ymin, zmax));
-  const auto c7 = internal::compare(plane, VA::Vector(xmax, ymax, zmax));
-  const auto c8 = internal::compare(plane, VA::Vector(xmin, ymax, zmax));
+  using Vector = typename VA::VECTOR;
+  const auto c1 = internal::compare<VA>(plane, VA::Vector(xmin, ymin, zmin));
+  const auto c2 = internal::compare<VA>(plane, VA::Vector(xmax, ymin, zmin));
+  const auto c3 = internal::compare<VA>(plane, VA::Vector(xmax, ymax, zmin));
+  const auto c4 = internal::compare<VA>(plane, VA::Vector(xmin, ymax, zmin));
+  const auto c5 = internal::compare<VA>(plane, VA::Vector(xmin, ymin, zmax));
+  const auto c6 = internal::compare<VA>(plane, VA::Vector(xmax, ymin, zmax));
+  const auto c7 = internal::compare<VA>(plane, VA::Vector(xmax, ymax, zmax));
+  const auto c8 = internal::compare<VA>(plane, VA::Vector(xmin, ymax, zmax));
   const auto cmin = min(c1, min(c2, min(c3, min(c4, min(c5, min(c6, min(c7, c8)))))));
   const auto cmax = max(c1, max(c2, max(c3, max(c4, max(c5, max(c6, max(c7, c8)))))));
   if (cmin >= 0) {
@@ -127,10 +127,10 @@ inPlaceSetIntersection(set<int>& a, const set<int>& b) {
 //------------------------------------------------------------------------------
 // Initialize a polyhedron given the vertex coordinates and connectivity.
 //------------------------------------------------------------------------------
-template<typename VectorType, typename VA>
+template<typename VA>
 void
-initializePolyhedron(std::vector<Vertex3d<VectorType, VA>>& poly,
-                     const vector<VectorType>& positions,
+initializePolyhedron(std::vector<Vertex3d<VA>>& poly,
+                     const vector<typename VA::VECTOR>& positions,
                      const vector<vector<int>>& neighbors) {
 
   // Pre-conditions
@@ -147,9 +147,9 @@ initializePolyhedron(std::vector<Vertex3d<VectorType, VA>>& poly,
 //------------------------------------------------------------------------------
 // Return a nicely formatted string representing the polyhedron.
 //------------------------------------------------------------------------------
-template<typename VectorType, typename VA>
+template<typename VA>
 std::string
-polyhedron2string(const std::vector<Vertex3d<VectorType, VA>>& poly) {
+polyhedron2string(const std::vector<Vertex3d<VA>>& poly) {
 
   std::ostringstream s;
   const auto nverts = poly.size();
@@ -165,36 +165,15 @@ polyhedron2string(const std::vector<Vertex3d<VectorType, VA>>& poly) {
   return s.str();
 }
 
-// std::string
-// polyhedron2string(const Polyhedron& poly) {
-//   ostringstream s;
-//   s << "[";
-
-//   // Get the vertices in face ordering.
-//   const vector<vector<const Vertex3d*>> faces;
-
-//   // Now output the face vertex coordinates.
-//   for (const auto& face: faces) {
-//     s << "[";
-//     for (const auto vptr: face) {
-//       s << " " << vptr->position;
-//     }
-//     s << "]\n ";
-//   }
-//   s << "]";
-
-//   return s.str();
-// }
-
 //------------------------------------------------------------------------------
 // Compute the zeroth and first moment of a Polyhedron.
 //------------------------------------------------------------------------------
-template<typename VectorType, typename VA>
-void moments(double& zerothMoment, VectorType& firstMoment,
-             const std::vector<Vertex3d<VectorType, VA>>& polyhedron) {
+template<typename VA>
+void moments(double& zerothMoment, typename VA::VECTOR& firstMoment,
+             const std::vector<Vertex3d<VA>>& polyhedron) {
 
   // Useful types.
-  using Vector = VectorType;
+  using Vector = typename VA::VECTOR;
 
   // Clear the result for accumulation.
   zerothMoment = 0.0;
@@ -239,14 +218,14 @@ void moments(double& zerothMoment, VectorType& firstMoment,
 //------------------------------------------------------------------------------
 // Clip a polyhedron by planes.
 //------------------------------------------------------------------------------
-template<typename VectorType, typename VA>
-void clipPolyhedron(std::vector<Vertex3d<VectorType, VA>>& polyhedron,
-                    const std::vector<Plane<VectorType, VA>>& planes) {
+template<typename VA>
+void clipPolyhedron(std::vector<Vertex3d<VA>>& polyhedron,
+                    const std::vector<Plane<VA>>& planes) {
 
   // Pre-declare variables.  Normally I prefer local declaration, but this
   // seems to slightly help performance.
-  using Vector = VectorType;
-  using Vertex = Vertex3d<VectorType, VA>;
+  using Vector = typename VA::VECTOR;
+  using Vertex = Vertex3d<VA>;
   bool above, below;
   int nverts0, nverts, nneigh, i, j, k, jn, inew, iprev, inext, itmp;
   vector<int>::iterator nitr;
@@ -289,7 +268,7 @@ void clipPolyhedron(std::vector<Vertex3d<VectorType, VA>>& polyhedron,
     // Also keep track of any vertices that landed exactly in-plane.
     if (not (above or below)) {
       for (auto& v: polyhedron) {
-        v.comp = internal::compare(plane, v.position);
+        v.comp = internal::compare<VA>(plane, v.position);
         if (v.comp == 1) {
           below = false;
         } else if (v.comp == -1) {
@@ -481,11 +460,11 @@ void clipPolyhedron(std::vector<Vertex3d<VectorType, VA>>& polyhedron,
 //------------------------------------------------------------------------------
 // Collapse degenerate vertices.
 //------------------------------------------------------------------------------
-template<typename VectorType, typename VA>
-void collapseDegenerates(std::vector<Vertex3d<VectorType, VA>>& polyhedron,
+template<typename VA>
+void collapseDegenerates(std::vector<Vertex3d<VA>>& polyhedron,
                          const double tol) {
 
-  using Vertex = Vertex3d<VectorType, VA>;
+  using Vertex = Vertex3d<VA>;
   const auto tol2 = tol*tol;
   auto n = polyhedron.size();
   if (n > 0) {
@@ -605,9 +584,9 @@ void collapseDegenerates(std::vector<Vertex3d<VectorType, VA>>& polyhedron,
 // Implicitly uses the convention that neighbors for each vertex are arranged
 // counter-clockwise viewed from the exterior.
 //------------------------------------------------------------------------------
-template<typename VectorType, typename VA>
+template<typename VA>
 vector<vector<int>>
-extractFaces(const std::vector<Vertex3d<VectorType, VA>>& poly) {
+extractFaces(const std::vector<Vertex3d<VA>>& poly) {
 
   using Edge = pair<int, int>;
   using Face = vector<int>;
@@ -693,9 +672,9 @@ extractFaces(const std::vector<Vertex3d<VectorType, VA>>& poly) {
 //------------------------------------------------------------------------------
 // Compute the set of clips common to each face.
 //------------------------------------------------------------------------------
-template<typename VectorType, typename VA>
+template<typename VA>
 vector<set<int>>
-commonFaceClips(const std::vector<Vertex3d<VectorType, VA>>& poly,
+commonFaceClips(const std::vector<Vertex3d<VA>>& poly,
                 const vector<vector<int>>& faceVertices) {
   const auto nfaces = faceVertices.size();
   vector<set<int>> faceClips(nfaces);
@@ -713,8 +692,8 @@ commonFaceClips(const std::vector<Vertex3d<VectorType, VA>>& poly,
 //------------------------------------------------------------------------------
 // Split a polyhedron into a set of tetrahedra.
 //------------------------------------------------------------------------------
-template<typename VectorType, typename VA>
-vector<vector<int>> splitIntoTetrahedra(const std::vector<Vertex3d<VectorType, VA>>& poly,
+template<typename VA>
+vector<vector<int>> splitIntoTetrahedra(const std::vector<Vertex3d<VA>>& poly,
                                         const double tol) {
 
   // Prepare the result, which will be quadruples of indices in the input polyhedron vertices.

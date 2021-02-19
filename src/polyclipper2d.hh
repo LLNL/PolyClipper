@@ -40,10 +40,9 @@ namespace PolyClipper {
 // The 2D vertex struct, which we use to encode polygons, i.e., 
 // polygons are specified as std::vector<Vertex2d>.
 //------------------------------------------------------------------------------
-template<typename VectorType = Vector2d,
-         typename VA = internal::VectorAdapter<Vector2d>>
+template<typename VA = internal::VectorAdapter<Vector2d>>
 struct Vertex2d {
-  using Vector = VectorType;
+  using Vector = typename VA::VECTOR;
   Vector position;
   std::pair<int, int> neighbors;
   int comp;
@@ -65,64 +64,56 @@ struct Vertex2d {
 //------------------------------------------------------------------------------
 // Initialize a polygon given the vertex coordinates and connectivity.
 //------------------------------------------------------------------------------
-template<typename VectorType = Vector2d,
-         typename VA = internal::VectorAdapter<Vector2d>>
-void initializePolygon(std::vector<Vertex2d<VectorType, VA>>& poly,
-                       const std::vector<VectorType>& positions,
+template<typename VA = internal::VectorAdapter<Vector2d>>
+void initializePolygon(std::vector<Vertex2d<VA>>& poly,
+                       const std::vector<typename VA::VECTOR>& positions,
                        const std::vector<std::vector<int>>& neighbors);
 
 //------------------------------------------------------------------------------
 // Return a nicely formatted string representing the polygon.
 //------------------------------------------------------------------------------
-template<typename VectorType = Vector2d,
-         typename VA = internal::VectorAdapter<Vector2d>>
-std::string polygon2string(const std::vector<Vertex2d<VectorType, VA>>& poly);
+template<typename VA = internal::VectorAdapter<Vector2d>>
+std::string polygon2string(const std::vector<Vertex2d<VA>>& poly);
 
 //------------------------------------------------------------------------------
 // Compute the zeroth and first moment of a Polygon.
 //------------------------------------------------------------------------------
-template<typename VectorType = Vector2d,
-         typename VA = internal::VectorAdapter<Vector2d>>
-void moments(double& zerothMoment, VectorType& firstMoment,
-             const std::vector<Vertex2d<VectorType, VA>>& polygon);
+template<typename VA = internal::VectorAdapter<Vector2d>>
+void moments(double& zerothMoment, typename VA::VECTOR& firstMoment,
+             const std::vector<Vertex2d<VA>>& polygon);
 
 //------------------------------------------------------------------------------
 // Clip a polygon by planes.
 //------------------------------------------------------------------------------
-template<typename VectorType = Vector2d,
-         typename VA = internal::VectorAdapter<Vector2d>>
-void clipPolygon(std::vector<Vertex2d<VectorType, VA>>& poly,
-                 const std::vector<Plane<VectorType, VA>>& planes);
+template<typename VA = internal::VectorAdapter<Vector2d>>
+void clipPolygon(std::vector<Vertex2d<VA>>& poly,
+                 const std::vector<Plane<VA>>& planes);
 
 //------------------------------------------------------------------------------
 // Collapse degenerate vertices.
 //------------------------------------------------------------------------------
-template<typename VectorType = Vector2d,
-         typename VA = internal::VectorAdapter<Vector2d>>
-void collapseDegenerates(std::vector<Vertex2d<VectorType, VA>>& poly,
+template<typename VA = internal::VectorAdapter<Vector2d>>
+void collapseDegenerates(std::vector<Vertex2d<VA>>& poly,
                          const double tol);
 
 //------------------------------------------------------------------------------
 // Return the vertices ordered in faces.
 //------------------------------------------------------------------------------
-template<typename VectorType = Vector2d,
-         typename VA = internal::VectorAdapter<Vector2d>>
-std::vector<std::vector<int>> extractFaces(const std::vector<Vertex2d<VectorType, VA>>& poly);
+template<typename VA = internal::VectorAdapter<Vector2d>>
+std::vector<std::vector<int>> extractFaces(const std::vector<Vertex2d<VA>>& poly);
 
 //------------------------------------------------------------------------------
 // Compute the set of clips common to each face.
 //------------------------------------------------------------------------------
-template<typename VectorType = Vector2d,
-         typename VA = internal::VectorAdapter<Vector2d>>
-std::vector<std::set<int>> commonFaceClips(const std::vector<Vertex2d<VectorType, VA>>& poly,
+template<typename VA = internal::VectorAdapter<Vector2d>>
+std::vector<std::set<int>> commonFaceClips(const std::vector<Vertex2d<VA>>& poly,
                                            const std::vector<std::vector<int>>& faces);
 
 //------------------------------------------------------------------------------
 // Split a polygon into a set of triangles.
 //------------------------------------------------------------------------------
-template<typename VectorType = Vector2d,
-         typename VA = internal::VectorAdapter<Vector2d>>
-std::vector<std::vector<int>> splitIntoTriangles(const std::vector<Vertex2d<VectorType, VA>>& poly,
+template<typename VA = internal::VectorAdapter<Vector2d>>
+std::vector<std::vector<int>> splitIntoTriangles(const std::vector<Vertex2d<VA>>& poly,
                                                  const double tol = 0.0);
 
 }

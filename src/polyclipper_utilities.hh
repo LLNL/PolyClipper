@@ -143,10 +143,10 @@ removeElements(std::vector<Value>& vec,
 //------------------------------------------------------------------------------
 // Compare a plane and point.
 //------------------------------------------------------------------------------
-template<typename VectorType, typename VA>
+template<typename VA>
 inline
-int compare(const Plane<VectorType, VA>& plane,
-            const VectorType& point) {
+int compare(const Plane<VA>& plane,
+            const typename VA::VECTOR& point) {
   const auto sgndist = plane.dist + VA::dot(plane.normal, point);
   if (std::abs(sgndist) < 1.0e-10) return 0;
   return sgn0(sgndist);
@@ -155,12 +155,12 @@ int compare(const Plane<VectorType, VA>& plane,
 //------------------------------------------------------------------------------
 // Intersect a line-segment with a plane.
 //------------------------------------------------------------------------------
-template<typename VectorType, typename VA>
+template<typename VA>
 inline
-VectorType
-segmentPlaneIntersection(const VectorType& a,                   // line-segment begin
-                         const VectorType& b,                   // line-segment end
-                         const Plane<VectorType, VA>& plane) {  // plane
+typename VA::VECTOR
+segmentPlaneIntersection(const typename VA::VECTOR& a,         // line-segment begin
+                         const typename VA::VECTOR& b,         // line-segment end
+                         const Plane<VA>& plane) { // plane
   const auto asgndist = plane.dist + VA::dot(plane.normal, a);
   const auto bsgndist = plane.dist + VA::dot(plane.normal, b);
   assert(asgndist != bsgndist);

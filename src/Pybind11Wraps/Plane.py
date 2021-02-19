@@ -1,6 +1,6 @@
 from PYB11Generator import *
 
-@PYB11template("VectorType", "VA")
+@PYB11template("VA")
 class Plane:
     """The PolyClipper plane.
 
@@ -23,7 +23,7 @@ Planes also optionally keep an integer ID, which is used during clipping
 operations to track which plane(s) are responsible for each vertex."""
 
     PYB11typedefs = """
-    using Vector = %(VectorType)s;
+    using Vector = typename %(VA)s::VECTOR;
 """
 
     #---------------------------------------------------------------------------
@@ -49,7 +49,7 @@ operations to track which plane(s) are responsible for each vertex."""
         "Construct using a point in the plane (p), unit normal (nhat), plane ID (id)"
 
     def pyinit4(self,
-                rhs = "const Plane<%(VectorType)s, %(VA)s>&"):
+                rhs = "const Plane<%(VA)s>&"):
         "Copy constructor"
         
     #---------------------------------------------------------------------------
@@ -70,7 +70,7 @@ operations to track which plane(s) are responsible for each vertex."""
     #---------------------------------------------------------------------------
     # Methods
     #---------------------------------------------------------------------------
-    @PYB11implementation('''[](const Plane<%(VectorType)s, %(VA)s>& self) { return "{" + std::to_string(self.dist) + ", (" + std::to_string(self.normal.x) + ", " + std::to_string(self.normal.y) + ")}"; }''')
+    @PYB11implementation('''[](const Plane<%(VA)s>& self) { return "{" + std::to_string(self.dist) + ", (" + std::to_string(self.normal.x) + ", " + std::to_string(self.normal.y) + ")}"; }''')
     def __repr__(self):
         return
 

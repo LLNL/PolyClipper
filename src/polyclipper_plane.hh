@@ -6,10 +6,9 @@
 
 namespace PolyClipper {
 
-template<typename VectorType,
-         typename VA = internal::VectorAdapter<VectorType>>
+template<typename VA>
 struct Plane {
-  using Vector = VectorType;
+  using Vector = typename VA::VECTOR;
   double dist;                       // Signed distance to the origin
   Vector normal;                     // Unit normal
   int ID;                            // ID for the plane, used to label vertices

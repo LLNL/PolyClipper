@@ -48,18 +48,18 @@ namespace {    // anonymous methods
 //    0 ==> plane cuts through box
 //    1 ==> box above plane
 //------------------------------------------------------------------------------
-template<typename VectorType, typename VA>
+template<typename VA>
 inline
-int compare(const Plane<VectorType, VA>& plane,
+int compare(const Plane<VA>& plane,
             const double xmin,
             const double ymin,
             const double xmax,
             const double ymax) {
-  using Vector = VectorType;
-  const auto c1 = internal::compare(plane, VA::Vector(xmin, ymin));
-  const auto c2 = internal::compare(plane, VA::Vector(xmax, ymin));
-  const auto c3 = internal::compare(plane, VA::Vector(xmax, ymax));
-  const auto c4 = internal::compare(plane, VA::Vector(xmin, ymax));
+  using Vector = typename VA::VECTOR;
+  const auto c1 = internal::compare<VA>(plane, VA::Vector(xmin, ymin));
+  const auto c2 = internal::compare<VA>(plane, VA::Vector(xmax, ymin));
+  const auto c3 = internal::compare<VA>(plane, VA::Vector(xmax, ymax));
+  const auto c4 = internal::compare<VA>(plane, VA::Vector(xmin, ymax));
   const auto cmin = std::min(c1, std::min(c2, std::min(c3, c4)));
   const auto cmax = std::max(c1, std::max(c2, std::max(c3, c4)));
   if (cmin >= 0) {
@@ -74,14 +74,14 @@ int compare(const Plane<VectorType, VA>& plane,
 //------------------------------------------------------------------------------
 // Check if two line segments intersect.
 //------------------------------------------------------------------------------
-template<typename VectorType, typename VA>
+template<typename VA>
 inline
 bool
-segmentsIntersect(const VectorType& a,
-                  const VectorType& b,
-                  const VectorType& c,
-                  const VectorType& d) {
-  using PlaneType = Plane<VectorType, VA>;
+segmentsIntersect(const typename VA::VECTOR& a,
+                  const typename VA::VECTOR& b,
+                  const typename VA::VECTOR& c,
+                  const typename VA::VECTOR& d) {
+  using PlaneType = Plane<VA>;
 
   // The plane in the (c,c) orientation.
   PlaneType cdplane;
@@ -89,7 +89,7 @@ segmentsIntersect(const VectorType& a,
   cdplane.dist = VA::dot(-c, cdplane.normal);
 
   // Does the (a,b) segment straddle the plane?
-  if (internal::compare(cdplane, a)*internal::compare(cdplane, b) == 1) return false;
+  if (internal::compare<VA>(cdplane, a)*internal::compare<VA>(cdplane, b) == 1) return false;
 
   // Is the point where (a,b) intersects the plane between (c,d)?
   const auto g = internal::segmentPlaneIntersection(a, b, cdplane);
@@ -99,12 +99,12 @@ segmentsIntersect(const VectorType& a,
 //------------------------------------------------------------------------------
 // Check if a line segment intersects the polygon.
 //------------------------------------------------------------------------------
-template<typename VectorType, typename VA>
+template<typename VA>
 inline
 bool
-intersect(const VectorType& a,                                 // line-segment begin
-          const VectorType& b,                                 // line-segment end
-          const std::vector<Vertex2d<VectorType, VA>>& poly) { // Polygon
+intersect(const typename VA::VECTOR& a,            // line-segment begin
+          const typename VA::VECTOR& b,            // line-segment end
+          const std::vector<Vertex2d<VA>>& poly) { // Polygon
   auto result = false;
   const auto n = poly.size();
   auto i = 0;
@@ -119,10 +119,10 @@ intersect(const VectorType& a,                                 // line-segment b
 //------------------------------------------------------------------------------
 // Initialize a polygon given the vertex coordinates and connectivity.
 //------------------------------------------------------------------------------
-template<typename VectorType, typename VA>
+template<typename VA>
 void
-initializePolygon(std::vector<Vertex2d<VectorType, VA>>& poly,
-                  const vector<VectorType>& positions,
+initializePolygon(std::vector<Vertex2d<VA>>& poly,
+                  const vector<typename VA::VECTOR>& positions,
                   const vector<vector<int>>& neighbors) {
 
   // Pre-conditions
@@ -139,10 +139,10 @@ initializePolygon(std::vector<Vertex2d<VectorType, VA>>& poly,
 //------------------------------------------------------------------------------
 // Return a nicely formatted string representing the polygon.
 //------------------------------------------------------------------------------
-template<typename VectorType, typename VA>
+template<typename VA>
 std::string
-polygon2string(const std::vector<Vertex2d<VectorType, VA>>& poly) {
-  using Vertex = Vertex2d<VectorType, VA>;
+polygon2string(const std::vector<Vertex2d<VA>>& poly) {
+  using Vertex = Vertex2d<VA>;
 
   // Numbers of vertices.
   const auto nverts = poly.size();
@@ -191,12 +191,12 @@ polygon2string(const std::vector<Vertex2d<VectorType, VA>>& poly) {
 //------------------------------------------------------------------------------
 // Compute the zeroth and first moment of a Polygon.
 //------------------------------------------------------------------------------
-template<typename VectorType, typename VA>
-void moments(double& zerothMoment, VectorType& firstMoment,
-             const std::vector<Vertex2d<VectorType, VA>>& polygon) {
+template<typename VA>
+void moments(double& zerothMoment, typename VA::VECTOR& firstMoment,
+             const std::vector<Vertex2d<VA>>& polygon) {
 
   // Useful types.
-  using Vector = VectorType;
+  using Vector = typename VA::VECTOR;
   const double nearlyZero = 1.0e-15;
 
   // Clear the result for accumulation.
@@ -222,13 +222,13 @@ void moments(double& zerothMoment, VectorType& firstMoment,
 //------------------------------------------------------------------------------
 // Clip a polygon by planes.
 //------------------------------------------------------------------------------
-template<typename VectorType, typename VA>
-void clipPolygon(std::vector<Vertex2d<VectorType, VA>>& polygon,
-                 const std::vector<Plane<VectorType, VA>>& planes) {
+template<typename VA>
+void clipPolygon(std::vector<Vertex2d<VA>>& polygon,
+                 const std::vector<Plane<VA>>& planes) {
 
   // Useful types.
-  using Vector = VectorType;
-  using Vertex = Vertex2d<VectorType, VA>;
+  using Vector = typename VA::VECTOR;
+  using Vertex = Vertex2d<VA>;
   const double nearlyZero = 1.0e-15;
 
   // Check the input.
@@ -264,7 +264,7 @@ void clipPolygon(std::vector<Vertex2d<VectorType, VA>>& polygon,
     // Check the current set of vertices against this plane.
     if (not (above or below)) {
       for (auto& v: polygon) {
-        v.comp = internal::compare(plane, v.position);
+        v.comp = internal::compare<VA>(plane, v.position);
         if (v.comp == 1) {
           below = false;
         } else if (v.comp == -1) {
@@ -435,11 +435,11 @@ void clipPolygon(std::vector<Vertex2d<VectorType, VA>>& polygon,
 //------------------------------------------------------------------------------
 // Collapse degenerate vertices.
 //------------------------------------------------------------------------------
-template<typename VectorType, typename VA>
-void collapseDegenerates(std::vector<Vertex2d<VectorType, VA>>& polygon,
+template<typename VA>
+void collapseDegenerates(std::vector<Vertex2d<VA>>& polygon,
                          const double tol) {
 
-  using VertexType = Vertex2d<VectorType, VA>;
+  using VertexType = Vertex2d<VA>;
 
   const auto tol2 = tol*tol;
   auto n = polygon.size();
@@ -535,11 +535,11 @@ void collapseDegenerates(std::vector<Vertex2d<VectorType, VA>>& polygon,
 //------------------------------------------------------------------------------
 // Return the vertices ordered in faces.
 //------------------------------------------------------------------------------
-template<typename VectorType, typename VA>
+template<typename VA>
 vector<vector<int>>
-extractFaces(const std::vector<Vertex2d<VectorType, VA>>& poly) {
+extractFaces(const std::vector<Vertex2d<VA>>& poly) {
 
-  using VertexType = Vertex2d<VectorType, VA>;
+  using VertexType = Vertex2d<VA>;
   
   // Numbers of vertices.
   const auto nverts = poly.size();
@@ -582,9 +582,9 @@ extractFaces(const std::vector<Vertex2d<VectorType, VA>>& poly) {
 //------------------------------------------------------------------------------
 // Compute the set of clips common to each face.
 //------------------------------------------------------------------------------
-template<typename VectorType, typename VA>
+template<typename VA>
 vector<set<int>>
-commonFaceClips(const std::vector<Vertex2d<VectorType, VA>>& poly,
+commonFaceClips(const std::vector<Vertex2d<VA>>& poly,
                 const vector<vector<int>>& faceVertices) {
 
   const auto nfaces = faceVertices.size();
@@ -601,8 +601,8 @@ commonFaceClips(const std::vector<Vertex2d<VectorType, VA>>& poly,
 //------------------------------------------------------------------------------
 // Split a polygon into a set of triangles.
 //------------------------------------------------------------------------------
-template<typename VectorType, typename VA>
-vector<vector<int>> splitIntoTriangles(const std::vector<Vertex2d<VectorType, VA>>& poly,
+template<typename VA>
+vector<vector<int>> splitIntoTriangles(const std::vector<Vertex2d<VA>>& poly,
                                        const double tol) {
 
   // Prepare the result, which will be triples of indices in the input polygon vertices.

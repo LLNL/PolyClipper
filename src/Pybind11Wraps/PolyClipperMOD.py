@@ -19,8 +19,8 @@ PYB11namespaces = ["PolyClipper"]
 PYB11preamble = """
 using Polygon = std::vector<PolyClipper::Vertex2d<>>;
 using Polyhedron = std::vector<PolyClipper::Vertex3d<>>;
-using Plane2d = PolyClipper::Plane<PolyClipper::Vector2d>;
-using Plane3d = PolyClipper::Plane<PolyClipper::Vector3d>;
+using Plane2d = PolyClipper::Plane<PolyClipper::internal::VectorAdapter<PolyClipper::Vector2d>>;
+using Plane3d = PolyClipper::Plane<PolyClipper::internal::VectorAdapter<PolyClipper::Vector3d>>;
 """
 
 #-------------------------------------------------------------------------------
@@ -41,8 +41,8 @@ Polyhedron = PYB11_bind_vector("PolyClipper::Vertex3d<>", opaque=True, local=Tru
 #-------------------------------------------------------------------------------
 # Plane
 #-------------------------------------------------------------------------------
-Plane2d = PYB11TemplateClass(Plane, template_parameters=("Vector2d", "internal::VectorAdapter<Vector2d>"))
-Plane3d = PYB11TemplateClass(Plane, template_parameters=("Vector3d", "internal::VectorAdapter<Vector3d>"))
+Plane2d = PYB11TemplateClass(Plane, template_parameters="internal::VectorAdapter<Vector2d>")
+Plane3d = PYB11TemplateClass(Plane, template_parameters="internal::VectorAdapter<Vector3d>")
 
 #-------------------------------------------------------------------------------
 # Polygon methods.
