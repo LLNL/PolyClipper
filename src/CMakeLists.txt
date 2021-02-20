@@ -5,6 +5,13 @@ include(${CMAKE_MODULE_PATH}/PolyClipperAddLibs.cmake)
 include_directories(.)
 
 # PolyClipper itself is entirely C++ headers
+add_library(PolyClipper INTERFACE)
+target_include_directories(
+  PolyClipper
+  INTERFACE $<BUILD_INTERFACE:${${PROJECT_NAME}_SOURCE_DIR}/src>
+            $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+  )
+
 set(PolyClipper_headers 
     polyclipper2d.hh
     polyclipper2dImpl.hh

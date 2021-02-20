@@ -4,6 +4,8 @@
 #ifndef __PolyClipper_Vector3d__
 #define __PolyClipper_Vector3d__
 
+#include <cmath>
+
 namespace PolyClipper {
 
 struct Vector3d {

@@ -110,3 +110,8 @@ add_subdirectory(src)
 if (ENABLE_DOCS)
   add_subdirectory(docs)
 endif()
+
+#-------------------------------------------------------------------------------
+# Add any tests
+#-------------------------------------------------------------------------------
+add_subdirectory(test/test_array_vector)

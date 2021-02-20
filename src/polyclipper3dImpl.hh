@@ -154,7 +154,7 @@ polyhedron2string(const std::vector<Vertex3d<VA>>& poly) {
   std::ostringstream s;
   const auto nverts = poly.size();
   for (auto i = 0; i < nverts; ++i) {
-    s << i << " ID=" << poly[i].ID << " comp=" << poly[i].comp << " @ " << poly[i].position
+    s << i << " ID=" << poly[i].ID << " comp=" << poly[i].comp << " @ " << VA::str(poly[i].position)
       << " neighbors=[";
     copy(poly[i].neighbors.begin(), poly[i].neighbors.end(), ostream_iterator<int>(s, " "));
     s << "] clips[";
@@ -256,7 +256,7 @@ void clipPolyhedron(std::vector<Vertex3d<VA>>& polyhedron,
   const auto nplanes = planes.size();
   while (kplane < nplanes and not polyhedron.empty()) {
     const auto& plane = planes[kplane++];
-    // cerr << "Clip plane: " << plane.dist << " " << plane.normal << endl;
+    // cerr << "Clip plane: " << plane.dist << " " << VA::str(plane.normal) << endl;
 
     // First check against the bounding box.
     auto boxcomp = compare(plane, xmin, ymin, zmin, xmax, ymax, zmax);

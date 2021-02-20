@@ -6,6 +6,9 @@
 #ifndef __PolyClipper_adapter__
 #define __PolyClipper_adapter__
 
+#include <string>
+#include <sstream>
+
 namespace PolyClipper {
 namespace internal {
 
@@ -36,6 +39,7 @@ struct VectorAdapter {
   static VECTOR  sub(const VECTOR& a, const VECTOR& b)       { return a - b; }
   static VECTOR  neg(const VECTOR& a)                        { return -a; }
   static VECTOR  unitVector(const VECTOR& a)                 { return a.unitVector(); }
+  static std::string str(const VECTOR& a)                    { std::ostringstream os; os << a; return os.str(); }
 };
 
 }

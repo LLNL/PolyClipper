@@ -154,7 +154,7 @@ polygon2string(const std::vector<Vertex2d<VA>>& poly) {
   std::ostringstream s;
   s << "{\n";
   for (auto i = 0; i < nverts; ++i) {
-    s << "  " << i << " " << poly[i].position
+    s << "  " << i << " " << VA::str(poly[i].position)
       << " [" << poly[i].neighbors.first << " " << poly[i].neighbors.second << "]"
       << " clips[";
     std::copy(poly[i].clips.begin(), poly[i].clips.end(), ostream_iterator<int>(s, " "));
@@ -211,7 +211,7 @@ void moments(double& zerothMoment, typename VA::VECTOR& firstMoment,
       const auto v2 = polygon[v1.neighbors.second];
       const auto triA = VA::crossmag(VA::sub(v1.position, v0.position), VA::sub(v2.position, v0.position));
       zerothMoment += triA;
-      firstMoment += triA * VA::sub(VA::add(v1.position, v2.position), VA::mul(v0.position, 2.0));
+      VA::iadd(firstMoment, VA::mul(VA::sub(VA::add(v1.position, v2.position), VA::mul(v0.position, 2.0)), triA));
     }
     VA::idiv(firstMoment, 3.0*std::max(nearlyZero, zerothMoment));
     VA::iadd(firstMoment, v0.position);
@@ -253,7 +253,7 @@ void clipPolygon(std::vector<Vertex2d<VA>>& polygon,
   const auto nplanes = planes.size();
   while (kplane < nplanes and not polygon.empty()) {
     const auto& plane = planes[kplane++];
-    // cerr << "Clip plane: " << plane.dist << " " << plane.normal << endl;
+    // cerr << "Clip plane: " << plane.dist << " " << VA::str(plane.normal) << endl;
 
     // First check against the bounding box.
     auto boxcomp = compare(plane, xmin, ymin, xmax, ymax);
@@ -321,7 +321,7 @@ void clipPolygon(std::vector<Vertex2d<VA>>& polygon,
           polygon[v].neighbors.second = vnew;
           polygon[vnext].neighbors.first = vnew;
           hangingVertices.push_back(vnew);
-          // cerr << " --> Inserting new vertex @ " << polygon.back().position << endl;
+          // cerr << " --> Inserting new vertex @ " << VA::str(polygon.back().position) << endl;
 
         } else if (polygon[v].comp == 0 and 
                    (polygon[vprev].comp == -1 xor polygon[vnext].comp == -1)) {
@@ -329,7 +329,7 @@ void clipPolygon(std::vector<Vertex2d<VA>>& polygon,
           // No new vertex, but vptr will be hanging.
           hangingVertices.push_back(v);
           polygon[v].clips.insert(plane.ID);
-          // cerr << " --> Hanging vertex @ " << polygon[v].position << endl;
+          // cerr << " --> Hanging vertex @ " << VA::str(polygon[v].position) << endl;
 
         }
       }

@@ -11,6 +11,8 @@
 #include "polyclipper_plane.hh"
 
 #include <ostream>
+#include <vector>
+#include <cassert>
 
 namespace PolyClipper {
 namespace internal {
@@ -164,7 +166,7 @@ segmentPlaneIntersection(const typename VA::VECTOR& a,         // line-segment b
   const auto asgndist = plane.dist + VA::dot(plane.normal, a);
   const auto bsgndist = plane.dist + VA::dot(plane.normal, b);
   assert(asgndist != bsgndist);
-  return (a*bsgndist - b*asgndist)/(bsgndist - asgndist);
+  return VA::div(VA::sub(VA::mul(a, bsgndist), VA::mul(b, asgndist)), bsgndist - asgndist);
 }
 
 }
