@@ -4,7 +4,7 @@
 #include <iostream>
 
 // Define a trait class for using a simple C style array of doubles as 3D Vector type for use in PolyClipper.
-struct ArrayAdapter2d {  
+struct ArrayAdapter3d {  
   using VECTOR = std::array<double, 3>;
   static VECTOR Vector(double a, double b)                   { assert(false); }                  // only 2D
   static VECTOR Vector(double a, double b, double c)         { return {a, b, c}; }               // only 3D
@@ -20,7 +20,7 @@ struct ArrayAdapter2d {
   static VECTOR  cross(const VECTOR& a, const VECTOR& b)     { return {a[1]*b[2] - a[2]*b[1],    // only 2D
                                                                        a[2]*b[0] - a[0]*b[2],
                                                                        a[0]*b[1] - a[1]*b[0]}; }
-  static double  magnitude2(const VECTOR& a)                 { return a[0]*a[0] + a[1]*a[1] + a[2]*b[2]; }
+  static double  magnitude2(const VECTOR& a)                 { return a[0]*a[0] + a[1]*a[1] + a[2]*a[2]; }
   static double  magnitude(const VECTOR& a)                  { return std::sqrt(magnitude2(a)); }
   static VECTOR& imul(VECTOR& a, const double b)             { a[0] *= b; a[1] *= b; a[2] *= b; return a; }
   static VECTOR& idiv(VECTOR& a, const double b)             { a[0] /= b; a[1] /= b; a[2] /= b; return a; }
