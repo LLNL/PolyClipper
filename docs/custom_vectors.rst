@@ -54,7 +54,7 @@ The following code is an example of all the methods we need to define in a trait
        double& VectorAdapter::z(VECTOR& a)
        double  VectorAdapter::z(const VECTOR& a)
 
-Once you have your trait class for adapting your C++ Vector ready, you can call PolyClipper functions with this class a template parameter.  For instance, in 3D the method for clipping a polyhedron is templated with a default for PolyClipper's internal Vector type::
+Once you have your trait class for adapting your C++ Vector ready, you can call PolyClipper functions with this class as the template parameter.  For instance, in 3D the method for clipping a polyhedron is templated with a default for PolyClipper's internal Vector type::
 
   template<typename VA = internal::VectorAdapter<Vector3d>>
   void clipPolyhedron(std::vector<Vertex3d<VA>>& poly,
@@ -141,6 +141,26 @@ In the test directory of PolyClipper (under ``test/test_array_vector``) is a com
 .. note::
    Note that the ``PolyClipper::Vector2d`` internal type defines its own versions of methods required by a Vector adapter trait class, so the adapter in that case (found in ``polyclipper_adapter.hh``) is only a thin wrapper around those methods.  In this example, however, the ``std::array`` does not have any notion of mathematical concepts like the Vector dot product, cross product, magnitude, etc., so we explicitly compute those in the appropriate methods of ``ArrayAdapter2d`` above.
 
+Since in C++ PolyClipper is a header-only library, the above source will compile directly and yields the following output::
+
+  Initial polygon: {
+    0 (0 0) [3 1] clips[]
+    1 (10 0) [0 2] clips[]
+    2 (10 10) [1 3] clips[]
+    3 (0 10) [2 0] clips[]
+  }
+
+  Moments: 100 (5 5)
+
+  After clipping: {
+    0 (10 0) [1 3] clips[]
+    1 (0.4 0) [2 0] clips[10 ]
+    2 (0 0.4) [4 1] clips[10 ]
+    3 (10 5.7) [0 4] clips[20 ]
+    4 (0 0.7) [3 2] clips[20 ]
+  }
+
+  Moments: 31.92 (6.31754 1.93001)
 
 A 3D example using ``std::array<double, 3>`` as a Vector
 --------------------------------------------------------
@@ -235,4 +255,26 @@ Similarly to above we can also use ``std::array<double, 3>`` as a Vector type in
     return 0;
   }
 
+Executing this example produces the output::
 
+  Initial polyhedron: 0 ID=-1 comp=1 @ (0 0 0) neighbors=[1 4 3 ] clips[]
+  1 ID=-1 comp=1 @ (10 0 0) neighbors=[5 0 2 ] clips[]
+  2 ID=-1 comp=1 @ (10 10 0) neighbors=[3 6 1 ] clips[]
+  3 ID=-1 comp=1 @ (0 10 0) neighbors=[7 2 0 ] clips[]
+  4 ID=-1 comp=1 @ (0 0 10) neighbors=[5 7 0 ] clips[]
+  5 ID=-1 comp=1 @ (10 0 10) neighbors=[1 6 4 ] clips[]
+  6 ID=-1 comp=1 @ (10 10 10) neighbors=[5 2 7 ] clips[]
+  7 ID=-1 comp=1 @ (0 10 10) neighbors=[4 6 3 ] clips[]
+
+  Moments: 1000 (5 5 5)
+
+  After clipping: 0 ID=0 comp=1 @ (10 0 0) neighbors=[4 1 5 ] clips[]
+  1 ID=1 comp=1 @ (0.6 0 0) neighbors=[3 2 0 ] clips[10 ]
+  2 ID=2 comp=1 @ (0 0.6 0) neighbors=[1 3 6 ] clips[10 ]
+  3 ID=3 comp=1 @ (0 0 0.6) neighbors=[2 1 7 ] clips[10 ]
+  4 ID=4 comp=2 @ (10 0 6.5) neighbors=[5 7 0 ] clips[20 ]
+  5 ID=5 comp=2 @ (10 6.5 0) neighbors=[6 4 0 ] clips[20 ]
+  6 ID=6 comp=2 @ (0 1.5 0) neighbors=[7 5 2 ] clips[20 ]
+  7 ID=7 comp=2 @ (0 0 1.5) neighbors=[4 6 3 ] clips[20 ]
+
+  Moments: 90.3807 (6.84598 1.64115 1.64115)

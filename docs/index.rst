@@ -13,10 +13,10 @@ Welcome to PolyClipper's documentation!
    intro.rst
    building.rst
    concepts.rst
-   custom_vectors.rst
    datatypes.rst
    polygon_methods.rst
    polyhedron_methods.rst
+   custom_vectors.rst
 
 Indices and tables
 ==================
