@@ -20,10 +20,6 @@
 //
 // Created by J. Michael Owen, Tue Nov 28 10:00:51 PST 2017
 //----------------------------------------------------------------------------//
-
-#include "polyclipper.hh"
-#include "polyclipper_utilities.hh"
-
 #include <list>
 #include <map>
 #include <set>
@@ -33,6 +29,7 @@
 #include <iterator>
 #include <algorithm>
 #include <assert.h>
+
 using std::vector;
 using std::list;
 using std::map;
@@ -46,33 +43,23 @@ namespace PolyClipper {
 namespace {    // anonymous methods
 
 //------------------------------------------------------------------------------
-// Compare a plane and point.
-//------------------------------------------------------------------------------
-inline
-int compare(const Plane2d& plane,
-            const PolyClipper::Vector2d& point) {
-  const auto sgndist = plane.dist + plane.normal.dot(point);
-  if (std::abs(sgndist) < 1.0e-10) return 0;
-  return sgn0(sgndist);
-}
-
-//------------------------------------------------------------------------------
 // Compare a plane and a box (defined by it's min/max coordinates).
 //   -1 ==> box below plane
 //    0 ==> plane cuts through box
 //    1 ==> box above plane
 //------------------------------------------------------------------------------
+template<typename VA>
 inline
-int compare(const Plane2d& plane,
+int compare(const Plane<VA>& plane,
             const double xmin,
             const double ymin,
             const double xmax,
             const double ymax) {
-  using Vector = PolyClipper::Vector2d;
-  const auto c1 = compare(plane, Vector(xmin, ymin));
-  const auto c2 = compare(plane, Vector(xmax, ymin));
-  const auto c3 = compare(plane, Vector(xmax, ymax));
-  const auto c4 = compare(plane, Vector(xmin, ymax));
+  using Vector = typename VA::VECTOR;
+  const auto c1 = internal::compare<VA>(plane, VA::Vector(xmin, ymin));
+  const auto c2 = internal::compare<VA>(plane, VA::Vector(xmax, ymin));
+  const auto c3 = internal::compare<VA>(plane, VA::Vector(xmax, ymax));
+  const auto c4 = internal::compare<VA>(plane, VA::Vector(xmin, ymax));
   const auto cmin = std::min(c1, std::min(c2, std::min(c3, c4)));
   const auto cmax = std::max(c1, std::max(c2, std::max(c3, c4)));
   if (cmin >= 0) {
@@ -85,50 +72,39 @@ int compare(const Plane2d& plane,
 }
 
 //------------------------------------------------------------------------------
-// Intersect a line-segment with a plane.
-//------------------------------------------------------------------------------
-inline
-PolyClipper::Vector2d
-segmentPlaneIntersection(const PolyClipper::Vector2d& a,       // line-segment begin
-                         const PolyClipper::Vector2d& b,       // line-segment end
-                         const Plane2d& plane) {               // plane
-  const auto asgndist = plane.dist + plane.normal.dot(a);
-  const auto bsgndist = plane.dist + plane.normal.dot(b);
-  assert(asgndist != bsgndist);
-  return (a*bsgndist - b*asgndist)/(bsgndist - asgndist);
-}
-
-//------------------------------------------------------------------------------
 // Check if two line segments intersect.
 //------------------------------------------------------------------------------
+template<typename VA>
 inline
 bool
-segmentsIntersect(const PolyClipper::Vector2d& a,
-                  const PolyClipper::Vector2d& b,
-                  const PolyClipper::Vector2d& c,
-                  const PolyClipper::Vector2d& d) {
+segmentsIntersect(const typename VA::VECTOR& a,
+                  const typename VA::VECTOR& b,
+                  const typename VA::VECTOR& c,
+                  const typename VA::VECTOR& d) {
+  using PlaneType = Plane<VA>;
 
   // The plane in the (c,c) orientation.
-  Plane2d cdplane;
-  cdplane.normal = PolyClipper::Vector2d(-(c.y - d.y), c.x - d.x).unitVector();
-  cdplane.dist = -c.dot(cdplane.normal);
+  PlaneType cdplane;
+  cdplane.normal = VA::Vector(-(VA::y(c) - VA::y(d)), VA::x(c) - VA::x(d)).unitVector();
+  cdplane.dist = VA::dot(-c, cdplane.normal);
 
   // Does the (a,b) segment straddle the plane?
-  if (compare(cdplane, a)*compare(cdplane, b) == 1) return false;
+  if (internal::compare<VA>(cdplane, a)*internal::compare<VA>(cdplane, b) == 1) return false;
 
   // Is the point where (a,b) intersects the plane between (c,d)?
-  const auto g = segmentPlaneIntersection(a, b, cdplane);
-  return (c - g).dot(d - g) <= 0;
+  const auto g = internal::segmentPlaneIntersection(a, b, cdplane);
+  return VA::dot(VA::sub(c, g), VA::sub(d, g)) <= 0;
 }
 
 //------------------------------------------------------------------------------
 // Check if a line segment intersects the polygon.
 //------------------------------------------------------------------------------
+template<typename VA>
 inline
 bool
-intersect(const PolyClipper::Vector2d& a,       // line-segment begin
-          const PolyClipper::Vector2d& b,       // line-segment end
-          const Polygon& poly) {                  // Polygon
+intersect(const typename VA::VECTOR& a,            // line-segment begin
+          const typename VA::VECTOR& b,            // line-segment end
+          const std::vector<Vertex2d<VA>>& poly) { // Polygon
   auto result = false;
   const auto n = poly.size();
   auto i = 0;
@@ -143,9 +119,10 @@ intersect(const PolyClipper::Vector2d& a,       // line-segment begin
 //------------------------------------------------------------------------------
 // Initialize a polygon given the vertex coordinates and connectivity.
 //------------------------------------------------------------------------------
+template<typename VA>
 void
-initializePolygon(Polygon& poly,
-                  const vector<PolyClipper::Vector2d>& positions,
+initializePolygon(std::vector<Vertex2d<VA>>& poly,
+                  const vector<typename VA::VECTOR>& positions,
                   const vector<vector<int>>& neighbors) {
 
   // Pre-conditions
@@ -162,23 +139,25 @@ initializePolygon(Polygon& poly,
 //------------------------------------------------------------------------------
 // Return a nicely formatted string representing the polygon.
 //------------------------------------------------------------------------------
+template<typename VA>
 std::string
-polygon2string(const Polygon& poly) {
-  std::ostringstream s;
+polygon2string(const std::vector<Vertex2d<VA>>& poly) {
+  using Vertex = Vertex2d<VA>;
 
   // Numbers of vertices.
   const auto nverts = poly.size();
-  const auto nactive = count_if(poly.begin(), poly.end(),
-                                [](const Vertex2d& x) { return x.comp >= 0; });
+  const auto nactive = std::count_if(poly.begin(), poly.end(),
+                                     [](const Vertex& x) { return x.comp >= 0; });
   set<int> usedVertices;
 
   // Dump the raw vertex info.
+  std::ostringstream s;
   s << "{\n";
   for (auto i = 0; i < nverts; ++i) {
-    s << "  " << i << " " << poly[i].position
+    s << "  " << i << " " << VA::str(poly[i].position)
       << " [" << poly[i].neighbors.first << " " << poly[i].neighbors.second << "]"
       << " clips[";
-    copy(poly[i].clips.begin(), poly[i].clips.end(), ostream_iterator<int>(s, " "));
+    std::copy(poly[i].clips.begin(), poly[i].clips.end(), ostream_iterator<int>(s, " "));
     s << "]\n";
   }
   s << "}\n";
@@ -212,16 +191,17 @@ polygon2string(const Polygon& poly) {
 //------------------------------------------------------------------------------
 // Compute the zeroth and first moment of a Polygon.
 //------------------------------------------------------------------------------
-void moments(double& zerothMoment, PolyClipper::Vector2d& firstMoment,
-             const Polygon& polygon) {
+template<typename VA>
+void moments(double& zerothMoment, typename VA::VECTOR& firstMoment,
+             const std::vector<Vertex2d<VA>>& polygon) {
 
   // Useful types.
-  using Vector = PolyClipper::Vector2d;
+  using Vector = typename VA::VECTOR;
   const double nearlyZero = 1.0e-15;
 
   // Clear the result for accumulation.
   zerothMoment = 0.0;
-  firstMoment = {0.0, 0.0};
+  firstMoment = VA::Vector(0.0, 0.0);
 
   // Walk the polygon, and add up our results triangle by triangle.
   if (not polygon.empty()) {
@@ -229,11 +209,12 @@ void moments(double& zerothMoment, PolyClipper::Vector2d& firstMoment,
     const auto v0 = polygon[0];
     for (const auto v1: polygon) {
       const auto v2 = polygon[v1.neighbors.second];
-      const auto triA = (v1.position - v0.position).cross(v2.position - v0.position);
+      const auto triA = VA::crossmag(VA::sub(v1.position, v0.position), VA::sub(v2.position, v0.position));
       zerothMoment += triA;
-      firstMoment += triA * (v1.position + v2.position - 2.0*v0.position);
+      VA::iadd(firstMoment, VA::mul(VA::sub(VA::add(v1.position, v2.position), VA::mul(v0.position, 2.0)), triA));
     }
-    firstMoment = firstMoment/(3.0*std::max(nearlyZero, zerothMoment)) + v0.position;
+    VA::idiv(firstMoment, 3.0*std::max(nearlyZero, zerothMoment));
+    VA::iadd(firstMoment, v0.position);
     zerothMoment *= 0.5;
   }
 }
@@ -241,11 +222,13 @@ void moments(double& zerothMoment, PolyClipper::Vector2d& firstMoment,
 //------------------------------------------------------------------------------
 // Clip a polygon by planes.
 //------------------------------------------------------------------------------
-void clipPolygon(Polygon& polygon,
-                 const std::vector<Plane2d>& planes) {
+template<typename VA>
+void clipPolygon(std::vector<Vertex2d<VA>>& polygon,
+                 const std::vector<Plane<VA>>& planes) {
 
   // Useful types.
-  using Vector = PolyClipper::Vector2d;
+  using Vector = typename VA::VECTOR;
+  using Vertex = Vertex2d<VA>;
   const double nearlyZero = 1.0e-15;
 
   // Check the input.
@@ -259,10 +242,10 @@ void clipPolygon(Polygon& polygon,
   auto xmin = std::numeric_limits<double>::max(), xmax = std::numeric_limits<double>::lowest();
   auto ymin = std::numeric_limits<double>::max(), ymax = std::numeric_limits<double>::lowest();
   for (auto& v: polygon) {
-    xmin = std::min(xmin, v.position.x);
-    xmax = std::max(xmax, v.position.x);
-    ymin = std::min(ymin, v.position.y);
-    ymax = std::max(ymax, v.position.y);
+    xmin = std::min(xmin, VA::x(v.position));
+    xmax = std::max(xmax, VA::x(v.position));
+    ymin = std::min(ymin, VA::y(v.position));
+    ymax = std::max(ymax, VA::y(v.position));
   }
 
   // Loop over the planes.
@@ -270,7 +253,7 @@ void clipPolygon(Polygon& polygon,
   const auto nplanes = planes.size();
   while (kplane < nplanes and not polygon.empty()) {
     const auto& plane = planes[kplane++];
-    // cerr << "Clip plane: " << plane.dist << " " << plane.normal << endl;
+    // cerr << "Clip plane: " << plane.dist << " " << VA::str(plane.normal) << endl;
 
     // First check against the bounding box.
     auto boxcomp = compare(plane, xmin, ymin, xmax, ymax);
@@ -281,7 +264,7 @@ void clipPolygon(Polygon& polygon,
     // Check the current set of vertices against this plane.
     if (not (above or below)) {
       for (auto& v: polygon) {
-        v.comp = compare(plane, v.position);
+        v.comp = internal::compare<VA>(plane, v.position);
         if (v.comp == 1) {
           below = false;
         } else if (v.comp == -1) {
@@ -319,10 +302,10 @@ void clipPolygon(Polygon& polygon,
         if ((polygon[v].comp)*(polygon[vnext].comp) == -1) {
           // This pair straddles the plane and creates a new vertex.
           vnew = polygon.size();
-          polygon.push_back(Vertex2d(segmentPlaneIntersection(polygon[v].position,
-                                                              polygon[vnext].position,
-                                                              plane),
-                                     2));         // 2 indicates new vertex
+          polygon.push_back(Vertex(internal::segmentPlaneIntersection(polygon[v].position,
+                                                                      polygon[vnext].position,
+                                                                      plane),
+                                   2));         // 2 indicates new vertex
           polygon[vnew].neighbors = {v, vnext};
           polygon[vnew].clips.insert(plane.ID);
           // Patch up clip info for existing clips
@@ -338,7 +321,7 @@ void clipPolygon(Polygon& polygon,
           polygon[v].neighbors.second = vnew;
           polygon[vnext].neighbors.first = vnew;
           hangingVertices.push_back(vnew);
-          // cerr << " --> Inserting new vertex @ " << polygon.back().position << endl;
+          // cerr << " --> Inserting new vertex @ " << VA::str(polygon.back().position) << endl;
 
         } else if (polygon[v].comp == 0 and 
                    (polygon[vprev].comp == -1 xor polygon[vnext].comp == -1)) {
@@ -346,7 +329,7 @@ void clipPolygon(Polygon& polygon,
           // No new vertex, but vptr will be hanging.
           hangingVertices.push_back(v);
           polygon[v].clips.insert(plane.ID);
-          // cerr << " --> Hanging vertex @ " << polygon[v].position << endl;
+          // cerr << " --> Hanging vertex @ " << VA::str(polygon[v].position) << endl;
 
         }
       }
@@ -361,9 +344,9 @@ void clipPolygon(Polygon& polygon,
       if (true) { //(hangingVertices.size() > 2) {
 
         // Yep, more than one new edge here.
-        const Vector direction(plane.normal.y, -(plane.normal.x));
-        sort(hangingVertices.begin(), hangingVertices.end(), 
-             [&](const int a, const int b) { return (polygon[a].position).dot(direction) < (polygon[b].position).dot(direction); });
+        const auto direction = VA::Vector(VA::y(plane.normal), -VA::x(plane.normal));
+        std::sort(hangingVertices.begin(), hangingVertices.end(), 
+                  [&](const int a, const int b) { return (VA::dot(polygon[a].position, direction) < VA::dot(polygon[b].position, direction)); });
 
         // Now the ordered pairs of these new vertices form the new edges.
         int v1, v2;
@@ -415,10 +398,10 @@ void clipPolygon(Polygon& polygon,
           nkill++;
         } else {
           v.ID = i++;
-          xmin = std::min(xmin, v.position.x);
-          xmax = std::max(xmax, v.position.x);
-          ymin = std::min(ymin, v.position.y);
-          ymax = std::max(ymax, v.position.y);
+          xmin = std::min(xmin, VA::x(v.position));
+          xmax = std::max(xmax, VA::x(v.position));
+          ymin = std::min(ymin, VA::y(v.position));
+          ymax = std::max(ymax, VA::y(v.position));
         }
       }
 
@@ -433,7 +416,7 @@ void clipPolygon(Polygon& polygon,
             polygon[k].neighbors.second = polygon[polygon[k].neighbors.second].ID;
           }
         }
-        removeElements(polygon, verts2kill);
+        internal::removeElements(polygon, verts2kill);
       }
       double V1;
       Vector C1;
@@ -452,11 +435,11 @@ void clipPolygon(Polygon& polygon,
 //------------------------------------------------------------------------------
 // Collapse degenerate vertices.
 //------------------------------------------------------------------------------
-void collapseDegenerates(Polygon& polygon,
+template<typename VA>
+void collapseDegenerates(std::vector<Vertex2d<VA>>& polygon,
                          const double tol) {
 
-  // Make a copy of the input polygon for debugging
-  //Polygon copyPoly = polygon;
+  using VertexType = Vertex2d<VA>;
 
   const auto tol2 = tol*tol;
   auto n = polygon.size();
@@ -477,7 +460,7 @@ void collapseDegenerates(Polygon& polygon,
           //assert (polygon[j].ID >= 0);
           if (j==i) throw std::logic_error("got vertex and neighbor identical in collapseDegenerates");
           if (polygon[j].ID < 0) throw std::logic_error("polygon[j].ID is negative in collapseDegenerates");
-          if ((polygon[i].position - polygon[j].position).magnitude2() < tol2) {
+          if (VA::magnitude2(VA::sub(polygon[i].position, polygon[j].position)) < tol2) {
             done = false;
             active = true;
             polygon[j].ID = -1;
@@ -531,7 +514,7 @@ void collapseDegenerates(Polygon& polygon,
       }
 
       // Erase the inactive vertices.
-      polygon.erase(remove_if(polygon.begin(), polygon.end(), [](const Vertex2d& v) { return v.ID < 0; }), polygon.end());
+      polygon.erase(remove_if(polygon.begin(), polygon.end(), [](const VertexType& v) { return v.ID < 0; }), polygon.end());
       if (polygon.size() < 3) polygon.clear();
     }
   }
@@ -552,13 +535,16 @@ void collapseDegenerates(Polygon& polygon,
 //------------------------------------------------------------------------------
 // Return the vertices ordered in faces.
 //------------------------------------------------------------------------------
+template<typename VA>
 vector<vector<int>>
-extractFaces(const Polygon& poly) {
+extractFaces(const std::vector<Vertex2d<VA>>& poly) {
 
+  using VertexType = Vertex2d<VA>;
+  
   // Numbers of vertices.
   const auto nverts = poly.size();
   const auto nactive = count_if(poly.begin(), poly.end(),
-                                [](const Vertex2d& x) { return x.comp >= 0; });
+                                [](const VertexType& x) { return x.comp >= 0; });
 
   // Allocate the result arrays.
   vector<vector<int>> faceVertices(nactive, vector<int>(2));
@@ -596,8 +582,9 @@ extractFaces(const Polygon& poly) {
 //------------------------------------------------------------------------------
 // Compute the set of clips common to each face.
 //------------------------------------------------------------------------------
+template<typename VA>
 vector<set<int>>
-commonFaceClips(const Polygon& poly,
+commonFaceClips(const std::vector<Vertex2d<VA>>& poly,
                 const vector<vector<int>>& faceVertices) {
 
   const auto nfaces = faceVertices.size();
@@ -614,7 +601,8 @@ commonFaceClips(const Polygon& poly,
 //------------------------------------------------------------------------------
 // Split a polygon into a set of triangles.
 //------------------------------------------------------------------------------
-vector<vector<int>> splitIntoTriangles(const Polygon& poly,
+template<typename VA>
+vector<vector<int>> splitIntoTriangles(const std::vector<Vertex2d<VA>>& poly,
                                        const double tol) {
 
   // Prepare the result, which will be triples of indices in the input polygon vertices.
@@ -625,7 +613,7 @@ vector<vector<int>> splitIntoTriangles(const Polygon& poly,
   bool convex = true;
   auto i = 0;
   while (convex and i < n0) {
-    convex = ((poly[poly[i].neighbors.second].position - poly[i].position).cross((poly[poly[i].neighbors.first].position - poly[i].position)) >= 0.0);
+    convex = VA::crossmag(VA::sub(poly[poly[i].neighbors.second].position, poly[i].position), VA::sub(poly[poly[i].neighbors.first].position, poly[i].position)) >= 0.0;
     ++i;
   }
 
@@ -636,7 +624,7 @@ vector<vector<int>> splitIntoTriangles(const Polygon& poly,
     for (auto i = 2; i < n0; ++i) {
       const auto& v1 = poly[i-1].position;
       const auto& v2 = poly[i].position;
-      a = 0.5*(v1 - v0).cross(v2 - v0);
+      a = VA::crossmag(VA::sub(v1, v0), VA::sub(v2, v0));  // really should be 0.5*
       if (a > tol) result.push_back({0, i - 1, i});
     }
     return result;

@@ -97,7 +97,7 @@ else()
   message("-- Python module install path ${POLYCLIPPER_PYTHON_INSTALL}")
 endif()
 
-set(POLYCLIPPER_PYTHON_DEPENDS PolyClipper)
+set(POLYCLIPPER_PYTHON_DEPENDS )
 
 #-------------------------------------------------------------------------------
 # Prepare to build the src
@@ -110,3 +110,8 @@ add_subdirectory(src)
 if (ENABLE_DOCS)
   add_subdirectory(docs)
 endif()
+
+#-------------------------------------------------------------------------------
+# Add any tests
+#-------------------------------------------------------------------------------
+add_subdirectory(test/test_array_vector)

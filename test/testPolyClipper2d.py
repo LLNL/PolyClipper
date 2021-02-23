@@ -54,9 +54,9 @@ def moments_answer(poly):
     m0, m1 = 0.0, Vector2d(0, 0)
     for v2 in poly:
         v3 = poly[v2.neighbors[1]]
-        Ai = (v2.position - v1.position).cross(v3.position - v1.position)  # 2x
+        Ai = (v2.position - v1.position).crossmag(v3.position - v1.position)  # 2x
         m0 += Ai
-        m1 += (v1.position + v2.position + v3.position)*Ai                 # 6x
+        m1 += (v1.position + v2.position + v3.position)*Ai                    # 6x
     return 0.5*m0, (v1.position + m1/(3.0*m0))
 
 #-------------------------------------------------------------------------------
@@ -418,7 +418,7 @@ class TestPolyClipper2d(unittest.TestCase):
             centroidTris = Vector2d()
             for inds in tris:
                 assert len(inds) == 3
-                a = (poly[inds[1]].position - poly[inds[0]].position).cross(poly[inds[2]].position - poly[inds[0]].position)
+                a = (poly[inds[1]].position - poly[inds[0]].position).crossmag(poly[inds[2]].position - poly[inds[0]].position)
                 assert a >= 0.0
                 volTris += a
                 centroidTris += a*(poly[inds[0]].position + poly[inds[1]].position + poly[inds[2]].position)

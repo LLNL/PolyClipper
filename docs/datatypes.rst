@@ -2,10 +2,13 @@
 PolyClipper data types
 ########################################
 
-As mentioned in section :ref:`PolyClipper concepts`, PolyClipper includes the data types ``Vector2d``, ``Vector3d``, ``Plane2d``, ``Plane3d``, ``Vertex2d``, and ``Vertex3d``, all defined inside the C++ namespace ``PolyClipper``.  The entirity of PolyClipper's interface (including these types) are in the single header file ``polyclipper.hh``.  In this section we describe the C++ interface for each of these types (the Python interface is identical).
+As mentioned in section :ref:`PolyClipper concepts`, PolyClipper includes the data types ``Vector2d``, ``Vector3d``, ``Plane2d``, ``Plane3d``, ``Vertex2d``, and ``Vertex3d``, all defined inside the C++ namespace ``PolyClipper``.  For 2D (polygon) operations include the header ``polyclipper2d.hh``, while for 3D (polyhedron) include ``polyclipper3d.hh``.
+In this section we describe the C++ interface for each of these types.
 
-..
-   Note this file also defines the types ``PolyClipper::Polygon`` and ``PolyClipper::Polyhedron``, but these are simply aliases for ``std::vector<PolyClipper::Vertex2d>`` and ``std::vector<PolyClipper::Vertex3d>``.  
+.. note::
+   Python interface notes
+
+   The Python interface is identical to C++, with template parameters defaulted to PolyClippper's Vector2d/Vector3d implementations.  We also define a ``Polygon`` and ``Polyhedron`` class for in Python, which are ``std::vector<PolyClipper::Vertex2d<>>`` and ``std::vector<PolyClipper::Vertex3d<>>`` under the hood.
 
 ..
    Vector2d
@@ -15,10 +18,9 @@ As mentioned in section :ref:`PolyClipper concepts`, PolyClipper includes the da
 
 Vector classes
 --------------------
-..
-  ------------------------------------------------------------------------------
-  Vector2d
-  ------------------------------------------------------------------------------
+
+Vector2d
+~~~~~~~~
 
 .. cpp:class:: Vector2d
 
@@ -98,10 +100,8 @@ Vector classes
 
      If :math:`\vec{a} = (0,0)`, returns the unit vector in the :math:`x` direction: :math:`(1,0)`.
      
-..
-  ------------------------------------------------------------------------------
-  Vector3d
-  ------------------------------------------------------------------------------
+Vector3d
+~~~~~~~~
 
 .. cpp:class:: Vector3d
 
@@ -187,108 +187,72 @@ Vector classes
      
 Plane classes
 --------------------
-..
-  ------------------------------------------------------------------------------
-  Plane2d
-  ------------------------------------------------------------------------------
 
-.. cpp:class:: Plane2d
+.. cpp:class:: template<typename VA> Plane
 
-   Plane2d represents a plane in the :math:`(x,y)` coordinate system for clipping Polygons.  A plane is stored as a unit normal and closest signed distance from the plane to the origin: :math:`(\hat{n}, d)`.  The signed distance from the plane to any point :math:`\vec{p}` is
+    Plane represents a plane for clipping polytopes, and is templated on ``VA`` (a Vector adapter) type describing how to use the appropriate geometric Vector type.
 
-  .. math::
-     d_s(\vec{p}) = (\vec{p} - \vec{p}_0) \cdot \hat{n} = d + \vec{p} \cdot \hat{n},
+    .. note::
+      In the headers ``polyclipper2d.hh`` and ``polyclipper3d.hh`` we define the typedefs::
 
-  where :math:`\vec{p}_0` is any point in the plane.  Note with this definition the :math:`d` parameter defining the plane is :math:`d = -\vec{p}_0 \cdot \hat{n}`.
+        using Plane2d = Plane<internal::VectorAdapter<Vector2d>>;
+        using Plane3d = Plane<internal::VectorAdapter<Vector3d>>;
 
-  .. cpp:type:: Vector2d Plane2d::Vector
+      (both in the namespace ``PolyClipper``) for convenience when working with PolyClipper's native Vectors.
 
-  .. cpp:member:: Vector2d Plane2d::normal
+    A plane is stored as a unit normal and closest signed distance from the plane to the origin: :math:`(\hat{n}, d)`.  The signed distance from the plane to any point :math:`\vec{p}` is
 
-     The unit normal to the plane :math:`\hat{n}`.
+    .. math::
+       d_s(\vec{p}) = (\vec{p} - \vec{p}_0) \cdot \hat{n} = d + \vec{p} \cdot \hat{n},
 
-  .. cpp:member:: double Plane2d::dist
+    where :math:`\vec{p}_0` is any point in the plane.  Note with this definition the :math:`d` parameter defining the plane is :math:`d = -\vec{p}_0 \cdot \hat{n}`.
 
-     The minimum signed distance from the origin to the plane :math:`d`.
+  .. cpp:type:: Vector VA::VECTOR
 
-  .. cpp:member:: int Plane2d::ID
-
-     An optional integer identification number for the plane.  This is used by Vertex2d to record which plane(s) are responsible for creating the vertex.
-
-  .. cpp:function:: Plane2d::Plane2d()
-
-     Default constructor -- implies {:math:`\hat{n}, d`, ID} = {(1,0), 0.0, std::numeric_limits<int>::min()}
-
-  .. cpp:function:: Plane2d::Plane2d(const double d, const Vector2d& nhat)
-
-     Construct with {:math:`\hat{n}, d`, ID} = {nhat, d, std::numeric_limits<int>::min()}
-
-  .. cpp:function:: Plane2d::Plane2d(const Vector2d& p, const Vector2d& nhat)
-
-     Construct specifying the normal and a point in the plane, so {:math:`\hat{n}, d`, ID} = {nhat, :math:`-p\cdot\hat{n}`, std::numeric_limits<int>::min()}
-
-  .. cpp:function:: Plane2d::Plane2d(const Vector2d& p, const Vector2d& nhat, const int id)
-
-     Construct specifying the normal, a point in the plane, and ID, so {:math:`\hat{n}, d`, ID} = {nhat, :math:`-p\cdot\hat{n}`, id}
-
-..
-  ------------------------------------------------------------------------------
-  Plane3d
-  ------------------------------------------------------------------------------
-
-.. cpp:class:: Plane3d
-
-   Plane3d represents a plane in the :math:`(x,y,z)` coordinate system for clipping Polyhedra.  A plane is stored as a unit normal and closest signed distance from the plane to the origin: :math:`(\hat{n}, d)`.  The signed distance from the plane to any point :math:`\vec{p}` is
-
-  .. math::
-     d_s(\vec{p}) = (\vec{p} - \vec{p}_0) \cdot \hat{n} = d + \vec{p} \cdot \hat{n},
-
-  where :math:`\vec{p}_0` is any point in the plane.  Note with this definition the :math:`d` parameter defining the plane is :math:`d = -\vec{p}_0 \cdot \hat{n}`.
-
-  .. cpp:type:: Vector3d Plane3d::Vector
-
-  .. cpp:member:: Vector3d Plane3d::normal
-
-     The unit normal to the plane :math:`\hat{n}`.
-
-  .. cpp:member:: double Plane3d::dist
+  .. cpp:member:: double Plane::dist
 
      The minimum signed distance from the origin to the plane :math:`d`.
 
-  .. cpp:member:: int Plane3d::ID
+  .. cpp:member:: Vector Plane::normal
 
-     An optional integer identification number for the plane.  This is used by Vertex3d to record which plane(s) are responsible for creating the vertex.
+     The unit normal to the plane :math:`\hat{n}`.
 
-  .. cpp:function:: Plane3d::Plane3d()
+  .. cpp:member:: int Plane::ID
+
+     An optional integer identification number for the plane.  This is used by ``Vertex<VA>`` to record which plane(s) are responsible for creating the vertex.
+
+  .. cpp:function:: Plane::Plane()
 
      Default constructor -- implies {:math:`\hat{n}, d`, ID} = {(1,0,0), 0.0, std::numeric_limits<int>::min()}
 
-  .. cpp:function:: Plane3d::Plane3d(const double d, const Vector3d& nhat)
+  .. cpp:function:: Plane::Plane(const double d, const Vector& nhat)
 
      Construct with {:math:`\hat{n}, d`, ID} = {nhat, d, std::numeric_limits<int>::min()}
 
-  .. cpp:function:: Plane3d::Plane3d(const Vector3d& p, const Vector3d& nhat)
+  .. cpp:function:: Plane::Plane(const Vector& p, const Vector& nhat)
 
      Construct specifying the normal and a point in the plane, so {:math:`\hat{n}, d`, ID} = {nhat, :math:`-p\cdot\hat{n}`, std::numeric_limits<int>::min()}
 
-  .. cpp:function:: Plane3d::Plane3d(const Vector3d& p, const Vector3d& nhat, const int id)
+  .. cpp:function:: Plane::Plane(const Vector& p, const Vector& nhat, const int id)
 
      Construct specifying the normal, a point in the plane, and ID, so {:math:`\hat{n}, d`, ID} = {nhat, :math:`-p\cdot\hat{n}`, id}
 
 Vertex classes
 --------------------
-..
-  ------------------------------------------------------------------------------
-  Vertex2d
-  ------------------------------------------------------------------------------
 
-.. cpp:class:: Vertex2d
+Vertex2d
+~~~~~~~~
+
+.. cpp:class:: template<typename VA = internal::VectorAdapter<Vector2d>> Vertex2d
 
   Vertex2d is used to encode Polygons in 2d.  A vertex includes a position and the connectivity to neighboring vertices in the Polygon.  In this 2d case, the connectivity is always 2 vertices, ordered such that going from the first neighbor, to this vertex, and on to the last neighbor goes around the Polygon in the counter-clockwise direction.  This is illustrated in the Polygon examples in :ref:`PolyClipper concepts`.
 
-  .. cpp:type:: Vector2d Vertex2d::Vector
+  .. note::
+     Note that while ``Vertex2d`` is templated on a geometric Vector trait class, the template argument defaults to an implementation appropriate for use with ``PolyClipper::Vector2d``.
 
-  .. cpp:member:: Vector2d Vertex2d::position
+  .. cpp:type:: Vector VA::VECTOR
+
+  .. cpp:member:: Vector Vertex2d::position
 
      The position of the vertex in :math:`(x,y)` coordinates.
 
@@ -312,26 +276,27 @@ Vertex classes
 
      Default constructor, sets member data to {position, neighbors, comp, ID, clips} = {(0,0), (), 1, -1, {}}
 
-  .. cpp:function:: Vertex2d::Vertex2d(const Vector2d& pos)
+  .. cpp:function:: Vertex2d::Vertex2d(const Vector& pos)
 
      Construct with just the position
 
-  .. cpp:function:: Vertex2d::Vertex2d(const Vector2d& pos, const int c)
+  .. cpp:function:: Vertex2d::Vertex2d(const Vector& pos, const int c)
 
      Construct with {position, comp} = {pos, c}
 
-..
-  ------------------------------------------------------------------------------
-  Vertex3d
-  ------------------------------------------------------------------------------
+Vertex3d
+~~~~~~~~
 
-.. cpp:class:: Vertex3d
+.. cpp:class:: template<typename VA = internal::VectorAdapter<Vector3d>> Vertex3d
 
   Vertex3d is used to encode Polyhedra in 3d.  A vertex includes a position and the connectivity to neighboring vertices in the Polyhedron.  For Polyhedra, the neighbor connectivity should be 3 or more neighbors, listed counter-clockwise as viewed from the exterior side of the vertex (see the illustrations in :ref:`PolyClipper concepts` for examples).
 
-  .. cpp:type:: Vector3d Vertex3d::Vector
+  .. note::
+     Note that while ``Vertex3d`` is templated on a geometric Vector trait class, the template argument defaults to an implementation appropriate for use with ``PolyClipper::Vector3d``.
 
-  .. cpp:member:: Vector3d Vertex3d::position
+  .. cpp:type:: Vector VA::VECTOR
+
+  .. cpp:member:: Vector Vertex3d::position
 
      The position of the vertex in :math:`(x,y,z)` coordinates.
 
@@ -355,10 +320,10 @@ Vertex classes
 
      Default constructor, sets member data to {position, neighbors, comp, ID, clips} = {(0,0,0), (), 1, -1, {}}
 
-  .. cpp:function:: Vertex3d::Vertex3d(const Vector3d& pos)
+  .. cpp:function:: Vertex3d::Vertex3d(const Vector& pos)
 
      Construct with just the position
 
-  .. cpp:function:: Vertex3d::Vertex3d(const Vector3d& pos, const int c)
+  .. cpp:function:: Vertex3d::Vertex3d(const Vector& pos, const int c)
 
      Construct with {position, comp} = {pos, c}

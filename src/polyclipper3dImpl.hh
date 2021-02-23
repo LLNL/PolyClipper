@@ -20,10 +20,6 @@
 //
 // Created by J. Michael Owen, Tue Nov 28 10:00:51 PST 2017
 //----------------------------------------------------------------------------//
-
-#include "polyclipper.hh"
-#include "polyclipper_utilities.hh"
-
 #include <list>
 #include <map>
 #include <set>
@@ -32,6 +28,7 @@
 #include <iterator>
 #include <algorithm>
 #include <assert.h>
+
 using std::vector;
 using std::list;
 using std::map;
@@ -50,37 +47,29 @@ namespace PolyClipper {
 namespace {    // anonymous methods
 
 //------------------------------------------------------------------------------
-// Compare a plane and point.
-//------------------------------------------------------------------------------
-inline
-int compare(const Plane3d& plane,
-            const PolyClipper::Vector3d& point) {
-  return sgn(plane.dist + plane.normal.dot(point));
-}
-
-//------------------------------------------------------------------------------
 // Compare a plane and a box (defined by it's min/max coordinates).
 //   -1 ==> box below plane
 //    0 ==> plane cuts through box
 //    1 ==> box above plane
 //------------------------------------------------------------------------------
+template<typename VA>
 inline
-int compare(const Plane3d& plane,
+int compare(const Plane<VA>& plane,
             const double xmin,
             const double ymin,
             const double zmin,
             const double xmax,
             const double ymax,
             const double zmax) {
-  using Vector = PolyClipper::Vector3d;
-  const auto c1 = compare(plane, Vector(xmin, ymin, zmin));
-  const auto c2 = compare(plane, Vector(xmax, ymin, zmin));
-  const auto c3 = compare(plane, Vector(xmax, ymax, zmin));
-  const auto c4 = compare(plane, Vector(xmin, ymax, zmin));
-  const auto c5 = compare(plane, Vector(xmin, ymin, zmax));
-  const auto c6 = compare(plane, Vector(xmax, ymin, zmax));
-  const auto c7 = compare(plane, Vector(xmax, ymax, zmax));
-  const auto c8 = compare(plane, Vector(xmin, ymax, zmax));
+  using Vector = typename VA::VECTOR;
+  const auto c1 = internal::compare<VA>(plane, VA::Vector(xmin, ymin, zmin));
+  const auto c2 = internal::compare<VA>(plane, VA::Vector(xmax, ymin, zmin));
+  const auto c3 = internal::compare<VA>(plane, VA::Vector(xmax, ymax, zmin));
+  const auto c4 = internal::compare<VA>(plane, VA::Vector(xmin, ymax, zmin));
+  const auto c5 = internal::compare<VA>(plane, VA::Vector(xmin, ymin, zmax));
+  const auto c6 = internal::compare<VA>(plane, VA::Vector(xmax, ymin, zmax));
+  const auto c7 = internal::compare<VA>(plane, VA::Vector(xmax, ymax, zmax));
+  const auto c8 = internal::compare<VA>(plane, VA::Vector(xmin, ymax, zmax));
   const auto cmin = min(c1, min(c2, min(c3, min(c4, min(c5, min(c6, min(c7, c8)))))));
   const auto cmax = max(c1, max(c2, max(c3, max(c4, max(c5, max(c6, max(c7, c8)))))));
   if (cmin >= 0) {
@@ -93,26 +82,13 @@ int compare(const Plane3d& plane,
 }
 
 //------------------------------------------------------------------------------
-// Intersect a line-segment with a plane.
-//------------------------------------------------------------------------------
-inline
-PolyClipper::Vector3d
-segmentPlaneIntersection(const PolyClipper::Vector3d& a,       // line-segment begin
-                         const PolyClipper::Vector3d& b,       // line-segment end
-                         const Plane3d& plane) {                 // plane
-  const auto asgndist = plane.dist + plane.normal.dot(a);
-  const auto bsgndist = plane.dist + plane.normal.dot(b);
-  assert (asgndist != bsgndist);
-  return (a*bsgndist - b*asgndist)/(bsgndist - asgndist);
-}
-
-//------------------------------------------------------------------------------
 // Find the next neighbor in CCW order in the neighbor set of a vertex.
 // This should be the previous vertex from our entry value.
 //------------------------------------------------------------------------------
+template<typename VertexType>
 inline
 int
-nextInFaceLoop(const Vertex3d& v, const int vprev) {
+nextInFaceLoop(const VertexType& v, const int vprev) {
   const auto itr = find(v.neighbors.begin(), v.neighbors.end(), vprev);
   assert (itr != v.neighbors.end());
   if (itr == v.neighbors.begin()) {
@@ -151,9 +127,10 @@ inPlaceSetIntersection(set<int>& a, const set<int>& b) {
 //------------------------------------------------------------------------------
 // Initialize a polyhedron given the vertex coordinates and connectivity.
 //------------------------------------------------------------------------------
+template<typename VA>
 void
-initializePolyhedron(Polyhedron& poly,
-                     const vector<PolyClipper::Vector3d>& positions,
+initializePolyhedron(std::vector<Vertex3d<VA>>& poly,
+                     const vector<typename VA::VECTOR>& positions,
                      const vector<vector<int>>& neighbors) {
 
   // Pre-conditions
@@ -170,13 +147,14 @@ initializePolyhedron(Polyhedron& poly,
 //------------------------------------------------------------------------------
 // Return a nicely formatted string representing the polyhedron.
 //------------------------------------------------------------------------------
+template<typename VA>
 std::string
-polyhedron2string(const Polyhedron& poly) {
+polyhedron2string(const std::vector<Vertex3d<VA>>& poly) {
 
   std::ostringstream s;
   const auto nverts = poly.size();
   for (auto i = 0; i < nverts; ++i) {
-    s << i << " ID=" << poly[i].ID << " comp=" << poly[i].comp << " @ " << poly[i].position
+    s << i << " ID=" << poly[i].ID << " comp=" << poly[i].comp << " @ " << VA::str(poly[i].position)
       << " neighbors=[";
     copy(poly[i].neighbors.begin(), poly[i].neighbors.end(), ostream_iterator<int>(s, " "));
     s << "] clips[";
@@ -187,39 +165,19 @@ polyhedron2string(const Polyhedron& poly) {
   return s.str();
 }
 
-// std::string
-// polyhedron2string(const Polyhedron& poly) {
-//   ostringstream s;
-//   s << "[";
-
-//   // Get the vertices in face ordering.
-//   const vector<vector<const Vertex3d*>> faces;
-
-//   // Now output the face vertex coordinates.
-//   for (const auto& face: faces) {
-//     s << "[";
-//     for (const auto vptr: face) {
-//       s << " " << vptr->position;
-//     }
-//     s << "]\n ";
-//   }
-//   s << "]";
-
-//   return s.str();
-// }
-
 //------------------------------------------------------------------------------
 // Compute the zeroth and first moment of a Polyhedron.
 //------------------------------------------------------------------------------
-void moments(double& zerothMoment, PolyClipper::Vector3d& firstMoment,
-             const Polyhedron& polyhedron) {
+template<typename VA>
+void moments(double& zerothMoment, typename VA::VECTOR& firstMoment,
+             const std::vector<Vertex3d<VA>>& polyhedron) {
 
   // Useful types.
-  using Vector = PolyClipper::Vector3d;
+  using Vector = typename VA::VECTOR;
 
   // Clear the result for accumulation.
   zerothMoment = 0.0;
-  firstMoment = {0.0, 0.0, 0.0};
+  firstMoment = VA::Vector(0.0, 0.0, 0.0);
 
   if (not polyhedron.empty()) {
 
@@ -239,32 +197,35 @@ void moments(double& zerothMoment, PolyClipper::Vector3d& firstMoment,
     const auto facets = extractFaces(polyhedron);
     for (const auto& facet: facets) {
       const auto n = facet.size();
-      const auto p0 = polyhedron[facet[0]].position - origin;
+      const auto p0 = VA::sub(polyhedron[facet[0]].position, origin);
       for (auto k = 1; k < n - 1; ++k) {
         const auto i = facet[k];
         const auto j = facet[(k + 1) % n];
-        const auto p1 = polyhedron[i].position - origin;
-        const auto p2 = polyhedron[j].position - origin;
-        const auto dV = p0.dot(p1.cross(p2));
-        zerothMoment += dV;                               // 6x
-        firstMoment += dV*(p0 + p1 + p2);                 // 24x
+        const auto p1 = VA::sub(polyhedron[i].position, origin);
+        const auto p2 = VA::sub(polyhedron[j].position, origin);
+        const auto dV = VA::dot(p0, VA::cross(p1, p2));
+        zerothMoment += dV;                                                // 6x
+        VA::iadd(firstMoment, VA::mul(VA::add(p0, VA::add(p1, p2)), dV));  // 24x
+        // firstMoment += dV*(p0 + p1 + p2);                 // 24x
       }
     }
     zerothMoment /= 6.0;
-    firstMoment *= safeInv(24.0*zerothMoment);
-    firstMoment += origin;
+    VA::imul(firstMoment, internal::safeInv(24.0*zerothMoment));
+    VA::iadd(firstMoment, origin);
   }
 }
 
 //------------------------------------------------------------------------------
 // Clip a polyhedron by planes.
 //------------------------------------------------------------------------------
-void clipPolyhedron(Polyhedron& polyhedron,
-                    const std::vector<Plane3d>& planes) {
+template<typename VA>
+void clipPolyhedron(std::vector<Vertex3d<VA>>& polyhedron,
+                    const std::vector<Plane<VA>>& planes) {
 
   // Pre-declare variables.  Normally I prefer local declaration, but this
   // seems to slightly help performance.
-  using Vector = PolyClipper::Vector3d;
+  using Vector = typename VA::VECTOR;
+  using Vertex = Vertex3d<VA>;
   bool above, below;
   int nverts0, nverts, nneigh, i, j, k, jn, inew, iprev, inext, itmp;
   vector<int>::iterator nitr;
@@ -282,12 +243,12 @@ void clipPolyhedron(Polyhedron& polyhedron,
   auto ymin = std::numeric_limits<double>::max(), ymax = std::numeric_limits<double>::lowest();
   auto zmin = std::numeric_limits<double>::max(), zmax = std::numeric_limits<double>::lowest();
   for (auto& v: polyhedron) {
-    xmin = std::min(xmin, v.position.x);
-    xmax = std::max(xmax, v.position.x);
-    ymin = std::min(ymin, v.position.y);
-    ymax = std::max(ymax, v.position.y);
-    zmin = std::min(zmin, v.position.z);
-    zmax = std::max(zmax, v.position.z);
+    xmin = std::min(xmin, VA::x(v.position));
+    xmax = std::max(xmax, VA::x(v.position));
+    ymin = std::min(ymin, VA::y(v.position));
+    ymax = std::max(ymax, VA::y(v.position));
+    zmin = std::min(zmin, VA::z(v.position));
+    zmax = std::max(zmax, VA::z(v.position));
   }
 
   // Loop over the planes.
@@ -295,7 +256,7 @@ void clipPolyhedron(Polyhedron& polyhedron,
   const auto nplanes = planes.size();
   while (kplane < nplanes and not polyhedron.empty()) {
     const auto& plane = planes[kplane++];
-    // cerr << "Clip plane: " << plane.dist << " " << plane.normal << endl;
+    // cerr << "Clip plane: " << plane.dist << " " << VA::str(plane.normal) << endl;
 
     // First check against the bounding box.
     auto boxcomp = compare(plane, xmin, ymin, zmin, xmax, ymax, zmax);
@@ -307,7 +268,7 @@ void clipPolyhedron(Polyhedron& polyhedron,
     // Also keep track of any vertices that landed exactly in-plane.
     if (not (above or below)) {
       for (auto& v: polyhedron) {
-        v.comp = compare(plane, v.position);
+        v.comp = internal::compare<VA>(plane, v.position);
         if (v.comp == 1) {
           below = false;
         } else if (v.comp == -1) {
@@ -341,10 +302,10 @@ void clipPolyhedron(Polyhedron& polyhedron,
 
               // This edge straddles the clip plane, so insert a new vertex.
               inew = polyhedron.size();
-              polyhedron.push_back(Vertex3d(segmentPlaneIntersection(polyhedron[i].position,
-                                                                     polyhedron[jn].position,
-                                                                     plane),
-                                            2));         // 2 indicates new vertex
+              polyhedron.push_back(Vertex(internal::segmentPlaneIntersection(polyhedron[i].position,
+                                                                             polyhedron[jn].position,
+                                                                             plane),
+                                          2));         // 2 indicates new vertex
               assert (polyhedron.size() == inew + 1);
               polyhedron[inew].neighbors = vector<int>({jn, i});
               polyhedron[inew].clips.insert(plane.ID);
@@ -464,12 +425,12 @@ void clipPolyhedron(Polyhedron& polyhedron,
       for (auto& v: polyhedron) {
         if (v.comp >= 0) {
           v.ID = i++;
-          xmin = std::min(xmin, v.position.x);
-          xmax = std::max(xmax, v.position.x);
-          ymin = std::min(ymin, v.position.y);
-          ymax = std::max(ymax, v.position.y);
-          zmin = std::min(zmin, v.position.z);
-          zmax = std::max(zmax, v.position.z);
+          xmin = std::min(xmin, VA::x(v.position));
+          xmax = std::max(xmax, VA::x(v.position));
+          ymin = std::min(ymin, VA::y(v.position));
+          ymax = std::max(ymax, VA::y(v.position));
+          zmin = std::min(zmin, VA::z(v.position));
+          zmax = std::max(zmax, VA::z(v.position));
         }
       }
 
@@ -482,7 +443,7 @@ void clipPolyhedron(Polyhedron& polyhedron,
           }
         }
       }
-      polyhedron.erase(std::remove_if(polyhedron.begin(), polyhedron.end(), [](Vertex3d& v) { return v.comp < 0; }), polyhedron.end());
+      polyhedron.erase(std::remove_if(polyhedron.begin(), polyhedron.end(), [](Vertex& v) { return v.comp < 0; }), polyhedron.end());
       double V1;
       Vector C1;
       moments(V1, C1, polyhedron);
@@ -499,9 +460,11 @@ void clipPolyhedron(Polyhedron& polyhedron,
 //------------------------------------------------------------------------------
 // Collapse degenerate vertices.
 //------------------------------------------------------------------------------
-void collapseDegenerates(Polyhedron& polyhedron,
+template<typename VA>
+void collapseDegenerates(std::vector<Vertex3d<VA>>& polyhedron,
                          const double tol) {
 
+  using Vertex = Vertex3d<VA>;
   const auto tol2 = tol*tol;
   auto n = polyhedron.size();
   if (n > 0) {
@@ -522,7 +485,7 @@ void collapseDegenerates(Polyhedron& polyhedron,
           for (auto jneigh = 0; jneigh < polyhedron[i].neighbors.size(); ++jneigh) {
             const auto j = polyhedron[i].neighbors[jneigh];
             assert (polyhedron[j].ID >= 0);
-            if ((polyhedron[i].position - polyhedron[j].position).magnitude2() < tol2) {
+            if (VA::magnitude2(VA::sub(polyhedron[i].position, polyhedron[j].position)) < tol2) {
               // cerr << " --> collapasing " << j << " to " << i;
               active = true;
               idone = false;
@@ -596,7 +559,7 @@ void collapseDegenerates(Polyhedron& polyhedron,
       }
 
       // Erase the inactive vertices.
-      polyhedron.erase(remove_if(polyhedron.begin(), polyhedron.end(), [](const Vertex3d& v) { return v.ID < 0; }), polyhedron.end());
+      polyhedron.erase(remove_if(polyhedron.begin(), polyhedron.end(), [](const Vertex& v) { return v.ID < 0; }), polyhedron.end());
       if (polyhedron.size() < 4) polyhedron.clear();
     }
   }
@@ -621,8 +584,9 @@ void collapseDegenerates(Polyhedron& polyhedron,
 // Implicitly uses the convention that neighbors for each vertex are arranged
 // counter-clockwise viewed from the exterior.
 //------------------------------------------------------------------------------
+template<typename VA>
 vector<vector<int>>
-extractFaces(const Polyhedron& poly) {
+extractFaces(const std::vector<Vertex3d<VA>>& poly) {
 
   using Edge = pair<int, int>;
   using Face = vector<int>;
@@ -708,8 +672,9 @@ extractFaces(const Polyhedron& poly) {
 //------------------------------------------------------------------------------
 // Compute the set of clips common to each face.
 //------------------------------------------------------------------------------
+template<typename VA>
 vector<set<int>>
-commonFaceClips(const Polyhedron& poly,
+commonFaceClips(const std::vector<Vertex3d<VA>>& poly,
                 const vector<vector<int>>& faceVertices) {
   const auto nfaces = faceVertices.size();
   vector<set<int>> faceClips(nfaces);
@@ -727,7 +692,8 @@ commonFaceClips(const Polyhedron& poly,
 //------------------------------------------------------------------------------
 // Split a polyhedron into a set of tetrahedra.
 //------------------------------------------------------------------------------
-vector<vector<int>> splitIntoTetrahedra(const Polyhedron& poly,
+template<typename VA>
+vector<vector<int>> splitIntoTetrahedra(const std::vector<Vertex3d<VA>>& poly,
                                         const double tol) {
 
   // Prepare the result, which will be quadruples of indices in the input polyhedron vertices.
@@ -746,7 +712,8 @@ vector<vector<int>> splitIntoTetrahedra(const Polyhedron& poly,
       const auto& v1 = poly[poly[i].neighbors[j  ]].position;
       const auto& v2 = poly[poly[i].neighbors[j+1]].position;
       const auto& v3 = poly[poly[i].neighbors[j+2]].position;
-      convex = ((v1 - v0).dot((v2 - v0).cross(v3 - v0)) <= 1.0e-10);  // Note we have to flip signs cause of neighbor ordering
+      convex = VA::dot(VA::sub(v1, v0), VA::cross(VA::sub(v2, v0), VA::sub(v3, v0))) <= 1.0e-10;  // Note we have to flip signs cause of neighbor ordering
+      // convex = ((v1 - v0).dot((v2 - v0).cross(v3 - v0)) <= 1.0e-10);
       ++j;
     }
     ++i;
@@ -773,7 +740,8 @@ vector<vector<int>> splitIntoTetrahedra(const Polyhedron& poly,
           const auto& v1 = poly[face[0  ]].position;
           const auto& v2 = poly[face[i-1]].position;
           const auto& v3 = poly[face[i  ]].position;
-          vol = (v1 - v0).dot((v2 - v0).cross(v3 - v0))/3.0;
+          vol = VA::dot(VA::sub(v1, v0), VA::cross(VA::sub(v2, v0), VA::sub(v3, v0)))/3.0;
+          // vol = (v1 - v0).dot((v2 - v0).cross(v3 - v0))/3.0;
           if (vol > tol) result.push_back({0, face[0], face[i-1], face[i]});
         }
       }

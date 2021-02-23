@@ -1,5 +1,6 @@
 from PYB11Generator import *
 
+@PYB11cppname("Vertex3d<>")
 class Vertex3d:
     '''The PolyClipper 3D (x,y,z) vertex type.
 
@@ -36,7 +37,7 @@ internal usage during PolyClipper clipping operations.
         "Construct with a position and initial 'comp' value"
 
     def pyinit3(self,
-                rhs = "const Vertex3d&"):
+                rhs = "const Vertex3d<>&"):
         "Copy constructor"
 
     #---------------------------------------------------------------------------
@@ -49,7 +50,7 @@ internal usage during PolyClipper clipping operations.
     # Methods
     #---------------------------------------------------------------------------
     @PYB11implementation('''
-[](const Vertex3d& self) { 
+[](const Vertex3d<>& self) { 
   auto result = "{pos=(" + std::to_string(self.position.x) + " " + std::to_string(self.position.y) + + " " + std::to_string(self.position.z) + 
                 "), neighbors=( ";
   for (const auto x: self.neighbors) result += std::to_string(x) + " "; 

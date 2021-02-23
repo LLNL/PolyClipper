@@ -6,9 +6,16 @@
 #ifndef __polyclipper_utilities__
 #define __polyclipper_utilities__
 
+#include "polyclipper_vector2d.hh"
+#include "polyclipper_vector3d.hh"
+#include "polyclipper_plane.hh"
+
 #include <ostream>
+#include <vector>
+#include <cassert>
 
 namespace PolyClipper {
+namespace internal {
 
 //------------------------------------------------------------------------------
 // Return the sign of the argument determined as follows:
@@ -135,6 +142,34 @@ removeElements(std::vector<Value>& vec,
   }
 }
 
+//------------------------------------------------------------------------------
+// Compare a plane and point.
+//------------------------------------------------------------------------------
+template<typename VA>
+inline
+int compare(const Plane<VA>& plane,
+            const typename VA::VECTOR& point) {
+  const auto sgndist = plane.dist + VA::dot(plane.normal, point);
+  if (std::abs(sgndist) < 1.0e-10) return 0;
+  return sgn0(sgndist);
+}
+
+//------------------------------------------------------------------------------
+// Intersect a line-segment with a plane.
+//------------------------------------------------------------------------------
+template<typename VA>
+inline
+typename VA::VECTOR
+segmentPlaneIntersection(const typename VA::VECTOR& a,         // line-segment begin
+                         const typename VA::VECTOR& b,         // line-segment end
+                         const Plane<VA>& plane) { // plane
+  const auto asgndist = plane.dist + VA::dot(plane.normal, a);
+  const auto bsgndist = plane.dist + VA::dot(plane.normal, b);
+  assert(asgndist != bsgndist);
+  return VA::div(VA::sub(VA::mul(a, bsgndist), VA::mul(b, asgndist)), bsgndist - asgndist);
+}
+
+}
 }
 
 //------------------------------------------------------------------------------

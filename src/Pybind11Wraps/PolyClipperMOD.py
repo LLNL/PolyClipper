@@ -8,25 +8,41 @@ from PYB11Generator import *
 import types
 
 # Include files.
-PYB11includes = ['"polyclipper.hh"']
+PYB11includes = ['"polyclipper2d.hh"',
+                 '"polyclipper3d.hh"',
+                 '"polyclipper_vector2d.hh"',
+                 '"polyclipper_vector3d.hh"',
+                 '"polyclipper_plane.hh"']
 
 PYB11namespaces = ["PolyClipper"]
+
+PYB11preamble = """
+using Polygon = std::vector<PolyClipper::Vertex2d<>>;
+using Polyhedron = std::vector<PolyClipper::Vertex3d<>>;
+using Plane2d = PolyClipper::Plane<PolyClipper::internal::VectorAdapter<PolyClipper::Vector2d>>;
+using Plane3d = PolyClipper::Plane<PolyClipper::internal::VectorAdapter<PolyClipper::Vector3d>>;
+"""
 
 #-------------------------------------------------------------------------------
 # Import the types defined in this module
 #-------------------------------------------------------------------------------
 from Vector2d import *
 from Vector3d import *
-from Plane2d import *
-from Plane3d import *
 from Vertex2d import *
 from Vertex3d import *
+from Plane import *
 
 #-------------------------------------------------------------------------------
 # Polygon & Polyhedron
 #-------------------------------------------------------------------------------
-Polygon    = PYB11_bind_vector("PolyClipper::Vertex2d", opaque=True, local=True)
-Polyhedron = PYB11_bind_vector("PolyClipper::Vertex3d", opaque=True, local=True)
+Polygon    = PYB11_bind_vector("PolyClipper::Vertex2d<>", opaque=True, local=True)
+Polyhedron = PYB11_bind_vector("PolyClipper::Vertex3d<>", opaque=True, local=True)
+
+#-------------------------------------------------------------------------------
+# Plane
+#-------------------------------------------------------------------------------
+Plane2d = PYB11TemplateClass(Plane, template_parameters="internal::VectorAdapter<Vector2d>")
+Plane3d = PYB11TemplateClass(Plane, template_parameters="internal::VectorAdapter<Vector3d>")
 
 #-------------------------------------------------------------------------------
 # Polygon methods.
@@ -37,6 +53,7 @@ def initializePolygon(poly = "Polygon&",
     "Initialize a PolyClipper::Polygon from vertex positions and vertex neighbors."
     return "void"
 
+@PYB11cppname("polygon2string<>")
 def polygon2string(poly = "Polygon&"):
     "Return a formatted string representation for a PolyClipper::Polygon."
     return "std::string"
@@ -88,6 +105,7 @@ def initializePolyhedron(poly = "Polyhedron&",
     "Initialize a PolyClipper::Polyhedron from vertex positions and vertex neighbors."
     return "void"
 
+@PYB11cppname("polyhedron2string<>")
 def polyhedron2string(poly = "Polyhedron&"):
     "Return a formatted string representation for a PolyClipper::Polyhedron."
     return "std::string"
