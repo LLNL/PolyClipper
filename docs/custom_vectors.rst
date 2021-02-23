@@ -138,7 +138,8 @@ In the test directory of PolyClipper (under ``test/test_array_vector``) is a com
     return 0;
   }
   
-Note that the ``PolyClipper::Vector2d`` internal type defines its own versions of methods required by a Vector adapter trait class, so the adapter in that case (found in ``polyclipper_adapter.hh``) is only a thin wrapper around those methods.  In this example, however, the ``std::array`` does not have any notion of mathematical concepts like the Vector dot product, cross product, magnitude, etc., so we explicitly compute those in the appropriate methods of ``ArrayAdapter2d`` above.
+.. note::
+   Note that the ``PolyClipper::Vector2d`` internal type defines its own versions of methods required by a Vector adapter trait class, so the adapter in that case (found in ``polyclipper_adapter.hh``) is only a thin wrapper around those methods.  In this example, however, the ``std::array`` does not have any notion of mathematical concepts like the Vector dot product, cross product, magnitude, etc., so we explicitly compute those in the appropriate methods of ``ArrayAdapter2d`` above.
 
 
 A 3D example using ``std::array<double, 3>`` as a Vector

@@ -185,7 +185,7 @@ Vector classes
 
      If :math:`\vec{a} = (0,0,0)`, returns the unit vector in the :math:`x` direction: :math:`(1,0,0)`.
      
-Plane class
+Plane classes
 --------------------
 ..
   ------------------------------------------------------------------------------
@@ -231,7 +231,15 @@ Plane class
 
      Construct specifying the normal, a point in the plane, and ID, so {:math:`\hat{n}, d`, ID} = {nhat, :math:`-p\cdot\hat{n}`, id}
 
-Vertex class
+.. note::
+  In the headers ``polyclipper2d.hh`` and ``polyclipper3d.hh`` we define the typedefs::
+
+    using Plane2d = Plane<internal::VectorAdapter<Vector2d>>;
+    using Plane3d = Plane<internal::VectorAdapter<Vector3d>>;
+
+  (both in the namespace ``PolyClipper``) for convenience when working with PolyClipper's native Vectors.
+
+Vertex classes
 --------------------
 ..
   ------------------------------------------------------------------------------
