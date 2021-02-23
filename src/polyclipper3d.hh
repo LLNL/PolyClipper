@@ -36,6 +36,9 @@
 
 namespace PolyClipper {
 
+// A convenient alias for the 3D plane with PolyClippers internal Vector type
+using Plane3d = Plane<internal::VectorAdapter<Vector3d>>;
+
 //------------------------------------------------------------------------------
 // The 3D vertex struct, which we use to encode polyhedra, i.e., 
 // polyhedra are specified as std::vector<Vertex3d>.

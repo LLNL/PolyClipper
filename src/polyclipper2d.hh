@@ -36,6 +36,9 @@
 
 namespace PolyClipper {
 
+// A convenient alias for the 2D plane with PolyClippers internal Vector type
+using Plane2d = Plane<internal::VectorAdapter<Vector2d>>;
+
 //------------------------------------------------------------------------------
 // The 2D vertex struct, which we use to encode polygons, i.e., 
 // polygons are specified as std::vector<Vertex2d>.
