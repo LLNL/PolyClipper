@@ -7,17 +7,13 @@
 struct ArrayAdapter2d {  
   using VECTOR = std::array<double, 2>;
   static VECTOR Vector(double a, double b)                   { return {a, b}; }                 // only 2D
-  static VECTOR Vector(double a, double b, double c)         { assert(false); }                 // only 3D
   static bool equal(const VECTOR& a, const VECTOR& b)        { return (a[0] == b[0]) and (a[1] == b[1]); }
   static double& x(VECTOR& a)                                { return a[0]; }
   static double& y(VECTOR& a)                                { return a[1]; }
-  static double& z(VECTOR& a)                                { assert(false); }
   static double  x(const VECTOR& a)                          { return a[0]; }
   static double  y(const VECTOR& a)                          { return a[1]; }
-  static double  z(const VECTOR& a)                          { assert(false); }
   static double  dot(const VECTOR& a, const VECTOR& b)       { return a[0]*b[0] + a[1]*b[1]; }
   static double  crossmag(const VECTOR& a, const VECTOR& b)  { return a[0]*b[1] - a[1]*b[0]; }   // only 2D
-  static VECTOR  cross(const VECTOR& a, const VECTOR& b)     { assert(false); }                  // only 3D
   static double  magnitude2(const VECTOR& a)                 { return a[0]*a[0] + a[1]*a[1]; }
   static double  magnitude(const VECTOR& a)                  { return std::sqrt(magnitude2(a)); }
   static VECTOR& imul(VECTOR& a, const double b)             { a[0] *= b; a[1] *= b; return a; }

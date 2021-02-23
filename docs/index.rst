@@ -7,12 +7,13 @@ Welcome to PolyClipper's documentation!
 =======================================
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
    :caption: Contents:
 
    intro.rst
    building.rst
    concepts.rst
+   custom_vectors.rst
    datatypes.rst
    polygon_methods.rst
    polyhedron_methods.rst

@@ -2,7 +2,7 @@
 PolyClipper concepts
 ########################################
 
-PolyClipper only has a few data types ``Vector2d``, ``Vector3d``, ``Plane2d``, ``Plane3d``, ``Vertex2d``, and ``Vertex3d``, all defined inside the C++ namespace ``PolyClipper``.  There are also ``Polygon`` and ``Polyhedron`` types defined, but these are simply aliases for ``std::vector<PolyClipper::Vertex2d>`` and ``std::vector<PolyClipper::Vertex3d>``.
+PolyClipper only has a few data types (``Vector2d``, ``Vector3d``, ``Plane2d``, ``Plane3d``, ``Vertex2d``, and ``Vertex3d``), all defined inside the C++ namespace ``PolyClipper``.  The main methods of PolyClipper are free functions for clipping and manipulating polytopes (i.e., polygons and polyhedra), which are represented as collections of ``Vertex2d`` (for polygons) and ``Vertex3d`` (for polyhedra).  Note that while PolyClipper provides native (``Vector2d``, ``Vector3d``) types, PolyClipper's functions are templated on the Vector type (actually a trait class describing the Vector operations), allowing the C++ user to use their own native geometric Vectors if so desired.  The built in Python module provided by PolyClipper is instantiated using PolyClipper's native Vector's, so if you want to provide Python versions with your own Vector types you must bind those yourself.  Further discussion and examples of this generalized C++ functionality can be found in the :ref:`Using PolyClipper with a user defined Vector type`.
 
 Collections of vertices encapsulate all the necessary information to specify Polygons and Polyhedra.  This works because vertices contain their connectivity to neighbor vertices in the object.  For example, consider a hexagon as an example of a ``Polygon``:
 

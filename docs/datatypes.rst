@@ -185,104 +185,60 @@ Vector classes
 
      If :math:`\vec{a} = (0,0,0)`, returns the unit vector in the :math:`x` direction: :math:`(1,0,0)`.
      
-Plane classes
+Plane class
 --------------------
 ..
   ------------------------------------------------------------------------------
-  Plane2d
+  Plane
   ------------------------------------------------------------------------------
 
-.. cpp:class:: Plane2d
+.. cpp:class:: template<typename VA> Plane
 
-   Plane2d represents a plane in the :math:`(x,y)` coordinate system for clipping Polygons.  A plane is stored as a unit normal and closest signed distance from the plane to the origin: :math:`(\hat{n}, d)`.  The signed distance from the plane to any point :math:`\vec{p}` is
+   Plane represents a plane for clipping polytopes, and is templated on a VectorAdapter type describing how to use the approripate geometric Vector type.  A plane is stored as a unit normal and closest signed distance from the plane to the origin: :math:`(\hat{n}, d)`.  The signed distance from the plane to any point :math:`\vec{p}` is
 
   .. math::
      d_s(\vec{p}) = (\vec{p} - \vec{p}_0) \cdot \hat{n} = d + \vec{p} \cdot \hat{n},
 
   where :math:`\vec{p}_0` is any point in the plane.  Note with this definition the :math:`d` parameter defining the plane is :math:`d = -\vec{p}_0 \cdot \hat{n}`.
 
-  .. cpp:type:: Vector2d Plane2d::Vector
+  .. cpp:type:: Vector VA::Vector
 
-  .. cpp:member:: Vector2d Plane2d::normal
-
-     The unit normal to the plane :math:`\hat{n}`.
-
-  .. cpp:member:: double Plane2d::dist
+  .. cpp:member:: double Plane::dist
 
      The minimum signed distance from the origin to the plane :math:`d`.
 
-  .. cpp:member:: int Plane2d::ID
-
-     An optional integer identification number for the plane.  This is used by Vertex2d to record which plane(s) are responsible for creating the vertex.
-
-  .. cpp:function:: Plane2d::Plane2d()
-
-     Default constructor -- implies {:math:`\hat{n}, d`, ID} = {(1,0), 0.0, std::numeric_limits<int>::min()}
-
-  .. cpp:function:: Plane2d::Plane2d(const double d, const Vector2d& nhat)
-
-     Construct with {:math:`\hat{n}, d`, ID} = {nhat, d, std::numeric_limits<int>::min()}
-
-  .. cpp:function:: Plane2d::Plane2d(const Vector2d& p, const Vector2d& nhat)
-
-     Construct specifying the normal and a point in the plane, so {:math:`\hat{n}, d`, ID} = {nhat, :math:`-p\cdot\hat{n}`, std::numeric_limits<int>::min()}
-
-  .. cpp:function:: Plane2d::Plane2d(const Vector2d& p, const Vector2d& nhat, const int id)
-
-     Construct specifying the normal, a point in the plane, and ID, so {:math:`\hat{n}, d`, ID} = {nhat, :math:`-p\cdot\hat{n}`, id}
-
-..
-  ------------------------------------------------------------------------------
-  Plane3d
-  ------------------------------------------------------------------------------
-
-.. cpp:class:: Plane3d
-
-   Plane3d represents a plane in the :math:`(x,y,z)` coordinate system for clipping Polyhedra.  A plane is stored as a unit normal and closest signed distance from the plane to the origin: :math:`(\hat{n}, d)`.  The signed distance from the plane to any point :math:`\vec{p}` is
-
-  .. math::
-     d_s(\vec{p}) = (\vec{p} - \vec{p}_0) \cdot \hat{n} = d + \vec{p} \cdot \hat{n},
-
-  where :math:`\vec{p}_0` is any point in the plane.  Note with this definition the :math:`d` parameter defining the plane is :math:`d = -\vec{p}_0 \cdot \hat{n}`.
-
-  .. cpp:type:: Vector3d Plane3d::Vector
-
-  .. cpp:member:: Vector3d Plane3d::normal
+  .. cpp:member:: Vector Plane::normal
 
      The unit normal to the plane :math:`\hat{n}`.
 
-  .. cpp:member:: double Plane3d::dist
+  .. cpp:member:: int Plane::ID
 
-     The minimum signed distance from the origin to the plane :math:`d`.
+     An optional integer identification number for the plane.  This is used by ``Vertex<VA>`` to record which plane(s) are responsible for creating the vertex.
 
-  .. cpp:member:: int Plane3d::ID
-
-     An optional integer identification number for the plane.  This is used by Vertex3d to record which plane(s) are responsible for creating the vertex.
-
-  .. cpp:function:: Plane3d::Plane3d()
+  .. cpp:function:: Plane::Plane()
 
      Default constructor -- implies {:math:`\hat{n}, d`, ID} = {(1,0,0), 0.0, std::numeric_limits<int>::min()}
 
-  .. cpp:function:: Plane3d::Plane3d(const double d, const Vector3d& nhat)
+  .. cpp:function:: Plane::Plane(const double d, const Vector& nhat)
 
      Construct with {:math:`\hat{n}, d`, ID} = {nhat, d, std::numeric_limits<int>::min()}
 
-  .. cpp:function:: Plane3d::Plane3d(const Vector3d& p, const Vector3d& nhat)
+  .. cpp:function:: Plane::Plane(const Vector& p, const Vector& nhat)
 
      Construct specifying the normal and a point in the plane, so {:math:`\hat{n}, d`, ID} = {nhat, :math:`-p\cdot\hat{n}`, std::numeric_limits<int>::min()}
 
-  .. cpp:function:: Plane3d::Plane3d(const Vector3d& p, const Vector3d& nhat, const int id)
+  .. cpp:function:: Plane::Plane(const Vector& p, const Vector& nhat, const int id)
 
      Construct specifying the normal, a point in the plane, and ID, so {:math:`\hat{n}, d`, ID} = {nhat, :math:`-p\cdot\hat{n}`, id}
 
-Vertex classes
+Vertex class
 --------------------
 ..
   ------------------------------------------------------------------------------
-  Vertex2d
+  Vertex
   ------------------------------------------------------------------------------
 
-.. cpp:class:: Vertex2d
+.. cpp:class:: template<typename VA> Vertex2d
 
   Vertex2d is used to encode Polygons in 2d.  A vertex includes a position and the connectivity to neighboring vertices in the Polygon.  In this 2d case, the connectivity is always 2 vertices, ordered such that going from the first neighbor, to this vertex, and on to the last neighbor goes around the Polygon in the counter-clockwise direction.  This is illustrated in the Polygon examples in :ref:`PolyClipper concepts`.
 
