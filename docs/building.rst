@@ -56,6 +56,9 @@ PYBIND11_INCLUDE_PATH
 PYB11GEN_PATH
   Similarly you can explicitly specify a path to a PYB11Generator installation.  By default the PolyClipper downloaded version is used.
 
+ENABLE_DOCS
+  Turn Sphinx documentation generation on/off.
+
 SPHINX_EXECUTABLE
   Specify where the Sphinx executable is that should be used to build documentation.  If not given, the executable path is searched for ``sphinx-build``.
 

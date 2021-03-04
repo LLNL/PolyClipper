@@ -62,6 +62,10 @@ struct Vertex2d {
             comp      == rhs.comp and
             ID        == rhs.ID);
   }
+  friend std::ostream& operator<<(std::ostream& os, const Vertex2d<VA>& v) {
+    os << "Vertex2d[ " << VA::str(v.position) << " [" << v.neighbors.first << " " << v.neighbors.second << "] " << v.comp << " " << v.ID << "]";
+    return os;
+  }
 };
 
 //------------------------------------------------------------------------------

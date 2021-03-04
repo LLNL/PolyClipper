@@ -35,8 +35,8 @@ from Plane import *
 #-------------------------------------------------------------------------------
 # Polygon & Polyhedron
 #-------------------------------------------------------------------------------
-Polygon    = PYB11_bind_vector("PolyClipper::Vertex2d<>", opaque=True, local=True)
-Polyhedron = PYB11_bind_vector("PolyClipper::Vertex3d<>", opaque=True, local=True)
+Polygon    = PYB11_bind_vector("PolyClipper::Vertex2d<>", opaque=True, local=False)
+Polyhedron = PYB11_bind_vector("PolyClipper::Vertex3d<>", opaque=True, local=False)
 
 #-------------------------------------------------------------------------------
 # Plane
