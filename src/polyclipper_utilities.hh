@@ -10,9 +10,28 @@
 #include "polyclipper_vector3d.hh"
 #include "polyclipper_plane.hh"
 
+#include <iostream>
 #include <ostream>
 #include <vector>
-#include <cassert>
+#include <stdexcept>
+
+//------------------------------------------------------------------------------
+// Define an assert command with optional message
+//------------------------------------------------------------------------------
+#ifndef NDEBUG
+#   define PCASSERT2(condition, message) \
+    do { \
+        if (! (condition)) { \
+            std::cerr << "Assertion `" #condition "` failed in " << __FILE__ \
+                      << " line " << __LINE__ << ": " << message << std::endl; \
+            throw std::runtime_error("PolyClipper ERROR");                                              \
+        } \
+    } while (false)
+#else
+   define PCASSERT2(condition, message) do { } while (false)
+#endif
+
+#define PCASSERT(condition) PCASSERT2(condition, #condition)
 
 namespace PolyClipper {
 namespace internal {
@@ -165,7 +184,7 @@ segmentPlaneIntersection(const typename VA::VECTOR& a,         // line-segment b
                          const Plane<VA>& plane) { // plane
   const auto asgndist = plane.dist + VA::dot(plane.normal, a);
   const auto bsgndist = plane.dist + VA::dot(plane.normal, b);
-  assert(asgndist != bsgndist);
+  PCASSERT(asgndist != bsgndist);
   return VA::div(VA::sub(VA::mul(a, bsgndist), VA::mul(b, asgndist)), bsgndist - asgndist);
 }
 
@@ -208,6 +227,17 @@ inline
 PolyClipper::Vector3d
 operator*(const double lhs, const PolyClipper::Vector3d& rhs) {
   return rhs*lhs;
+}
+
+//------------------------------------------------------------------------------
+// Plane ostream
+//------------------------------------------------------------------------------
+template<typename VA>
+inline
+std::ostream&
+operator<<(std::ostream& os, const PolyClipper::Plane<VA>& plane) {
+  os << "Plane[ " << plane.dist << " " << VA::str(plane.normal) << " " << plane.ID << "]";
+  return os;
 }
 
 #endif

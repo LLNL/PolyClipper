@@ -6,7 +6,7 @@
 // Define a trait class for using a simple C style array of doubles as 3D Vector type for use in PolyClipper.
 struct ArrayAdapter3d {  
   using VECTOR = std::array<double, 3>;
-  static VECTOR Vector(double a, double b)                   { assert(false); }                  // only 2D
+  static VECTOR Vector(double a, double b)                   { PCASSERT(false); }                // only 2D
   static VECTOR Vector(double a, double b, double c)         { return {a, b, c}; }               // only 3D
   static bool equal(const VECTOR& a, const VECTOR& b)        { return (a[0] == b[0]) and (a[1] == b[1]) and (a[2] == b[2]); }
   static double& x(VECTOR& a)                                { return a[0]; }
@@ -16,7 +16,7 @@ struct ArrayAdapter3d {
   static double  y(const VECTOR& a)                          { return a[1]; }
   static double  z(const VECTOR& a)                          { return a[2]; }
   static double  dot(const VECTOR& a, const VECTOR& b)       { return a[0]*b[0] + a[1]*b[1] + a[2]*b[2]; }
-  static double  crossmag(const VECTOR& a, const VECTOR& b)  { assert(false); }                  // only 2D
+  static double  crossmag(const VECTOR& a, const VECTOR& b)  { PCASSERT(false); }                // only 2D
   static VECTOR  cross(const VECTOR& a, const VECTOR& b)     { return {a[1]*b[2] - a[2]*b[1],    // only 2D
                                                                        a[2]*b[0] - a[0]*b[2],
                                                                        a[0]*b[1] - a[1]*b[0]}; }

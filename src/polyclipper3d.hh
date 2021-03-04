@@ -59,6 +59,12 @@ struct Vertex3d {
             comp      == rhs.comp and
             ID        == rhs.ID);
   }
+  friend std::ostream& operator<<(std::ostream& os, const Vertex3d& v) {
+    os << "Vertex3d[ " << VA::str(v.position) << " [";
+    for (const auto i: v.neighbors) os << i << " ";
+    os << "] " << v.comp << " " << v.ID << "]";
+    return os;
+  }
 };
 
 //------------------------------------------------------------------------------

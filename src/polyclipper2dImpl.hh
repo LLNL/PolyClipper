@@ -28,7 +28,6 @@
 #include <sstream>
 #include <iterator>
 #include <algorithm>
-#include <assert.h>
 
 using std::vector;
 using std::list;
@@ -127,10 +126,10 @@ initializePolygon(std::vector<Vertex2d<VA>>& poly,
 
   // Pre-conditions
   const auto n = positions.size();
-  assert (neighbors.size() == n);
+  PCASSERT(neighbors.size() == n);
   poly.resize(n);
   for (auto i = 0; i < n; ++i) {
-    assert (neighbors[i].size() == 2);
+    PCASSERT(neighbors[i].size() == 2);
     poly[i].position = positions[i];
     poly[i].neighbors = {neighbors[i][0], neighbors[i][1]};
   }
@@ -171,7 +170,7 @@ polygon2string(const std::vector<Vertex2d<VA>>& poly) {
   //   auto vstart = 0;
   //   while (vstart < nverts and
   //          (poly[vstart].comp < 0 or usedVertices.find(vstart) != usedVertices.end())) vstart++;
-  //   assert (vstart < nverts);
+  //   PCASSERT(vstart < nverts);
   //   auto vnext = vstart;
 
   //   // Read out this loop.
@@ -259,7 +258,7 @@ void clipPolygon(std::vector<Vertex2d<VA>>& polygon,
     auto boxcomp = compare(plane, xmin, ymin, xmax, ymax);
     auto above = boxcomp ==  1;
     auto below = boxcomp == -1;
-    assert (not (above and below));
+    PCASSERT(not (above and below));
 
     // Check the current set of vertices against this plane.
     if (not (above or below)) {
@@ -271,7 +270,7 @@ void clipPolygon(std::vector<Vertex2d<VA>>& polygon,
           above = false;
         }
       }
-      assert (not (above and below));
+      PCASSERT(not (above and below));
     }
 
     // Did we get a simple case?
@@ -292,7 +291,7 @@ void clipPolygon(std::vector<Vertex2d<VA>>& polygon,
 
         // BCS XXX note that we are about to attempt to index into polygon.
         // If vnext = -1, for example, this will be a memory error with the sanitizer.
-        //assert (vnext >= 0);
+        //PCASSERT(vnext >= 0);
         if (vnext < 0) throw std::logic_error("vnext < 0");
         if (vprev < 0) throw std::logic_error("vprev < 0");
         const auto nverts = polygon.size();
@@ -339,7 +338,7 @@ void clipPolygon(std::vector<Vertex2d<VA>>& polygon,
       // For each hanging vertex, link to the neighbors that survive the clipping.
       // If there are more than two hanging vertices, we've clipped a non-convex face and need to check
       // how to hook up each section, possibly resulting in new faces.
-      //assert (hangingVertices.size() % 2 == 0);
+      //PCASSERT(hangingVertices.size() % 2 == 0);
       if (hangingVertices.size() % 2 != 0) throw std::logic_error("hangingVertices mod 2 is not zero");
       if (true) { //(hangingVertices.size() > 2) {
 
@@ -362,15 +361,15 @@ void clipPolygon(std::vector<Vertex2d<VA>>& polygon,
         // Just hook across the vertices and we're done.
         for (auto v: hangingVertices) {
           std::tie(vprev, vnext) = polygon[v].neighbors;
-          assert (polygon[v].comp == 0 or polygon[v].comp == 2);
-          assert (polygon[vprev].comp == -1 xor polygon[vnext].comp == -1);
+          PCASSERT(polygon[v].comp == 0 or polygon[v].comp == 2);
+          PCASSERT(polygon[vprev].comp == -1 xor polygon[vnext].comp == -1);
 
           if (polygon[vprev].comp == -1) {
             // We have to search backwards.
             while (polygon[vprev].comp == -1) {
               vprev = polygon[vprev].neighbors.first;
             }
-            assert (vprev != v);
+            PCASSERT(vprev != v);
             polygon[v].neighbors.first = vprev;
 
           } else {
@@ -378,7 +377,7 @@ void clipPolygon(std::vector<Vertex2d<VA>>& polygon,
             while (polygon[vnext].comp == -1) {
               vnext = polygon[vnext].neighbors.second;
             }
-            assert (vnext != v);
+            PCASSERT(vnext != v);
             polygon[v].neighbors.second = vnext;
 
           }
@@ -457,7 +456,7 @@ void collapseDegenerates(std::vector<Vertex2d<VA>>& polygon,
       for (auto i = 0; i < n; ++i) {
         if (polygon[i].ID >= 0) {
           auto j = polygon[i].neighbors.second;
-          //assert (polygon[j].ID >= 0);
+          //PCASSERT(polygon[j].ID >= 0);
           if (j==i) throw std::logic_error("got vertex and neighbor identical in collapseDegenerates");
           if (polygon[j].ID < 0) throw std::logic_error("polygon[j].ID is negative in collapseDegenerates");
           if (VA::magnitude2(VA::sub(polygon[i].position, polygon[j].position)) < tol2) {
@@ -524,9 +523,9 @@ void collapseDegenerates(std::vector<Vertex2d<VA>>& polygon,
   {
     const auto n = polygon.size();
     for (auto i = 0; i < n; ++i) {
-      assert(polygon[i].ID == i);
-      assert(polygon[i].neighbors.first < n);
-      assert(polygon[i].neighbors.second < n);
+      PCASSERT(polygon[i].ID == i);
+      PCASSERT(polygon[i].neighbors.first < n);
+      PCASSERT(polygon[i].neighbors.second < n);
     }
   }
 #endif
@@ -558,13 +557,13 @@ extractFaces(const std::vector<Vertex2d<VA>>& poly) {
     auto vstart = 0;
     while (vstart < nverts and
            (poly[vstart].comp < 0 or usedVertices.find(vstart) != usedVertices.end())) vstart++;
-    assert(vstart < nverts);
+    PCASSERT(vstart < nverts);
     auto vnext = vstart;
 
     // Read out this loop.
     auto force = true;
     while (force or vnext != vstart) {
-      assert(k < nactive);
+      PCASSERT(k < nactive);
       faceVertices[k][0] = vnext;
       vnext = poly[vnext].neighbors.second;
       faceVertices[k][1] = vnext;
@@ -575,7 +574,7 @@ extractFaces(const std::vector<Vertex2d<VA>>& poly) {
     faceVertices[k-1][1] = vstart;
   }
 
-  assert(k == nactive);
+  PCASSERT(k == nactive);
   return faceVertices;
 }
 
@@ -590,7 +589,7 @@ commonFaceClips(const std::vector<Vertex2d<VA>>& poly,
   const auto nfaces = faceVertices.size();
   vector<set<int>> faceClips(nfaces);
   for (auto k = 0; k < nfaces; ++k) {
-    assert(faceVertices[k].size() == 2);
+    PCASSERT(faceVertices[k].size() == 2);
     std::set_intersection(poly[faceVertices[k][0]].clips.begin(), poly[faceVertices[k][0]].clips.end(),
                           poly[faceVertices[k][1]].clips.begin(), poly[faceVertices[k][1]].clips.end(),
                           std::inserter(faceClips[k], faceClips[k].begin()));
@@ -631,7 +630,7 @@ vector<vector<int>> splitIntoTriangles(const std::vector<Vertex2d<VA>>& poly,
   }
 
   // PolyClipper::splitIntoTriangles ERROR: non-convex polygons not supported yet.
-  assert (false);
+  PCASSERT(false);
 }
 
 }
