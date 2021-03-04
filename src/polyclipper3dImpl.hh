@@ -27,7 +27,6 @@
 #include <sstream>
 #include <iterator>
 #include <algorithm>
-#include <assert.h>
 
 using std::vector;
 using std::list;
@@ -90,7 +89,7 @@ inline
 int
 nextInFaceLoop(const VertexType& v, const int vprev) {
   const auto itr = find(v.neighbors.begin(), v.neighbors.end(), vprev);
-  assert (itr != v.neighbors.end());
+  PCASSERT(itr != v.neighbors.end());
   if (itr == v.neighbors.begin()) {
     return v.neighbors.back();
   } else {
@@ -135,10 +134,10 @@ initializePolyhedron(std::vector<Vertex3d<VA>>& poly,
 
   // Pre-conditions
   const auto n = positions.size();
-  assert (neighbors.size() == n);
+  PCASSERT(neighbors.size() == n);
   poly.resize(n);
   for (auto i = 0; i < n; ++i) {
-    assert(neighbors[i].size() >= 3);
+    PCASSERT(neighbors[i].size() >= 3);
     poly[i].position = positions[i];
     poly[i].neighbors = neighbors[i];
   }
@@ -231,6 +230,17 @@ void clipPolyhedron(std::vector<Vertex3d<VA>>& polyhedron,
   vector<int>::iterator nitr;
   const double nearlyZero = 1.0e-15;
 
+  // Prepare to dump the input state if we hit an exception
+  std::string initial_state;
+#ifndef NDEBUG
+  {
+    initial_state += "Initial polyhedron:\n" + polyhedron2string(polyhedron) + "\nClipping planes:\n";
+    std::ostringstream os;
+    for (const auto& plane: planes) os << plane << std::endl;
+    initial_state += os.str();
+  }
+#endif
+
   // Check the input.
   double V0;
   Vector C0;
@@ -262,7 +272,7 @@ void clipPolyhedron(std::vector<Vertex3d<VA>>& polyhedron,
     auto boxcomp = compare(plane, xmin, ymin, zmin, xmax, ymax, zmax);
     auto above = boxcomp ==  1;
     auto below = boxcomp == -1;
-    assert (not (above and below));
+    PCASSERT(not (above and below));
 
     // Check the current set of vertices against this plane.
     // Also keep track of any vertices that landed exactly in-plane.
@@ -275,7 +285,7 @@ void clipPolyhedron(std::vector<Vertex3d<VA>>& polyhedron,
           above = false;
         }
       }
-      assert (not (above and below));
+      PCASSERT(not (above and below));
     }
 
     // Did we get a simple case?
@@ -290,14 +300,14 @@ void clipPolyhedron(std::vector<Vertex3d<VA>>& polyhedron,
       // Insert any new vertices.
       nverts0 = polyhedron.size();
       for (i = 0; i < nverts0; ++i) {   // Only check vertices before we start adding new ones.
-        if (polyhedron[i].comp == 1) {
+        if (polyhedron[i].comp == 1 or polyhedron[i].comp == 0) {
 
           // This vertex survives clipping -- check the neighbors for any new vertices we need to insert.
           nneigh = polyhedron[i].neighbors.size();
-          assert (nneigh >= 3);
+          PCASSERT(nneigh >= 3);
           for (auto j = 0; j < nneigh; ++j) {
             jn = polyhedron[i].neighbors[j];
-            assert (jn < nverts0);
+            PCASSERT(jn < nverts0);
             if (polyhedron[jn].comp == -1) {
 
               // This edge straddles the clip plane, so insert a new vertex.
@@ -306,7 +316,7 @@ void clipPolyhedron(std::vector<Vertex3d<VA>>& polyhedron,
                                                                              polyhedron[jn].position,
                                                                              plane),
                                           2));         // 2 indicates new vertex
-              assert (polyhedron.size() == inew + 1);
+              PCASSERT(polyhedron.size() == inew + 1);
               polyhedron[inew].neighbors = vector<int>({jn, i});
               polyhedron[inew].clips.insert(plane.ID);
 
@@ -318,16 +328,16 @@ void clipPolyhedron(std::vector<Vertex3d<VA>>& polyhedron,
               polyhedron[inew].clips.insert(common_clips.begin(), common_clips.end());
 
               nitr = find(polyhedron[jn].neighbors.begin(), polyhedron[jn].neighbors.end(), i);
-              assert (nitr != polyhedron[jn].neighbors.end());
+              PCASSERT(nitr != polyhedron[jn].neighbors.end());
               *nitr = inew;
               polyhedron[i].neighbors[j] = inew;
-              // cerr << " --> Inserting new vertex @ " << polyhedron.back().position << endl;
-
+              // cerr << " --> Inserting new vertex @ " << VA::str(polyhedron.back().position) << " between [" << i << " " << jn << "]" << endl;
             }
           }
-        } else if (polyhedron[i].comp == 0) {
-          // This vertex is exactly in plane, so just add this plane as a clip.
-          polyhedron[i].clips.insert(plane.ID);
+          if (polyhedron[i].comp == 0) {
+            // This vertex is exactly in plane, so we also add this plane as a clip of the vertex.
+            polyhedron[i].clips.insert(plane.ID);
+          }
         }
       }
       nverts = polyhedron.size();
@@ -335,9 +345,9 @@ void clipPolyhedron(std::vector<Vertex3d<VA>>& polyhedron,
 
       // // Next handle reconnecting any vertices that were exactly in-plane.
       // for (auto vptr: planeVertices) {
-      //   assert (vptr->comp == 0);
+      //   PCASSERT(vptr->comp == 0);
       //   const auto nneigh = vptr->neighbors.size();
-      //   assert (nneigh >= 3);
+      //   PCASSERT(nneigh >= 3);
       //   for (auto j = 0; j < nneigh; ++j) {
       //     auto nptr = vptr->neighbors[j];
       //     if (nptr->comp == -1) {
@@ -352,9 +362,9 @@ void clipPolyhedron(std::vector<Vertex3d<VA>>& polyhedron,
       //         vnext = nextInFaceLoop(vnext, vprev);
       //         vprev = tmp;
       //       }
-      //       assert (vprev->comp == -1);
-      //       assert (vnext->comp != -1);
-      //       assert (vnext != vptr);
+      //       PCASSERT(vprev->comp == -1);
+      //       PCASSERT(vnext->comp != -1);
+      //       PCASSERT(vnext != vptr);
       //       vptr->neighbors[j] = vnext;
 
       //       const auto barf = ((vnext->position - Vector( 3.46945e-18, 0.0657523, -0.0728318 )).magnitude() < 1.0e-3);
@@ -362,16 +372,16 @@ void clipPolyhedron(std::vector<Vertex3d<VA>>& polyhedron,
 
       //       // Figure out which pointer on the new neighbor should point back at vptr.
       //       auto itr = find(vnext->neighbors.begin(), vnext->neighbors.end(), vprev);
-      //       assert (itr != vnext->neighbors.end());
+      //       PCASSERT(itr != vnext->neighbors.end());
       //       *itr = vptr;
       //     }
       //   }
       // }
 
-      // For each new vertex, link to the neighbors that survive the clipping.
+      // Look for any topology links to clipped nodes we need to patch.
       {
         for (i = nverts0; i < nverts; ++i) {
-          assert (polyhedron[i].comp == 2);
+          PCASSERT(polyhedron[i].comp == 2);
           nneigh = polyhedron[i].neighbors.size();
 
           // Look for any neighbors of the vertex that are clipped.
@@ -383,16 +393,16 @@ void clipPolyhedron(std::vector<Vertex3d<VA>>& polyhedron,
               iprev = i;
               inext = jn;
               itmp = inext;
-              // cerr << vitr->ID << ": ( " << vprev->ID << " " << vnext->ID << ")";
+              // cerr << i << ": ( " << iprev << " " << inext << ")";
               k = 0;
               while (polyhedron[inext].comp == -1 and k++ < nverts) {
                 itmp = inext;
                 inext = nextInFaceLoop(polyhedron[inext], iprev);
                 iprev = itmp;
-                // cerr << " (" << vprev->ID << " " << vnext->ID << ")";
+                // cerr << " (" << iprev << " " << inext << ")";
               }
               // cerr << endl;
-              assert (polyhedron[inext].comp != -1);
+              PCASSERT(polyhedron[inext].comp != -1);
               polyhedron[i].neighbors[j] = inext;
               polyhedron[inext].neighbors.insert(polyhedron[inext].neighbors.begin(), i);
               // newEdges.push_back(make_pair(vnext, vitr));
@@ -401,7 +411,7 @@ void clipPolyhedron(std::vector<Vertex3d<VA>>& polyhedron,
         }
       }
       // const auto nNewEdges = newEdges.size();
-      // assert (nNewEdges >= 3);
+      // PCASSERT(nNewEdges >= 3);
 
       // // Collapse any degenerate vertices back onto the originals.
       // {
@@ -437,7 +447,9 @@ void clipPolyhedron(std::vector<Vertex3d<VA>>& polyhedron,
       // Renumber the neighbor links.
       for (i = 0; i < nverts; ++i) {
         if (polyhedron[i].comp >= 0) {
-          assert (polyhedron[i].neighbors.size() >= 3);
+          PCASSERT2(polyhedron[i].neighbors.size() >= 3,
+                    "Bad number of vertex neighbors: " << i << " " << polyhedron[i] << "\n"
+                    << "Clipped from plane " << kplane << " " << plane << "\n" << initial_state);
           for (j = 0; j < polyhedron[i].neighbors.size(); ++j) {
             polyhedron[i].neighbors[j] = polyhedron[polyhedron[i].neighbors[j]].ID;
           }
@@ -484,7 +496,7 @@ void collapseDegenerates(std::vector<Vertex3d<VA>>& polyhedron,
           idone = true;
           for (auto jneigh = 0; jneigh < polyhedron[i].neighbors.size(); ++jneigh) {
             const auto j = polyhedron[i].neighbors[jneigh];
-            assert (polyhedron[j].ID >= 0);
+            PCASSERT(polyhedron[j].ID >= 0);
             if (VA::magnitude2(VA::sub(polyhedron[i].position, polyhedron[j].position)) < tol2) {
               // cerr << " --> collapasing " << j << " to " << i;
               active = true;
@@ -495,7 +507,7 @@ void collapseDegenerates(std::vector<Vertex3d<VA>>& polyhedron,
               // Merge the neighbors of j->i.
               auto jitr = polyhedron[i].neighbors.begin() + jneigh;
               auto kitr = find(polyhedron[j].neighbors.begin(), polyhedron[j].neighbors.end(), i);
-              assert (kitr != polyhedron[j].neighbors.end());
+              PCASSERT(kitr != polyhedron[j].neighbors.end());
               jitr = polyhedron[i].neighbors.insert(jitr, polyhedron[j].neighbors.begin(), kitr);
               jitr = polyhedron[i].neighbors.insert(jitr, kitr+1, polyhedron[j].neighbors.end());  // jitr now points at the first of the newly inserted neighbors
 
@@ -522,7 +534,7 @@ void collapseDegenerates(std::vector<Vertex3d<VA>>& polyhedron,
                  // also, i can not be a neighbor to itself
                  if (k != i) {
                     auto itr = find(polyhedron[k].neighbors.begin(), polyhedron[k].neighbors.end(), j);
-                    // assert (itr != polyhedron[k].neighbors.end());
+                    // PCASSERT(itr != polyhedron[k].neighbors.end());
                     if (itr != polyhedron[k].neighbors.end()) *itr = i;
                  }
               }
@@ -571,8 +583,8 @@ void collapseDegenerates(std::vector<Vertex3d<VA>>& polyhedron,
   {
     const auto n = polyhedron.size();
     for (auto i = 0; i < n; ++i) {
-      assert (polyhedron[i].ID == i);
-      for (auto j: polyhedron[i].neighbors) assert (j >= 0 and j < n);
+      PCASSERT(polyhedron[i].ID == i);
+      for (auto j: polyhedron[i].neighbors) PCASSERT(j >= 0 and j < n);
     }
   }
 #endif
@@ -619,7 +631,7 @@ extractFaces(const std::vector<Vertex3d<VA>>& poly) {
 
       // Check every (outgoing) edge attached to this vertex.
       for (const auto ni: v.neighbors) {
-        assert (poly[ni].comp >= 0);
+        PCASSERT(poly[ni].comp >= 0);
 
         // Has this edge been walked yet?
         if (edgesWalked.find(make_pair(ni, i)) == edgesWalked.end()) {
@@ -634,10 +646,11 @@ extractFaces(const std::vector<Vertex3d<VA>>& poly) {
           while (vnext != vstart) {
             // cerr << " " << vnext;
             face.push_back(vnext);
-            assert (edgesWalked.find(make_pair(vprev, vnext)) == edgesWalked.end());
+            PCASSERT2(edgesWalked.find(make_pair(vprev, vnext)) == edgesWalked.end(),
+                      "Hit a redundant edge: (" << vprev << " " << vnext << endl << polyhedron2string(poly));
             edgesWalked.insert(make_pair(vprev, vnext));
             auto itr = find(poly[vnext].neighbors.begin(), poly[vnext].neighbors.end(), vprev);
-            assert (itr != poly[vnext].neighbors.end());
+            PCASSERT(itr != poly[vnext].neighbors.end());
             vprev = vnext;
             if (itr == poly[vnext].neighbors.begin()) {
               vnext = poly[vnext].neighbors.back();
@@ -647,7 +660,7 @@ extractFaces(const std::vector<Vertex3d<VA>>& poly) {
           }
           // cerr << endl;
           edgesWalked.insert(make_pair(vprev, vnext));   // Final edge connecting last->first vertex
-          assert (face.size() >= 3);
+          PCASSERT(face.size() >= 3);
           faceVertices.push_back(face);
         }
       }
@@ -660,8 +673,8 @@ extractFaces(const std::vector<Vertex3d<VA>>& poly) {
     // Every pair should have been walked twice, once in each direction.
     for (auto i = 0; i < nverts; ++i) {
       for (const auto ni: poly[i].neighbors) {
-        assert (edgesWalked.find(make_pair(i, ni)) != edgesWalked.end());
-        assert (edgesWalked.find(make_pair(ni, i)) != edgesWalked.end());
+        PCASSERT(edgesWalked.find(make_pair(i, ni)) != edgesWalked.end());
+        PCASSERT(edgesWalked.find(make_pair(ni, i)) != edgesWalked.end());
       }
     }
   }
@@ -680,7 +693,7 @@ commonFaceClips(const std::vector<Vertex3d<VA>>& poly,
   vector<set<int>> faceClips(nfaces);
   for (auto k = 0; k < nfaces; ++k) {
     const auto n = faceVertices[k].size();
-    assert(n >= 3);
+    PCASSERT(n >= 3);
     faceClips[k] = poly[faceVertices[k][0]].clips;
     for (auto j = 1; j < n; ++j) {
       inPlaceSetIntersection(faceClips[k], poly[faceVertices[k][j]].clips);
@@ -705,7 +718,7 @@ vector<vector<int>> splitIntoTetrahedra(const std::vector<Vertex3d<VA>>& poly,
   auto i = 0;
   while (convex and i < n0) {
     const auto nv = poly[i].neighbors.size();
-    assert (nv >= 3);
+    PCASSERT(nv >= 3);
     auto j = 0;
     while (convex and j < nv - 2) {
       const auto& v0 = poly[i].position;
@@ -735,7 +748,7 @@ vector<vector<int>> splitIntoTetrahedra(const std::vector<Vertex3d<VA>>& poly,
       // cout << "]" << endl;
       if (find(face.begin(), face.end(), 0) == face.end()) {
         const auto nf = face.size();
-        assert (nf >= 3);
+        PCASSERT(nf >= 3);
         for (auto i = 2; i < nf; ++i) {
           const auto& v1 = poly[face[0  ]].position;
           const auto& v2 = poly[face[i-1]].position;
@@ -750,7 +763,7 @@ vector<vector<int>> splitIntoTetrahedra(const std::vector<Vertex3d<VA>>& poly,
   }
 
   // PolyClipper::splitIntoTetrahedra ERROR: non-convex polyhedra not supported yet:\n" + polyhedron2string(poly)
-  assert(false);
+  PCASSERT(false);
 }
 
 }
