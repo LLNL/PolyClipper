@@ -28,7 +28,7 @@
         } \
     } while (false)
 #else
-   define PCASSERT2(condition, message) do { } while (false)
+#   define PCASSERT2(condition, message) do { } while (false)
 #endif
 
 #define PCASSERT(condition) PCASSERT2(condition, #condition)
