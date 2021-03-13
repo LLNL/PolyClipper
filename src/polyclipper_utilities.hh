@@ -13,19 +13,33 @@
 #include <iostream>
 #include <ostream>
 #include <vector>
+#include <exception>
 #include <stdexcept>
+
+namespace PolyClipper {
+//------------------------------------------------------------------------------
+// An exception to indicate an internal PolyClipper error
+//------------------------------------------------------------------------------
+class PolyClipperError: public std::exception {
+public:
+  std::string mMsg;
+  PolyClipperError(const std::string msg): std::exception(), mMsg(msg) {}
+  virtual const char* what() const throw() { return mMsg.c_str(); }
+};
 
 //------------------------------------------------------------------------------
 // Define an assert command with optional message
 //------------------------------------------------------------------------------
 #ifndef NDEBUG
-#   define PCASSERT2(condition, message) \
-    do { \
-        if (! (condition)) { \
-            std::cerr << "Assertion `" #condition "` failed in " << __FILE__ \
-                      << " line " << __LINE__ << ": " << message << std::endl; \
-            throw std::runtime_error("PolyClipper ERROR");                                              \
-        } \
+#   define PCASSERT2(condition, message)                                       \
+    do {                                                                       \
+        if (! (condition)) {                                                   \
+            std::ostringstream s;                                              \
+            s << "PolyCliper ERROR: Assertion `" #condition "` failed in "     \
+              << __FILE__ << " line " << __LINE__ << ": \n" << message << "\n";\
+            std::cerr << s.str();                                              \
+            throw PolyClipperError(s.str());                                   \
+        }                                                                      \
     } while (false)
 #else
 #   define PCASSERT2(condition, message) do { } while (false)
@@ -33,7 +47,6 @@
 
 #define PCASSERT(condition) PCASSERT2(condition, #condition)
 
-namespace PolyClipper {
 namespace internal {
 
 //------------------------------------------------------------------------------
