@@ -300,15 +300,16 @@ void clipPolyhedron(std::vector<Vertex3d<VA>>& polyhedron,
       // Insert any new vertices.
       nverts0 = polyhedron.size();
       for (i = 0; i < nverts0; ++i) {   // Only check vertices before we start adding new ones.
-        if (polyhedron[i].comp == 1 or polyhedron[i].comp == 0) {
+        if (polyhedron[i].comp == -1) {
 
-          // This vertex survives clipping -- check the neighbors for any new vertices we need to insert.
+          // This vertex is clipped, scan it's neighbors for any that survive
           nneigh = polyhedron[i].neighbors.size();
-          PCASSERT(nneigh >= 3);
+          PCASSERT2(nneigh >= 3,
+                    "Bad vertex: " << i << " : " << polyhedron[i] << "\n" << initial_state);
           for (auto j = 0; j < nneigh; ++j) {
             jn = polyhedron[i].neighbors[j];
             PCASSERT(jn < nverts0);
-            if (polyhedron[jn].comp == -1) {
+            if (polyhedron[jn].comp > 0) {
 
               // This edge straddles the clip plane, so insert a new vertex.
               inew = polyhedron.size();
@@ -317,7 +318,7 @@ void clipPolyhedron(std::vector<Vertex3d<VA>>& polyhedron,
                                                                              plane),
                                           2));         // 2 indicates new vertex
               PCASSERT(polyhedron.size() == inew + 1);
-              polyhedron[inew].neighbors = vector<int>({jn, i});
+              polyhedron[inew].neighbors = vector<int>({i, jn});
               polyhedron[inew].clips.insert(plane.ID);
 
               // Patch up clip info -- gotta scan for common elements in the neighbors of the clipped guy.
@@ -334,10 +335,9 @@ void clipPolyhedron(std::vector<Vertex3d<VA>>& polyhedron,
               // cerr << " --> Inserting new vertex @ " << VA::str(polyhedron.back().position) << " between [" << i << " " << jn << "]" << endl;
             }
           }
-          if (polyhedron[i].comp == 0) {
-            // This vertex is exactly in plane, so we also add this plane as a clip of the vertex.
-            polyhedron[i].clips.insert(plane.ID);
-          }
+        } else if (polyhedron[i].comp == 0) {
+          // This vertex is exactly in plane, so we also add this plane as a clip of the vertex.
+          polyhedron[i].clips.insert(plane.ID);
         }
       }
       nverts = polyhedron.size();
@@ -465,6 +465,8 @@ void clipPolyhedron(std::vector<Vertex3d<VA>>& polyhedron,
       if (polyhedron.size() < 4 or
           V1 < nearlyZero or
           V1/V0 < 100.0*nearlyZero) polyhedron.clear();
+
+      // collapseDegenerates(polyhedron, 1.0e-8);
     }
   }
 }
@@ -480,6 +482,12 @@ void collapseDegenerates(std::vector<Vertex3d<VA>>& polyhedron,
   const auto tol2 = tol*tol;
   auto n = polyhedron.size();
   if (n > 0) {
+
+    // Prepare to dump the input state if we hit an exception
+    std::string initial_state;
+#ifndef NDEBUG
+    initial_state += "Initial polyhedron:\n" + polyhedron2string(polyhedron);
+#endif
 
     // Set the initial ID's the vertices.
     for (auto i = 0; i < n; ++i) polyhedron[i].ID = i;
@@ -647,7 +655,7 @@ extractFaces(const std::vector<Vertex3d<VA>>& poly) {
             // cerr << " " << vnext;
             face.push_back(vnext);
             PCASSERT2(edgesWalked.find(make_pair(vprev, vnext)) == edgesWalked.end(),
-                      "Hit a redundant edge: (" << vprev << " " << vnext << endl << polyhedron2string(poly));
+                      "Hit a redundant edge: (" << vprev << " " << vnext << ")" << endl << polyhedron2string(poly));
             edgesWalked.insert(make_pair(vprev, vnext));
             auto itr = find(poly[vnext].neighbors.begin(), poly[vnext].neighbors.end(), vprev);
             PCASSERT(itr != poly[vnext].neighbors.end());
