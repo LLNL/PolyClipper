@@ -193,6 +193,22 @@ deserialize(size_t& val,
 }
 
 //------------------------------------------------------------------------------
+// Deserialize a std::string
+//------------------------------------------------------------------------------
+inline
+void
+deserialize(std::string& val,
+            std::vector<char>::const_iterator& itr,
+            const std::vector<char>::const_iterator& endBuffer) {
+  size_t n;
+  deserialize(n, itr, endBuffer);
+  val.resize(n);
+  std::copy(itr, itr+n, val.begin());
+  itr += n;
+  PCASSERT(itr <= endBuffer);
+}
+
+//------------------------------------------------------------------------------
 // Deserialize a Vector
 //------------------------------------------------------------------------------
 template<typename VA>
@@ -303,7 +319,7 @@ deserialize(Plane<VA>& val,
             std::vector<char>::const_iterator& itr,
             const std::vector<char>::const_iterator& endBuffer) {
   deserialize(val.dist, itr, endBuffer);
-  deserialize(val.normal, itr, endBuffer);
+  deserialize<VA>(val.normal, itr, endBuffer);
   deserialize(val.ID, itr, endBuffer);
 }
 

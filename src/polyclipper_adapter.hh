@@ -43,7 +43,7 @@ struct VectorAdapter {
   static std::string str(const VECTOR& a)                    { std::ostringstream os; os << a; return os.str(); }  // Pretty human readable representation
   static std::array<double, 3> get_triple(const VECTOR& a)   { return a.triple(); }
   static void set_triple(VECTOR& a,
-                         const std::array<double, 3>& vals)  { a.restore(vals); }
+                         const std::array<double, 3>& vals)  { a.set_triple(vals); }
 };
 
 }
