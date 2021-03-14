@@ -230,7 +230,8 @@ def serialize_Plane3d(val = "const Plane3d&",
 
 #-------------------------------------------------------------------------------
 # Deserialization
-# #-------------------------------------------------------------------------------
+# I'll get cute here and use python code generation to make the various versions
+#-------------------------------------------------------------------------------
 for (cppname, pyname, template_arg) in (("double", "double", ""),
                                         ("int", "int", ""),
                                         ("size_t", "size_t", ""),
