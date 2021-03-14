@@ -5,6 +5,8 @@
 #define __PolyClipper_Vector2d__
 
 #include <cmath>
+#include <vector>
+#include <array>
 
 namespace PolyClipper {
 
@@ -30,6 +32,8 @@ struct Vector2d {
     const auto mag = this->magnitude();
     return (mag > 0.0 ? Vector2d(x/mag, y/mag) : Vector2d(1.0, 0.0));
   }
+  std::array<double, 3> triple() const                { return {x, y, 0.0}; }
+  void set_triple(const std::array<double, 3>& vals)  { x = vals[0]; y = vals[1]; }
 };
 
 inline Vector2d operator*(const double lhs, const Vector2d& rhs) { return rhs*lhs; }

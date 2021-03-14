@@ -35,8 +35,11 @@ from Plane import *
 #-------------------------------------------------------------------------------
 # Polygon & Polyhedron
 #-------------------------------------------------------------------------------
-Polygon    = PYB11_bind_vector("PolyClipper::Vertex2d<>", opaque=True, local=False)
-Polyhedron = PYB11_bind_vector("PolyClipper::Vertex3d<>", opaque=True, local=False)
+Polygon    = PYB11_bind_vector("PolyClipper::Vertex2d<>", opaque=True, local=True)
+Polyhedron = PYB11_bind_vector("PolyClipper::Vertex3d<>", opaque=True, local=True)
+
+# We also use vector<char>
+vector_of_char = PYB11_bind_vector("char", opaque=True, local=True)
 
 #-------------------------------------------------------------------------------
 # Plane
@@ -149,3 +152,78 @@ def splitIntoTetrahedra(poly = "const Polyhedron&",
 The result is returned as a vector<vector<int>>, where each inner vector is a set of four
 ints representing vertex indices in the input Polyhedron."""
     return "std::vector<std::vector<int>>"
+
+#-------------------------------------------------------------------------------
+# Serialization
+#-------------------------------------------------------------------------------
+@PYB11cppname("internal::serialize")
+def serialize_double(val = "const double",
+                     buffer = "std::vector<char>&"):
+    "Serialize a double"
+    return "void"
+
+@PYB11cppname("internal::serialize")
+def serialize_int(val = "const int",
+                     buffer = "std::vector<char>&"):
+    "Serialize an int"
+    return "void"
+
+@PYB11implementation("[](const int val, std::vector<char>& buffer) { size_t uval = size_t(val); internal::serialize(uval, buffer); }")
+def serialize_size_t(val = "const int",
+                     buffer = "std::vector<char>&"):
+    "Serialize a size_t (via Python int)"
+    return "void"
+
+@PYB11cppname("internal::serialize")
+def serialize_string(val = "const std::string&",
+                     buffer = "std::vector<char>&"):
+    "Serialize a std::string"
+    return "void"
+
+@PYB11cppname("internal::serialize<internal::VectorAdapter<Vector2d>>")
+def serialize_Vector2d(val = "const Vector2d&",
+                       buffer = "std::vector<char>&"):
+    "Serialize a Vector2d"
+    return "void"
+
+@PYB11cppname("internal::serialize<internal::VectorAdapter<Vector3d>>")
+def serialize_Vector3d(val = "const Vector3d&",
+                       buffer = "std::vector<char>&"):
+    "Serialize a Vector3d"
+    return "void"
+
+@PYB11cppname("internal::serialize")
+def serialize_Vertex2d(val = "const Vertex2d<>&",
+                       buffer = "std::vector<char>&"):
+    "Serialize a Vertex2d"
+    return "void"
+
+@PYB11cppname("internal::serialize")
+def serialize_Vertex2d(val = "const Vertex3d<>&",
+                       buffer = "std::vector<char>&"):
+    "Serialize a Vertex3d"
+    return "void"
+
+@PYB11cppname("internal::serialize")
+def serialize_Vertex2d(val = "const std::vector<Vertex2d<>>&",
+                       buffer = "std::vector<char>&"):
+    "Serialize a Polygon"
+    return "void"
+
+@PYB11cppname("internal::serialize")
+def serialize_Vertex2d(val = "const std::vector<Vertex3d<>>&",
+                       buffer = "std::vector<char>&"):
+    "Serialize a Polyhedron"
+    return "void"
+
+@PYB11cppname("internal::serialize")
+def serialize_Plane2d(val = "const Plane2d&",
+                      buffer = "std::vector<char>&"):
+    "Serialize a Plane2d"
+    return "void"
+
+@PYB11cppname("internal::serialize")
+def serialize_Plane3d(val = "const Plane3d&",
+                      buffer = "std::vector<char>&"):
+    "Serialize a Plane3d"
+    return "void"

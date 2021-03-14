@@ -5,6 +5,8 @@
 #define __PolyClipper_Vector3d__
 
 #include <cmath>
+#include <vector>
+#include <array>
 
 namespace PolyClipper {
 
@@ -32,6 +34,8 @@ struct Vector3d {
     const auto mag = this->magnitude();
     return (mag > 0.0 ? Vector3d(x/mag, y/mag, z/mag) : Vector3d(1.0, 0.0, 0.0));
   }
+  std::array<double, 3> triple() const               { return {x, y, z}; }
+  void set_triple(const std::array<double, 3>& vals) { x = vals[0]; y = vals[1]; z = vals[2]; }
 };
 
 inline Vector3d operator*(const double lhs, const Vector3d& rhs) { return rhs*lhs; }
