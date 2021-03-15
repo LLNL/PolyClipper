@@ -192,6 +192,42 @@ class TestPolyClipperSerialize(unittest.TestCase):
             vals1.append(x)
         assert vals1 == vals0
 
+    # # std::vector<Plane2d>
+    # def test_vector_of_Plane2d(self):
+    #     vals0 = [vector_of_Plane2d([Plane2d(p = Vector2d(rangen.uniform(-100.0, 100.0),
+    #                                                      rangen.uniform(-100.0, 100.0)),
+    #                                         nhat = Vector2d(rangen.uniform(-1.0, 1.0),
+    #                                                         rangen.uniform(-1.0, 1.0)).unitVector(),
+    #                                         id = rangen.randint(0, 1000)) for i in xrange(ntests)]) for j in xrange(ntests)]
+    #     buf = vector_of_char()
+    #     for x in vals0:
+    #         serialize_vector_of_Plane2d(x, buf)
+    #     itr = 0
+    #     vals1 = []
+    #     for i in xrange(ntests):
+    #         x, itr = deserialize_vector_of_Plane2d(itr, buf)
+    #         vals1.append(x)
+    #     assert vals1 == vals0
+
+    # # std::vector<Plane3d>
+    # def test_vector_of_Plane3d(self):
+    #     vals0 = [vector_of_Plane3d([Plane3d(p = Vector3d(rangen.uniform(-100.0, 100.0),
+    #                                                      rangen.uniform(-100.0, 100.0),
+    #                                                      rangen.uniform(-100.0, 100.0)),
+    #                                         nhat = Vector3d(rangen.uniform(-1.0, 1.0),
+    #                                                         rangen.uniform(-1.0, 1.0),
+    #                                                         rangen.uniform(-1.0, 1.0)).unitVector(),
+    #                                         id = rangen.randint(0, 1000)) for i in xrange(ntests)]) for j in xrange(ntests)]
+    #     buf = vector_of_char()
+    #     for x in vals0:
+    #         serialize_vector_of_Plane3d(x, buf)
+    #     itr = 0
+    #     vals1 = []
+    #     for i in xrange(ntests):
+    #         x, itr = deserialize_vector_of_Plane3d(itr, buf)
+    #         vals1.append(x)
+    #     assert vals1 == vals0
+
 #-------------------------------------------------------------------------------
 # Execute the tests
 #-------------------------------------------------------------------------------

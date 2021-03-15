@@ -225,19 +225,18 @@ void clipPolyhedron(std::vector<Vertex3d<VA>>& polyhedron,
   // seems to slightly help performance.
   using Vector = typename VA::VECTOR;
   using Vertex = Vertex3d<VA>;
+  using Polyhedron = std::vector<Vertex3d<VA>>;
   bool above, below;
   int nverts0, nverts, nneigh, i, j, k, jn, inew, iprev, inext, itmp;
   vector<int>::iterator nitr;
   const double nearlyZero = 1.0e-15;
 
   // Prepare to dump the input state if we hit an exception
-  std::string initial_state;
+  std::vector<char> initial_state;
 #ifndef NDEBUG
   {
-    initial_state += "Initial polyhedron:\n" + polyhedron2string(polyhedron) + "\nClipping planes:\n";
-    std::ostringstream os;
-    for (const auto& plane: planes) os << plane << std::endl;
-    initial_state += os.str();
+    internal::serialize(polyhedron, initial_state);
+    internal::serialize<VA>(planes, initial_state);
   }
 #endif
 
@@ -305,7 +304,7 @@ void clipPolyhedron(std::vector<Vertex3d<VA>>& polyhedron,
           // This vertex is clipped, scan it's neighbors for any that survive
           nneigh = polyhedron[i].neighbors.size();
           PCASSERT2(nneigh >= 3,
-                    "Bad vertex: " << i << " : " << polyhedron[i] << "\n" << initial_state);
+                    "Bad vertex: " << i << " : " << polyhedron[i] << "\n" << internal::dumpSerializedState(initial_state));
           for (auto j = 0; j < nneigh; ++j) {
             jn = polyhedron[i].neighbors[j];
             PCASSERT(jn < nverts0);
@@ -449,7 +448,7 @@ void clipPolyhedron(std::vector<Vertex3d<VA>>& polyhedron,
         if (polyhedron[i].comp >= 0) {
           PCASSERT2(polyhedron[i].neighbors.size() >= 3,
                     "Bad number of vertex neighbors: " << i << " " << polyhedron[i] << "\n"
-                    << "Clipped from plane " << kplane << " " << plane << "\n" << initial_state);
+                    << "Clipped from plane " << kplane << " " << plane << "\n" << internal::dumpSerializedState(initial_state));
           for (j = 0; j < polyhedron[i].neighbors.size(); ++j) {
             polyhedron[i].neighbors[j] = polyhedron[polyhedron[i].neighbors[j]].ID;
           }

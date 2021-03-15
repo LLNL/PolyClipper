@@ -39,8 +39,10 @@ from Plane import *
 Polygon    = PYB11_bind_vector("PolyClipper::Vertex2d<>", opaque=True, local=True)
 Polyhedron = PYB11_bind_vector("PolyClipper::Vertex3d<>", opaque=True, local=True)
 
-# We also use vector<char>
+# We also use a few other std::vector types
 vector_of_char = PYB11_bind_vector("char", opaque=True, local=True)
+#vector_of_Plane2d = PYB11_bind_vector("Plane2d", opaque=True, local=True)
+#vector_of_Plane3d = PYB11_bind_vector("Plane3d", opaque=True, local=True)
 
 #-------------------------------------------------------------------------------
 # Plane
@@ -229,6 +231,18 @@ def serialize_Plane3d(val = "const Plane3d&",
     "Serialize a Plane3d"
     return "void"
 
+@PYB11cppname("internal::serialize")
+def serialize_vector_of_Plane2d(val = "const std::vector<Plane2d>&",
+                                buffer = "std::vector<char>&"):
+    "Serialize a std::vector<Plane2d>"
+    return "void"
+
+@PYB11cppname("internal::serialize")
+def serialize_vector_of_Plane3d(val = "const std::vector<Plane3d>&",
+                                buffer = "std::vector<char>&"):
+    "Serialize a std::vector<Plane3d>"
+    return "void"
+
 #-------------------------------------------------------------------------------
 # Deserialization
 # I'll get cute here and use python code generation to make the various versions
@@ -244,7 +258,9 @@ for (cppname, pyname, template_arg) in (("double", "double", ""),
                                         ("Polygon", "Polygon", "<internal::VectorAdapter<Vector2d>>"),
                                         ("Polyhedron", "Polyhedron", "<internal::VectorAdapter<Vector3d>>"),
                                         ("Plane2d", "Plane2d", "<internal::VectorAdapter<Vector2d>>"),
-                                        ("Plane3d", "Plane3d", "<internal::VectorAdapter<Vector3d>>")):
+                                        ("Plane3d", "Plane3d", "<internal::VectorAdapter<Vector3d>>"),
+                                        ("std::vector<Plane2d>", "vector_of_Plane2d", "<internal::VectorAdapter<Vector2d>>"),
+                                        ("std::vector<Plane3d>", "vector_of_Plane3d", "<internal::VectorAdapter<Vector3d>>")):
     exec("""
 @PYB11implementation("[](int itr_pos, const std::vector<char>& buffer) {{ auto itr = buffer.begin() + itr_pos; {cppname} val; internal::deserialize{template_arg}(val, itr, buffer.end()); return py::make_tuple(val, int(std::distance(buffer.begin(), itr))); }}")
 def deserialize_{pyname}(itr_pos = "int",
@@ -256,3 +272,11 @@ def deserialize_{pyname}(itr_pos = "int",
            pyname = pyname,
            template_arg = template_arg))
 
+#-------------------------------------------------------------------------------
+# Miscellaneous
+#-------------------------------------------------------------------------------
+@PYB11cppname("internal::dumpSerializedState")
+def dumpSerializedState(buffer = "const std::vector<char>&",
+                        filename = ("std::string", '"PolyClipper"')):
+    "Write a char buffer to a binary file with randomly generated name extension"
+    return "std::string"

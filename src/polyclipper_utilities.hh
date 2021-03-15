@@ -12,9 +12,12 @@
 
 #include <iostream>
 #include <ostream>
+#include <fstream>
+#include <random>
 #include <vector>
 #include <exception>
 #include <stdexcept>
+#include <algorithm>
 
 namespace PolyClipper {
 //------------------------------------------------------------------------------
@@ -199,6 +202,24 @@ segmentPlaneIntersection(const typename VA::VECTOR& a,         // line-segment b
   const auto bsgndist = plane.dist + VA::dot(plane.normal, b);
   PCASSERT(asgndist != bsgndist);
   return VA::div(VA::sub(VA::mul(a, bsgndist), VA::mul(b, asgndist)), bsgndist - asgndist);
+}
+
+//------------------------------------------------------------------------------
+// Dump a serialized state to a file with a randomly augmented name.
+//------------------------------------------------------------------------------
+inline
+std::string
+dumpSerializedState(const std::vector<char>& buffer,
+                    std::string filename = "PolyClipper") {
+  std::string digits("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz");
+  std::random_device rd;
+  std::mt19937 generator(rd());
+  std::shuffle(digits.begin(), digits.end(), generator);
+  filename += "_" + digits.substr(0, 20) + ".bin";
+  std::ofstream os(filename, std::ios::out | std::ios::binary);
+  os.write(&(buffer[0]), buffer.size());
+  os.close();
+  return "Wrote " + std::to_string(buffer.size()) + " bytes to " + filename;
 }
 
 }

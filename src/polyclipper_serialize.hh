@@ -25,6 +25,7 @@ template<typename VA> void serialize(const Vertex3d<VA>& val, std::vector<char>&
 template<typename VA> void serialize(const std::vector<Vertex2d<VA>>& val, std::vector<char>& buffer);
 template<typename VA> void serialize(const std::vector<Vertex3d<VA>>& val, std::vector<char>& buffer);
 template<typename VA> void serialize(const Plane<VA>& val, std::vector<char>& buffer);
+template<typename VA> void serialize(const std::vector<Plane<VA>>& val, std::vector<char>& buffer);
 
 // Deserialize
 void deserialize(double& val, std::vector<char>::const_iterator& itr, const std::vector<char>::const_iterator& endBuffer);
@@ -37,6 +38,7 @@ template<typename VA> void deserialize(Vertex3d<VA>& val, std::vector<char>::con
 template<typename VA> void deserialize(std::vector<Vertex2d<VA>>& val, std::vector<char>::const_iterator& itr, const std::vector<char>::const_iterator& endBuffer);
 template<typename VA> void deserialize(std::vector<Vertex3d<VA>>& val, std::vector<char>::const_iterator& itr, const std::vector<char>::const_iterator& endBuffer);
 template<typename VA> void deserialize(Plane<VA>& val, std::vector<char>::const_iterator& itr, const std::vector<char>::const_iterator& endBuffer);
+template<typename VA> void deserialize(std::vector<Plane<VA>>& val, std::vector<char>::const_iterator& itr, const std::vector<char>::const_iterator& endBuffer);
 
 }
 }

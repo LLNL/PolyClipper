@@ -146,6 +146,18 @@ serialize(const Plane<VA>& val,
 }
 
 //------------------------------------------------------------------------------
+// Serialize std::vector<plane>
+//------------------------------------------------------------------------------
+template<typename VA>
+inline
+void
+serialize(const std::vector<Plane<VA>>& val,
+          std::vector<char>& buffer) {
+  serialize(val.size(), buffer);
+  for (const auto& x: val) serialize<VA>(x, buffer);
+}
+
+//------------------------------------------------------------------------------
 // Deserialize a double
 //------------------------------------------------------------------------------
 inline
@@ -321,6 +333,25 @@ deserialize(Plane<VA>& val,
   deserialize(val.dist, itr, endBuffer);
   deserialize<VA>(val.normal, itr, endBuffer);
   deserialize(val.ID, itr, endBuffer);
+}
+
+//------------------------------------------------------------------------------
+// Deserialize std::vector<plane>
+//------------------------------------------------------------------------------
+template<typename VA>
+inline
+void
+deserialize(std::vector<Plane<VA>>& val,
+            std::vector<char>::const_iterator& itr,
+            const std::vector<char>::const_iterator& endBuffer) {
+  val.clear();
+  size_t n;
+  Plane<VA> x;
+  deserialize(n, itr, endBuffer);
+  for (auto i = 0; i < n; ++i) {
+    deserialize(x, itr, endBuffer);
+    val.push_back(x);
+  }
 }
 
 }
