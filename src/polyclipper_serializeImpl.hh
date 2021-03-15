@@ -1,9 +1,6 @@
 //------------------------------------------------------------------------------
 // Methods for serializing/dserializing PolyClipper types
 //------------------------------------------------------------------------------
-#ifndef __PolyClipper_serialize__
-#define __PolyClipper_serialize__
-
 #include "polyclipper_utilities.hh"
 
 namespace PolyClipper {
@@ -118,7 +115,8 @@ inline
 void
 serialize(const std::vector<Vertex2d<VA>>& val,
           std::vector<char>& buffer) {
-  serialize(val.size(), buffer);
+  size_t n = val.size();
+  serialize(n, buffer);
   for (const auto& x: val) serialize(x, buffer);
 }
 
@@ -285,6 +283,7 @@ deserialize(std::vector<Vertex2d<VA>>& val,
   val.clear();
   size_t n;
   Vertex2d<VA> x;
+  deserialize(n, itr, endBuffer);
   for (auto i = 0; i < n; ++i) {
     deserialize(x, itr, endBuffer);
     val.push_back(x);
@@ -303,6 +302,7 @@ deserialize(std::vector<Vertex3d<VA>>& val,
   val.clear();
   size_t n;
   Vertex3d<VA> x;
+  deserialize(n, itr, endBuffer);
   for (auto i = 0; i < n; ++i) {
     deserialize(x, itr, endBuffer);
     val.push_back(x);
@@ -325,5 +325,3 @@ deserialize(Plane<VA>& val,
 
 }
 }
-
-#endif

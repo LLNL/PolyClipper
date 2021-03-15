@@ -12,7 +12,8 @@ PYB11includes = ['"polyclipper2d.hh"',
                  '"polyclipper3d.hh"',
                  '"polyclipper_vector2d.hh"',
                  '"polyclipper_vector3d.hh"',
-                 '"polyclipper_plane.hh"']
+                 '"polyclipper_plane.hh"',
+                 '"polyclipper_serialize.hh"']
 
 PYB11namespaces = ["PolyClipper"]
 
@@ -238,10 +239,10 @@ for (cppname, pyname, template_arg) in (("double", "double", ""),
                                         ("std::string", "string", ""),
                                         ("Vector2d", "Vector2d", "<internal::VectorAdapter<Vector2d>>"),
                                         ("Vector3d", "Vector3d", "<internal::VectorAdapter<Vector3d>>"),
-                                        ("Vertex2d<>", "Vertex2d", ""),
-                                        ("Vertex3d<>", "Vertex3d", ""),
-                                        ("Polygon", "Polygon", ""),
-                                        ("Polyhedron", "Polyhedron", ""),
+                                        ("Vertex2d<>", "Vertex2d", "<internal::VectorAdapter<Vector2d>>"),
+                                        ("Vertex3d<>", "Vertex3d", "<internal::VectorAdapter<Vector3d>>"),
+                                        ("Polygon", "Polygon", "<internal::VectorAdapter<Vector2d>>"),
+                                        ("Polyhedron", "Polyhedron", "<internal::VectorAdapter<Vector3d>>"),
                                         ("Plane2d", "Plane2d", "<internal::VectorAdapter<Vector2d>>"),
                                         ("Plane3d", "Plane3d", "<internal::VectorAdapter<Vector3d>>")):
     exec("""
