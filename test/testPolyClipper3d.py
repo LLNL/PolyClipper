@@ -23,10 +23,9 @@ rangen = random.Random()
 #  |_____|/
 #  4     5
 #
-cube_points = []
-for coords in [(0,0,0),  (10,0,0),  (10,10,0),  (0,10,0),
-               (0,0,10), (10,0,10), (10,10,10), (0,10,10)]:
-    cube_points.append(Vector3d(*coords))
+cube_points = [Vector3d(*coords) for coords in 
+               [(0,0,0),  (10,0,0),  (10,10,0),  (0,10,0),
+                (0,0,10), (10,0,10), (10,10,10), (0,10,10)]]
 
 cube_neighbors = [[1, 4, 3],
                   [5, 0, 2],
@@ -43,6 +42,25 @@ cube_facets = [[4, 5, 6, 7],
                [4, 7, 3, 0],
                [6, 2, 3, 7],
                [1, 5, 4, 0]]
+
+#-------------------------------------------------------------------------------
+# Make a diamond (2 pyramids (tets) stuck together on the base at z=0.
+
+diamond_points = [Vector3d(*coords) for coords in
+                  [(0,0,-1), (1,0,0), (-1,-1,0), (-1,1,0), (0,0,1)]]
+
+diamond_neighbors = [[1, 3, 2],
+                     [0, 2, 4, 3],
+                     [0, 3, 4, 1],
+                     [0, 1, 4, 2],
+                     [1, 2, 3]]
+
+diamond_facets = [[0, 2, 1],
+                  [0, 1, 3],
+                  [0, 3, 2],
+                  [1, 4, 3],
+                  [2, 4, 1],
+                  [2, 3, 4]]
 
 #-------------------------------------------------------------------------------
 # Make a non-convex notched thingy.                            |y     
@@ -147,6 +165,7 @@ class TestPolyhedronClipping(unittest.TestCase):
     #---------------------------------------------------------------------------
     def setUp(self):
         self.convexPolyData = [(cube_points, cube_neighbors, cube_facets),
+                               (diamond_points, diamond_neighbors, diamond_facets),
                                (degenerate_cube_points1, cube_neighbors, cube_facets),
                                (degenerate_cube_points2, cube_neighbors, cube_facets)]
         self.nonconvexPolyData = [(notched_points, notched_neighbors, notched_facets)]
@@ -253,6 +272,38 @@ class TestPolyhedronClipping(unittest.TestCase):
                     writePolyOBJ(chunk1, "chunk1.obj")
                     writePolyOBJ(chunk2, "chunk2.obj")
                 self.failUnless(success, "Plane clipping summing to wrong volumes: %s + %s = %s != %s" % (v1, v2, v1 + v2, v0))
+        return
+
+    #---------------------------------------------------------------------------
+    # Clip with a single plane along z = 0
+    #---------------------------------------------------------------------------
+    def testClipZeroPlane(self):
+        for points, neighbors, facets in self.polyData:
+            poly = Polyhedron()
+            initializePolyhedron(poly, points, neighbors)
+            planes1 = [Plane3d(Vector3d(0,0,0), Vector3d(0,0,1))]
+            planes2 = [Plane3d(Vector3d(0,0,0), Vector3d(0,0,-1))]
+            chunk1 = Polyhedron(poly)
+            chunk2 = Polyhedron(poly)
+            clipPolyhedron(chunk1, planes1)
+            clipPolyhedron(chunk2, planes2)
+            v0, c0 = moments(poly)
+            v1, c1 = moments(chunk1)
+            v2, c2 = moments(chunk2)
+            success = fuzzyEqual(v1 + v2, v0)
+            if not success:
+                print "Failed on pass ", i
+                print "Plane: ", p0, phat
+                print "Poly:\n", list(poly)
+                print "Chunk 1:\n ", list(chunk1)
+                print "Chunk 2:\n ", list(chunk2)
+                print moments(chunk1)
+                print moments(chunk2)
+                print "Vol check: %g + %g = %g" % (v1, v2, v0)
+                writePolyOBJ(poly, "poly.obj")
+                writePolyOBJ(chunk1, "chunk1.obj")
+                writePolyOBJ(chunk2, "chunk2.obj")
+            self.failUnless(success, "Plane clipping summing to wrong volumes: %s + %s = %s != %s" % (v1, v2, v1 + v2, v0))
         return
 
     #---------------------------------------------------------------------------
