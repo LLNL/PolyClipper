@@ -47,7 +47,7 @@ cube_facets = [[4, 5, 6, 7],
 # Make a diamond (2 pyramids (tets) stuck together on the base at z=0.
 
 diamond_points = [Vector3d(*coords) for coords in
-                  [(0,0,-1), (1,0,0), (-1,-1,0), (-1,1,0), (0,0,1)]]
+                  [(0,0,-1), (0,1,0), (-1,-1,0), (1,-1,0), (0,0,1)]]
 
 diamond_neighbors = [[1, 3, 2],
                      [0, 2, 4, 3],
@@ -292,8 +292,6 @@ class TestPolyhedronClipping(unittest.TestCase):
             v2, c2 = moments(chunk2)
             success = fuzzyEqual(v1 + v2, v0)
             if not success:
-                print "Failed on pass ", i
-                print "Plane: ", p0, phat
                 print "Poly:\n", list(poly)
                 print "Chunk 1:\n ", list(chunk1)
                 print "Chunk 2:\n ", list(chunk2)

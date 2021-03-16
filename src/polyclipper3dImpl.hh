@@ -342,52 +342,16 @@ void clipPolyhedron(std::vector<Vertex3d<VA>>& polyhedron,
       nverts = polyhedron.size();
       // cerr << "After insertion:\n" << polyhedron2string(polyhedron) << endl;
 
-      // // Next handle reconnecting any vertices that were exactly in-plane.
-      // for (auto vptr: planeVertices) {
-      //   PCASSERT(vptr->comp == 0);
-      //   const auto nneigh = vptr->neighbors.size();
-      //   PCASSERT(nneigh >= 3);
-      //   for (auto j = 0; j < nneigh; ++j) {
-      //     auto nptr = vptr->neighbors[j];
-      //     if (nptr->comp == -1) {
-
-      //       // Yep, this edge is clipped, so look for where the in-plane vertex should hook up.
-      //       auto vprev = vptr;
-      //       auto vnext = nptr;
-      //       auto tmp = vnext;
-      //       auto k = 0;
-      //       while (vnext->comp == -1 and k++ < nverts) {
-      //         tmp = vnext;
-      //         vnext = nextInFaceLoop(vnext, vprev);
-      //         vprev = tmp;
-      //       }
-      //       PCASSERT(vprev->comp == -1);
-      //       PCASSERT(vnext->comp != -1);
-      //       PCASSERT(vnext != vptr);
-      //       vptr->neighbors[j] = vnext;
-
-      //       const auto barf = ((vnext->position - Vector( 3.46945e-18, 0.0657523, -0.0728318 )).magnitude() < 1.0e-3);
-      //       if (barf) cerr << "Deg: " << vptr->position << " " << nneigh << endl;
-
-      //       // Figure out which pointer on the new neighbor should point back at vptr.
-      //       auto itr = find(vnext->neighbors.begin(), vnext->neighbors.end(), vprev);
-      //       PCASSERT(itr != vnext->neighbors.end());
-      //       *itr = vptr;
-      //     }
-      //   }
-      // }
-
       // Look for any topology links to clipped nodes we need to patch.
-      {
-        for (i = nverts0; i < nverts; ++i) {
-          PCASSERT2(polyhedron[i].comp == 2, internal::dumpSerializedState(initial_state));
+      for (i = 0; i < nverts; ++i) {
+        // PCASSERT2(polyhedron[i].comp == 2, internal::dumpSerializedState(initial_state));
+        if (polyhedron[i].comp == 0 or polyhedron[i].comp == 2) {
           nneigh = polyhedron[i].neighbors.size();
 
           // Look for any neighbors of the vertex that are clipped.
           for (j = 0; j < nneigh; ++j) {
             jn = polyhedron[i].neighbors[j];
             if (polyhedron[jn].comp == -1) {
-
               // This neighbor is clipped, so look for the first unclipped vertex along this face loop.
               iprev = i;
               inext = jn;
@@ -402,13 +366,18 @@ void clipPolyhedron(std::vector<Vertex3d<VA>>& polyhedron,
               }
               // cerr << endl;
               PCASSERT2(polyhedron[inext].comp != -1, internal::dumpSerializedState(initial_state));
-              polyhedron[i].neighbors[j] = inext;
-              polyhedron[inext].neighbors.insert(polyhedron[inext].neighbors.begin(), i);
-              // newEdges.push_back(make_pair(vnext, vitr));
+              if (polyhedron[i].neighbors[(j + 1u) % polyhedron[i].neighbors.size()] != inext) {
+                polyhedron[i].neighbors[j] = inext;
+                polyhedron[inext].neighbors.insert(polyhedron[inext].neighbors.begin(), i);
+              } else {
+                polyhedron[i].neighbors.erase(polyhedron[i].neighbors.begin() + j);
+              }
             }
           }
         }
       }
+      // cerr << "After relinking:\n" << polyhedron2string(polyhedron) << endl;
+
       // const auto nNewEdges = newEdges.size();
       // PCASSERT(nNewEdges >= 3);
 
