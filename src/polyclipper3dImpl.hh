@@ -271,7 +271,7 @@ void clipPolyhedron(std::vector<Vertex3d<VA>>& polyhedron,
     auto boxcomp = compare(plane, xmin, ymin, zmin, xmax, ymax, zmax);
     auto above = boxcomp ==  1;
     auto below = boxcomp == -1;
-    PCASSERT(not (above and below));
+    PCASSERT2(not (above and below), internal::dumpSerializedState(initial_state));
 
     // Check the current set of vertices against this plane.
     // Also keep track of any vertices that landed exactly in-plane.
@@ -284,7 +284,7 @@ void clipPolyhedron(std::vector<Vertex3d<VA>>& polyhedron,
           above = false;
         }
       }
-      PCASSERT(not (above and below));
+      PCASSERT2(not (above and below), internal::dumpSerializedState(initial_state));
     }
 
     // Did we get a simple case?
@@ -307,7 +307,7 @@ void clipPolyhedron(std::vector<Vertex3d<VA>>& polyhedron,
                     "Bad vertex: " << i << " : " << polyhedron[i] << "\n" << internal::dumpSerializedState(initial_state));
           for (auto j = 0; j < nneigh; ++j) {
             jn = polyhedron[i].neighbors[j];
-            PCASSERT(jn < nverts0);
+            PCASSERT2(jn < nverts0, internal::dumpSerializedState(initial_state));
             if (polyhedron[jn].comp > 0) {
 
               // This edge straddles the clip plane, so insert a new vertex.
@@ -316,7 +316,7 @@ void clipPolyhedron(std::vector<Vertex3d<VA>>& polyhedron,
                                                                              polyhedron[jn].position,
                                                                              plane),
                                           2));         // 2 indicates new vertex
-              PCASSERT(polyhedron.size() == inew + 1);
+              PCASSERT2(polyhedron.size() == inew + 1, internal::dumpSerializedState(initial_state));
               polyhedron[inew].neighbors = vector<int>({i, jn});
               polyhedron[inew].clips.insert(plane.ID);
 
@@ -328,7 +328,7 @@ void clipPolyhedron(std::vector<Vertex3d<VA>>& polyhedron,
               polyhedron[inew].clips.insert(common_clips.begin(), common_clips.end());
 
               nitr = find(polyhedron[jn].neighbors.begin(), polyhedron[jn].neighbors.end(), i);
-              PCASSERT(nitr != polyhedron[jn].neighbors.end());
+              PCASSERT2(nitr != polyhedron[jn].neighbors.end(), internal::dumpSerializedState(initial_state));
               *nitr = inew;
               polyhedron[i].neighbors[j] = inew;
               // cerr << " --> Inserting new vertex @ " << VA::str(polyhedron.back().position) << " between [" << i << " " << jn << "]" << endl;
@@ -380,7 +380,7 @@ void clipPolyhedron(std::vector<Vertex3d<VA>>& polyhedron,
       // Look for any topology links to clipped nodes we need to patch.
       {
         for (i = nverts0; i < nverts; ++i) {
-          PCASSERT(polyhedron[i].comp == 2);
+          PCASSERT2(polyhedron[i].comp == 2, internal::dumpSerializedState(initial_state));
           nneigh = polyhedron[i].neighbors.size();
 
           // Look for any neighbors of the vertex that are clipped.
@@ -401,7 +401,7 @@ void clipPolyhedron(std::vector<Vertex3d<VA>>& polyhedron,
                 // cerr << " (" << iprev << " " << inext << ")";
               }
               // cerr << endl;
-              PCASSERT(polyhedron[inext].comp != -1);
+              PCASSERT2(polyhedron[inext].comp != -1, internal::dumpSerializedState(initial_state));
               polyhedron[i].neighbors[j] = inext;
               polyhedron[inext].neighbors.insert(polyhedron[inext].neighbors.begin(), i);
               // newEdges.push_back(make_pair(vnext, vitr));
@@ -477,16 +477,19 @@ template<typename VA>
 void collapseDegenerates(std::vector<Vertex3d<VA>>& polyhedron,
                          const double tol) {
 
+  // Prepare to dump the input state if we hit an exception
+  std::vector<char> initial_state;
+#ifndef NDEBUG
+  {
+    internal::serialize(polyhedron, initial_state);
+    internal::serialize(tol, initial_state);
+  }
+#endif
+
   using Vertex = Vertex3d<VA>;
   const auto tol2 = tol*tol;
   auto n = polyhedron.size();
   if (n > 0) {
-
-    // Prepare to dump the input state if we hit an exception
-    std::string initial_state;
-#ifndef NDEBUG
-    initial_state += "Initial polyhedron:\n" + polyhedron2string(polyhedron);
-#endif
 
     // Set the initial ID's the vertices.
     for (auto i = 0; i < n; ++i) polyhedron[i].ID = i;
@@ -503,7 +506,7 @@ void collapseDegenerates(std::vector<Vertex3d<VA>>& polyhedron,
           idone = true;
           for (auto jneigh = 0; jneigh < polyhedron[i].neighbors.size(); ++jneigh) {
             const auto j = polyhedron[i].neighbors[jneigh];
-            PCASSERT(polyhedron[j].ID >= 0);
+            PCASSERT2(polyhedron[j].ID >= 0, internal::dumpSerializedState(initial_state));
             if (VA::magnitude2(VA::sub(polyhedron[i].position, polyhedron[j].position)) < tol2) {
               // cerr << " --> collapasing " << j << " to " << i;
               active = true;
@@ -514,7 +517,7 @@ void collapseDegenerates(std::vector<Vertex3d<VA>>& polyhedron,
               // Merge the neighbors of j->i.
               auto jitr = polyhedron[i].neighbors.begin() + jneigh;
               auto kitr = find(polyhedron[j].neighbors.begin(), polyhedron[j].neighbors.end(), i);
-              PCASSERT(kitr != polyhedron[j].neighbors.end());
+              PCASSERT2(kitr != polyhedron[j].neighbors.end(), internal::dumpSerializedState(initial_state));
               jitr = polyhedron[i].neighbors.insert(jitr, polyhedron[j].neighbors.begin(), kitr);
               jitr = polyhedron[i].neighbors.insert(jitr, kitr+1, polyhedron[j].neighbors.end());  // jitr now points at the first of the newly inserted neighbors
 
@@ -590,8 +593,8 @@ void collapseDegenerates(std::vector<Vertex3d<VA>>& polyhedron,
   {
     const auto n = polyhedron.size();
     for (auto i = 0; i < n; ++i) {
-      PCASSERT(polyhedron[i].ID == i);
-      for (auto j: polyhedron[i].neighbors) PCASSERT(j >= 0 and j < n);
+      PCASSERT2(polyhedron[i].ID == i, internal::dumpSerializedState(initial_state));
+      for (auto j: polyhedron[i].neighbors) PCASSERT2(j >= 0 and j < n, internal::dumpSerializedState(initial_state));
     }
   }
 #endif
@@ -612,6 +615,14 @@ extractFaces(const std::vector<Vertex3d<VA>>& poly) {
 
   // Prepare the result.
   vector<vector<int>> faceVertices;
+
+  // Prepare to dump the input state if we hit an exception
+  std::vector<char> initial_state;
+#ifndef NDEBUG
+  {
+    internal::serialize(poly, initial_state);
+  }
+#endif
 
   // {
   //   int i = 0;
@@ -638,7 +649,7 @@ extractFaces(const std::vector<Vertex3d<VA>>& poly) {
 
       // Check every (outgoing) edge attached to this vertex.
       for (const auto ni: v.neighbors) {
-        PCASSERT(poly[ni].comp >= 0);
+        PCASSERT2(poly[ni].comp >= 0, internal::dumpSerializedState(initial_state));
 
         // Has this edge been walked yet?
         if (edgesWalked.find(make_pair(ni, i)) == edgesWalked.end()) {
@@ -654,10 +665,11 @@ extractFaces(const std::vector<Vertex3d<VA>>& poly) {
             // cerr << " " << vnext;
             face.push_back(vnext);
             PCASSERT2(edgesWalked.find(make_pair(vprev, vnext)) == edgesWalked.end(),
-                      "Hit a redundant edge: (" << vprev << " " << vnext << ")" << endl << polyhedron2string(poly));
+                      "Hit a redundant edge: (" << vprev << " " << vnext << ")" << endl << polyhedron2string(poly) << endl
+                      << internal::dumpSerializedState(initial_state));
             edgesWalked.insert(make_pair(vprev, vnext));
             auto itr = find(poly[vnext].neighbors.begin(), poly[vnext].neighbors.end(), vprev);
-            PCASSERT(itr != poly[vnext].neighbors.end());
+            PCASSERT2(itr != poly[vnext].neighbors.end(), internal::dumpSerializedState(initial_state));
             vprev = vnext;
             if (itr == poly[vnext].neighbors.begin()) {
               vnext = poly[vnext].neighbors.back();
@@ -667,7 +679,7 @@ extractFaces(const std::vector<Vertex3d<VA>>& poly) {
           }
           // cerr << endl;
           edgesWalked.insert(make_pair(vprev, vnext));   // Final edge connecting last->first vertex
-          PCASSERT(face.size() >= 3);
+          PCASSERT2(face.size() >= 3, internal::dumpSerializedState(initial_state));
           faceVertices.push_back(face);
         }
       }
@@ -680,8 +692,8 @@ extractFaces(const std::vector<Vertex3d<VA>>& poly) {
     // Every pair should have been walked twice, once in each direction.
     for (auto i = 0; i < nverts; ++i) {
       for (const auto ni: poly[i].neighbors) {
-        PCASSERT(edgesWalked.find(make_pair(i, ni)) != edgesWalked.end());
-        PCASSERT(edgesWalked.find(make_pair(ni, i)) != edgesWalked.end());
+        PCASSERT2(edgesWalked.find(make_pair(i, ni)) != edgesWalked.end(), internal::dumpSerializedState(initial_state));
+        PCASSERT2(edgesWalked.find(make_pair(ni, i)) != edgesWalked.end(), internal::dumpSerializedState(initial_state));
       }
     }
   }
