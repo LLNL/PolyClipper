@@ -17,11 +17,13 @@ set(PolyClipper_headers
     polyclipper2dImpl.hh
     polyclipper3d.hh
     polyclipper3dImpl.hh
-    polyclipper_vector2d.hh
-    polyclipper_vector3d.hh
     polyclipper_adapter.hh
     polyclipper_plane.hh
-    polyclipper_utilities.hh)
+    polyclipper_serialize.hh
+    polyclipper_serializeImpl.hh
+    polyclipper_utilities.hh
+    polyclipper_vector2d.hh
+    polyclipper_vector3d.hh)
 # set(PolyClipper_sources polyclipper2d.cc polyclipper3d.cc)
 # polyclipper_add_cxx_library(PolyClipper)
 # install(TARGETS              PolyClipper
