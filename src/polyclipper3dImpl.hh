@@ -43,7 +43,7 @@ using std::endl;
 
 namespace PolyClipper {
 
-namespace {    // anonymous methods
+namespace internal {
 
 //------------------------------------------------------------------------------
 // Compare a plane and a box (defined by it's min/max coordinates).
@@ -137,7 +137,7 @@ inPlaceSetIntersection(set<int>& a, const set<int>& b) {
   a.erase(it1, a.end());
 }
 
-}              // anonymous methods
+}              // internal namespace methods
 
 //------------------------------------------------------------------------------
 // Initialize a polyhedron given the vertex coordinates and connectivity.
@@ -284,7 +284,7 @@ void clipPolyhedron(std::vector<Vertex3d<VA>>& polyhedron,
     // cerr << "Clip plane: " << plane.dist << " " << VA::str(plane.normal) << endl;
 
     // First check against the bounding box.
-    auto boxcomp = compare(plane, xmin, ymin, zmin, xmax, ymax, zmax);
+    auto boxcomp = internal::compare(plane, xmin, ymin, zmin, xmax, ymax, zmax);
     auto above = boxcomp ==  1;
     auto below = boxcomp == -1;
     PCASSERT2(not (above and below), internal::dumpSerializedState(initial_state));
@@ -376,7 +376,7 @@ void clipPolyhedron(std::vector<Vertex3d<VA>>& polyhedron,
               k = 0;
               while (polyhedron[inext].comp == -1 and k++ < nverts) {
                 itmp = inext;
-                inext = nextInFaceLoop(polyhedron[inext], iprev);
+                inext = internal::nextInFaceLoop(polyhedron[inext], iprev);
                 iprev = itmp;
                 // cerr << " (" << iprev << " " << inext << ")";
               }
@@ -652,7 +652,7 @@ extractFaces(const std::vector<Vertex3d<VA>>& poly) {
             edgesWalked.insert(make_pair(iprev, inext));
             face.push_back(inext);
             itmp = inext;
-            inext = nextInFaceLoop(poly[inext], iprev);
+            inext = internal::nextInFaceLoop(poly[inext], iprev);
             iprev = itmp;
           }
           // cerr << endl;
@@ -693,7 +693,7 @@ commonFaceClips(const std::vector<Vertex3d<VA>>& poly,
     PCASSERT(n >= 3);
     faceClips[k] = poly[faceVertices[k][0]].clips;
     for (auto j = 1; j < n; ++j) {
-      inPlaceSetIntersection(faceClips[k], poly[faceVertices[k][j]].clips);
+      internal::inPlaceSetIntersection(faceClips[k], poly[faceVertices[k][j]].clips);
     }
   }
   return faceClips;
