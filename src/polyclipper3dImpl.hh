@@ -98,6 +98,22 @@ nextInFaceLoop(const VertexType& v, const int vprev) {
 }
 
 //------------------------------------------------------------------------------
+// Walk the reverse of above.
+//------------------------------------------------------------------------------
+template<typename VertexType>
+inline
+int
+prevInFaceLoop(const VertexType& v, const int vprev) {
+  const auto itr = find(v.neighbors.begin(), v.neighbors.end(), vprev);
+  PCASSERT(itr != v.neighbors.end());
+  if (itr == v.neighbors.end() - 1) {
+    return v.neighbors.front();
+  } else {
+    return *(itr + 1);
+  }
+}
+
+//------------------------------------------------------------------------------
 // Perform an in-place intersection of two sets, leaving the result in the
 // first argument.
 //------------------------------------------------------------------------------
@@ -245,7 +261,7 @@ void clipPolyhedron(std::vector<Vertex3d<VA>>& polyhedron,
   Vector C0;
   moments(V0, C0, polyhedron);
   if (V0 < nearlyZero) polyhedron.clear();
-  // cerr << "Initial:\n" << polyhedron2string(polyhedron) << endl;
+  // cerr << "Initial:\n" << polyhedron2string(polyhedron) << "\nV0=" << V0 << endl;
 
   // Find the bounding box of the polyhedron.
   auto xmin = std::numeric_limits<double>::max(), xmax = std::numeric_limits<double>::lowest();
@@ -335,7 +351,7 @@ void clipPolyhedron(std::vector<Vertex3d<VA>>& polyhedron,
             }
           }
         } else if (polyhedron[i].comp == 0) {
-          // This vertex is exactly in plane, so we also add this plane as a clip of the vertex.
+          // This vertex is exactly in plane, so we add this plane as a clip of the vertex.
           polyhedron[i].clips.insert(plane.ID);
         }
       }
@@ -611,43 +627,36 @@ extractFaces(const std::vector<Vertex3d<VA>>& poly) {
     if (v.comp >= 0) {
 
       // {
-      //   cerr << " --> " << v.ID << " " << v.position << " :";
+      //   cerr << " --> " << v.ID << " :";
       //   for (const auto j: v.neighbors) cerr << " " << poly[j].ID;
       //   cerr << endl;
       // }
 
       // Check every (outgoing) edge attached to this vertex.
-      for (const auto ni: v.neighbors) {
-        PCASSERT2(poly[ni].comp >= 0, internal::dumpSerializedState(initial_state));
+      for (const auto j: v.neighbors) {
+        PCASSERT2(poly[j].comp >= 0, internal::dumpSerializedState(initial_state));
 
         // Has this edge been walked yet?
-        if (edgesWalked.find(make_pair(ni, i)) == edgesWalked.end()) {
-          Face face(1, ni);
-          auto vstart = ni;
-          auto vnext = i;
-          auto vprev = ni;
-          // cerr << "Face: " << ni;
-
-          // Follow around the face represented by this edge until we get back
-          // to our starting vertex.
-          while (vnext != vstart) {
-            // cerr << " " << vnext;
-            face.push_back(vnext);
-            PCASSERT2(edgesWalked.find(make_pair(vprev, vnext)) == edgesWalked.end(),
-                      "Hit a redundant edge: (" << vprev << " " << vnext << ")" << endl << polyhedron2string(poly) << endl
+        if (edgesWalked.find(make_pair(i, j)) == edgesWalked.end()) {
+          Face face(1, i);
+          auto istart = i;
+          auto iprev = i;
+          auto inext = j;
+          auto itmp = j;
+          // cerr << "Face: " << i;
+          while (inext != istart) {
+            // cerr << " " << inext;
+            PCASSERT2(edgesWalked.find(make_pair(iprev, inext)) == edgesWalked.end(),
+                      "Hit a redundant edge: (" << iprev << " " << inext << ")" << endl << polyhedron2string(poly) << endl
                       << internal::dumpSerializedState(initial_state));
-            edgesWalked.insert(make_pair(vprev, vnext));
-            auto itr = find(poly[vnext].neighbors.begin(), poly[vnext].neighbors.end(), vprev);
-            PCASSERT2(itr != poly[vnext].neighbors.end(), internal::dumpSerializedState(initial_state));
-            vprev = vnext;
-            if (itr == poly[vnext].neighbors.begin()) {
-              vnext = poly[vnext].neighbors.back();
-            } else {
-              vnext = *(itr - 1);
-            }
+            edgesWalked.insert(make_pair(iprev, inext));
+            face.push_back(inext);
+            itmp = inext;
+            inext = nextInFaceLoop(poly[inext], iprev);
+            iprev = itmp;
           }
           // cerr << endl;
-          edgesWalked.insert(make_pair(vprev, vnext));   // Final edge connecting last->first vertex
+          edgesWalked.insert(make_pair(iprev, inext));   // Final edge connecting last->first vertex
           PCASSERT2(face.size() >= 3, internal::dumpSerializedState(initial_state));
           faceVertices.push_back(face);
         }
