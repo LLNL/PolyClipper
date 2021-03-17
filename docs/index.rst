@@ -17,6 +17,7 @@ Welcome to PolyClipper's documentation!
    polygon_methods.rst
    polyhedron_methods.rst
    custom_vectors.rst
+   debugging.rst
 
 Indices and tables
 ==================
