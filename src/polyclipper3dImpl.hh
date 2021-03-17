@@ -369,6 +369,8 @@ void clipPolyhedron(std::vector<Vertex3d<VA>>& polyhedron,
 
       // Look for any topology links to clipped nodes we need to patch.
       // We hit any new vertices first, and then any preexisting that happened to lie exactly in-plane.
+      vector<vector<int>> old_neighbors(nverts);
+      for (i = 0; i < nverts; ++i) old_neighbors[i] = polyhedron[i].neighbors;
       for (ii = 0; ii < nverts; ++ii) {
         i = (ii + nverts0) % nverts;
         if (polyhedron[i].comp == 0 or polyhedron[i].comp == 2) {
@@ -394,22 +396,28 @@ void clipPolyhedron(std::vector<Vertex3d<VA>>& polyhedron,
               PCASSERT2(polyhedron[inext].comp != -1, internal::dumpSerializedState(initial_state));
               if (polyhedron[i].neighbors[(j + 1u) % polyhedron[i].neighbors.size()] == inext or
                   inext == i) {
-                polyhedron[i].neighbors.erase(polyhedron[i].neighbors.begin() + j);
+                polyhedron[i].neighbors[j] = -1; // mark to be removed
               } else {
                 polyhedron[i].neighbors[j] = inext;
                 if (polyhedron[inext].comp == 2) {
                   polyhedron[inext].neighbors.insert(polyhedron[inext].neighbors.begin(), i);
+                  old_neighbors[inext].insert(old_neighbors[inext].begin(), -1);
                 } else {
-                  auto itr = find(polyhedron[inext].neighbors.begin(),
-                                  polyhedron[inext].neighbors.end(),
-                                  iprev);
-                  PCASSERT(itr != polyhedron[inext].neighbors.end());
-                  polyhedron[inext].neighbors.insert(itr, i);
+                  auto offset = std::distance(old_neighbors[inext].begin(),
+                                              std::find(old_neighbors[inext].begin(),
+                                                        old_neighbors[inext].end(),
+                                                        iprev));
+                  PCASSERT2(offset != polyhedron[inext].neighbors.size(), internal::dumpSerializedState(initial_state));
+                  polyhedron[inext].neighbors.insert(polyhedron[inext].neighbors.begin() + offset, i);
+                  old_neighbors[inext].insert(old_neighbors[inext].begin() + offset, i);
                 }
               }
             }
           }
         }
+      }
+      for (i = 0; i < nverts; ++i) {
+        polyhedron[i].neighbors.erase(std::remove(polyhedron[i].neighbors.begin(), polyhedron[i].neighbors.end(), -1), polyhedron[i].neighbors.end());
       }
       // cerr << "After relinking:\n" << polyhedron2string(polyhedron) << endl;
 
