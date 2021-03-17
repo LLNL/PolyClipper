@@ -382,11 +382,12 @@ void clipPolyhedron(std::vector<Vertex3d<VA>>& polyhedron,
               }
               // cerr << endl;
               PCASSERT2(polyhedron[inext].comp != -1, internal::dumpSerializedState(initial_state));
-              if (polyhedron[i].neighbors[(j + 1u) % polyhedron[i].neighbors.size()] != inext) {
+              if (polyhedron[i].neighbors[(j + 1u) % polyhedron[i].neighbors.size()] == inext or
+                  inext == i) {
+                polyhedron[i].neighbors.erase(polyhedron[i].neighbors.begin() + j);
+              } else {
                 polyhedron[i].neighbors[j] = inext;
                 polyhedron[inext].neighbors.insert(polyhedron[inext].neighbors.begin(), i);
-              } else {
-                polyhedron[i].neighbors.erase(polyhedron[i].neighbors.begin() + j);
               }
             }
           }
