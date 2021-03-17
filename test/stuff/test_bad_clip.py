@@ -14,6 +14,7 @@ for filename in os.listdir("."):
 
         print "Read poly:\n", polyhedron2string(poly)
         print "  moments: ", moments(poly)
+        print "Read planes:\n", planes
 
         clipPolyhedron(poly, planes)
 
