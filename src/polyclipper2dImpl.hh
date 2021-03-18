@@ -39,7 +39,7 @@ using std::endl;
 
 namespace PolyClipper {
 
-namespace {    // anonymous methods
+namespace internal {
 
 //------------------------------------------------------------------------------
 // Compare a plane and a box (defined by it's min/max coordinates).
@@ -108,12 +108,12 @@ intersect(const typename VA::VECTOR& a,            // line-segment begin
   const auto n = poly.size();
   auto i = 0;
   while (i < n and (not result)) {
-    result = segmentsIntersect(a, b, poly[i].position, poly[(i+1)%n].position);
+    result = internal::segmentsIntersect(a, b, poly[i].position, poly[(i+1)%n].position);
   }
   return result;
 }
 
-}              // anonymous methods
+}              // internal namespace methods
 
 //------------------------------------------------------------------------------
 // Initialize a polygon given the vertex coordinates and connectivity.
@@ -255,7 +255,7 @@ void clipPolygon(std::vector<Vertex2d<VA>>& polygon,
     // cerr << "Clip plane: " << plane.dist << " " << VA::str(plane.normal) << endl;
 
     // First check against the bounding box.
-    auto boxcomp = compare(plane, xmin, ymin, xmax, ymax);
+    auto boxcomp = internal::compare(plane, xmin, ymin, xmax, ymax);
     auto above = boxcomp ==  1;
     auto below = boxcomp == -1;
     PCASSERT(not (above and below));

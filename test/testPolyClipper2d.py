@@ -22,6 +22,18 @@ square_points = [Vector2d(*coords)
                  for coords in [(0,0), (10,0), (10,10), (0,10)]]
 
 #-------------------------------------------------------------------------------
+# Diamond
+#      2
+#     / \
+#    /   \
+#   3     1
+#    \   /
+#     \ /
+#      0
+diamond_points = [Vector2d(*coords)
+                  for coords in [(0,-1), (1,0), (0,1), (-1,0)]]
+
+#-------------------------------------------------------------------------------
 # Make a non-convex notched thingy.
 #    6           5      3          2
 #    |------------\    /-----------|
@@ -52,12 +64,12 @@ def moments_answer(poly):
     assert n >= 3
     v1 = poly[0]
     m0, m1 = 0.0, Vector2d(0, 0)
-    for v2 in poly:
+    for v2 in poly[1:-1]:
         v3 = poly[v2.neighbors[1]]
         Ai = (v2.position - v1.position).crossmag(v3.position - v1.position)  # 2x
         m0 += Ai
         m1 += (v1.position + v2.position + v3.position)*Ai                    # 6x
-    return 0.5*m0, (v1.position + m1/(3.0*m0))
+    return 0.5*m0, m1/(3.0*m0)
 
 #-------------------------------------------------------------------------------
 # Compute the vertex neighbors assuming an ordered ring of the given size.
@@ -99,7 +111,7 @@ class TestPolyClipper2d(unittest.TestCase):
     # setUp
     #---------------------------------------------------------------------------
     def setUp(self):
-        self.convexPointSets = [square_points, degenerate_square_points]
+        self.convexPointSets = [square_points, diamond_points, degenerate_square_points]
         self.nonconvexPointSets = [notched_points]
         self.pointSets = self.convexPointSets + self.nonconvexPointSets
         self.ntests = 1000
@@ -154,6 +166,36 @@ class TestPolyClipper2d(unittest.TestCase):
         vol1, centroid1 = moments(poly1)
         assert vol1 == vol0
         assert centroid1 == centroid0
+
+    #---------------------------------------------------------------------------
+    # Clip with a single plane along y = 0
+    #---------------------------------------------------------------------------
+    def testClipZeroPlane(self):
+        for points in self.pointSets:
+            poly = Polygon()
+            initializePolygon(poly, points, vertexNeighbors(points))
+            planes1 = [Plane2d(Vector2d(0,0), Vector2d(0,1))]
+            planes2 = [Plane2d(Vector2d(0,0), Vector2d(0,-1))]
+            chunk1 = Polygon(poly)
+            chunk2 = Polygon(poly)
+            clipPolygon(chunk1, planes1)
+            clipPolygon(chunk2, planes2)
+            v0, c0 = moments(poly)
+            v1, c1 = moments(chunk1)
+            v2, c2 = moments(chunk2)
+            success = fuzzyEqual(v1 + v2, v0)
+            if not success:
+                print "Plane: ", p0, phat
+                print "Poly:\n", list(poly)
+                print "Chunk 1:\n ", list(chunk1)
+                print "Chunk 2:\n ", list(chunk2)
+                print moments(chunk1)
+                print moments(chunk2)
+                print "Vol check: %g + %g = %g" % (v1, v2, v0)
+                writePolyOBJ(poly, "poly.obj")
+                writePolyOBJ(chunk1, "chunk1.obj")
+                writePolyOBJ(chunk2, "chunk2.obj")
+            self.failUnless(success, "Plane clipping summing to wrong volumes: %s + %s = %s != %s" % (v1, v2, v1 + v2, v0))
 
     #---------------------------------------------------------------------------
     # Clip with planes passing through the polygon.

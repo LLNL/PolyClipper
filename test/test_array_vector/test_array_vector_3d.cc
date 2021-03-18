@@ -31,6 +31,9 @@ struct ArrayAdapter3d {
   static VECTOR  neg(const VECTOR& a)                        { return Vector(-a[0], -a[1], -a[2]); }
   static VECTOR  unitVector(const VECTOR& a)                 { auto mag = magnitude(a); return mag > 1.0e-15 ? div(a, mag) : Vector(1.0, 0.0, 0.0); }
   static std::string str(const VECTOR& a)                    { std::ostringstream os; os << "(" << a[0] << " " << a[1] << " " << a[2] << ")"; return os.str(); }
+  static std::array<double, 3> get_triple(const VECTOR& a)   { return a; }
+  static void set_triple(VECTOR& a,
+                         const std::array<double, 3> vals)   { a = vals; }
 };
 
 int main() {

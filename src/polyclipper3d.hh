@@ -27,6 +27,7 @@
 #include "polyclipper_plane.hh"
 #include "polyclipper_vector3d.hh"
 #include "polyclipper_utilities.hh"
+#include "polyclipper_serialize.hh"
 
 #include <cmath>
 #include <string>
@@ -35,9 +36,6 @@
 #include <set>
 
 namespace PolyClipper {
-
-// A convenient alias for the 3D plane with PolyClippers internal Vector type
-using Plane3d = Plane<internal::VectorAdapter<Vector3d>>;
 
 //------------------------------------------------------------------------------
 // The 3D vertex struct, which we use to encode polyhedra, i.e., 

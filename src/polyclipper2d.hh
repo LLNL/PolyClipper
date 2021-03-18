@@ -27,6 +27,7 @@
 #include "polyclipper_plane.hh"
 #include "polyclipper_vector2d.hh"
 #include "polyclipper_utilities.hh"
+#include "polyclipper_serialize.hh"
 
 #include <cmath>
 #include <string>
@@ -35,9 +36,6 @@
 #include <set>
 
 namespace PolyClipper {
-
-// A convenient alias for the 2D plane with PolyClippers internal Vector type
-using Plane2d = Plane<internal::VectorAdapter<Vector2d>>;
 
 //------------------------------------------------------------------------------
 // The 2D vertex struct, which we use to encode polygons, i.e., 

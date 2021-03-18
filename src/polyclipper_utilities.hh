@@ -12,20 +12,37 @@
 
 #include <iostream>
 #include <ostream>
+#include <fstream>
+#include <random>
 #include <vector>
+#include <exception>
 #include <stdexcept>
+#include <algorithm>
+
+namespace PolyClipper {
+//------------------------------------------------------------------------------
+// An exception to indicate an internal PolyClipper error
+//------------------------------------------------------------------------------
+class PolyClipperError: public std::exception {
+public:
+  std::string mMsg;
+  PolyClipperError(const std::string msg): std::exception(), mMsg(msg) {}
+  virtual const char* what() const throw() { return mMsg.c_str(); }
+};
 
 //------------------------------------------------------------------------------
 // Define an assert command with optional message
 //------------------------------------------------------------------------------
 #ifndef NDEBUG
-#   define PCASSERT2(condition, message) \
-    do { \
-        if (! (condition)) { \
-            std::cerr << "Assertion `" #condition "` failed in " << __FILE__ \
-                      << " line " << __LINE__ << ": " << message << std::endl; \
-            throw std::runtime_error("PolyClipper ERROR");                                              \
-        } \
+#   define PCASSERT2(condition, message)                                       \
+    do {                                                                       \
+        if (! (condition)) {                                                   \
+            std::ostringstream s;                                              \
+            s << "PolyCliper ERROR: Assertion `" #condition "` failed in "     \
+              << __FILE__ << " line " << __LINE__ << ": \n" << message << "\n";\
+            std::cerr << s.str();                                              \
+            throw PolyClipperError(s.str());                                   \
+        }                                                                      \
     } while (false)
 #else
 #   define PCASSERT2(condition, message) do { } while (false)
@@ -33,7 +50,6 @@
 
 #define PCASSERT(condition) PCASSERT2(condition, #condition)
 
-namespace PolyClipper {
 namespace internal {
 
 //------------------------------------------------------------------------------
@@ -186,6 +202,24 @@ segmentPlaneIntersection(const typename VA::VECTOR& a,         // line-segment b
   const auto bsgndist = plane.dist + VA::dot(plane.normal, b);
   PCASSERT(asgndist != bsgndist);
   return VA::div(VA::sub(VA::mul(a, bsgndist), VA::mul(b, asgndist)), bsgndist - asgndist);
+}
+
+//------------------------------------------------------------------------------
+// Dump a serialized state to a file with a randomly augmented name.
+//------------------------------------------------------------------------------
+inline
+std::string
+dumpSerializedState(const std::vector<char>& buffer,
+                    std::string filename = "PolyClipper") {
+  std::string digits("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz");
+  std::random_device rd;
+  std::mt19937 generator(rd());
+  std::shuffle(digits.begin(), digits.end(), generator);
+  filename += "_" + digits.substr(0, 20) + ".bin";
+  std::ofstream os(filename, std::ios::out | std::ios::binary);
+  os.write(&(buffer[0]), buffer.size());
+  os.close();
+  return "Wrote " + std::to_string(buffer.size()) + " bytes to " + filename;
 }
 
 }

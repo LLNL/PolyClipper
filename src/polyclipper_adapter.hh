@@ -8,6 +8,7 @@
 
 #include <string>
 #include <sstream>
+#include <array>
 
 namespace PolyClipper {
 namespace internal {
@@ -15,15 +16,15 @@ namespace internal {
 template<typename VectorType>
 struct VectorAdapter {
   using VECTOR = VectorType;
-  static VECTOR Vector(double a, double b)                   { return VECTOR(a, b); }    // only 2D
-  static VECTOR Vector(double a, double b, double c)         { return VECTOR(a, b, c); } // only 3D
-  static bool equal(const VECTOR& a, const VECTOR& b)        { return a == b; }
+  static VECTOR  Vector(double a, double b)                  { return VECTOR(a, b); }    // only 2D
+  static VECTOR  Vector(double a, double b, double c)        { return VECTOR(a, b, c); } // only 3D
+  static bool    equal(const VECTOR& a, const VECTOR& b)     { return a == b; }
   static double& x(VECTOR& a)                                { return a.x; }
   static double& y(VECTOR& a)                                { return a.y; }
-  static double& z(VECTOR& a)                                { return a.z; }
+  static double& z(VECTOR& a)                                { return a.z; }             // only 3D
   static double  x(const VECTOR& a)                          { return a.x; }
   static double  y(const VECTOR& a)                          { return a.y; }
-  static double  z(const VECTOR& a)                          { return a.z; }
+  static double  z(const VECTOR& a)                          { return a.z; }             // only 3D
   static double  dot(const VECTOR& a, const VECTOR& b)       { return a.dot(b); }
   static double  crossmag(const VECTOR& a, const VECTOR& b)  { return a.crossmag(b); }   // only 2D
   static VECTOR  cross(const VECTOR& a, const VECTOR& b)     { return a.cross(b); }      // only 3D
@@ -39,7 +40,10 @@ struct VectorAdapter {
   static VECTOR  sub(const VECTOR& a, const VECTOR& b)       { return a - b; }
   static VECTOR  neg(const VECTOR& a)                        { return -a; }
   static VECTOR  unitVector(const VECTOR& a)                 { return a.unitVector(); }
-  static std::string str(const VECTOR& a)                    { std::ostringstream os; os << a; return os.str(); }
+  static std::string str(const VECTOR& a)                    { std::ostringstream os; os << a; return os.str(); }  // Pretty human readable representation
+  static std::array<double, 3> get_triple(const VECTOR& a)   { return a.triple(); }
+  static void set_triple(VECTOR& a,
+                         const std::array<double, 3>& vals)  { a.set_triple(vals); }
 };
 
 }
