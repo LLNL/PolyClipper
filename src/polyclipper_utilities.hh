@@ -13,6 +13,7 @@
 #include <iostream>
 #include <ostream>
 #include <fstream>
+#include <sstream>
 #include <random>
 #include <vector>
 #include <exception>
