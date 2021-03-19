@@ -6,6 +6,8 @@
 #ifndef __PolyClipper_adapter__
 #define __PolyClipper_adapter__
 
+#include "polyclipper_utilities.hh"
+
 #include <string>
 #include <sstream>
 #include <array>
