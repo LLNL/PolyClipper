@@ -536,6 +536,25 @@ class TestPolyClipper2d(unittest.TestCase):
                     for iclip in clip:
                         assert iclip in (10, 20)
 
+    #---------------------------------------------------------------------------
+    # Pathological degeneracy reported by Branson
+    #---------------------------------------------------------------------------
+    def testDegenerateClip1(self):
+        targetTriVertices = [
+            Vector2d( 6.104166666666669405E-01,  1.000000000000000000E+00),
+            Vector2d( 6.100000000000003197E-01,  1.000000000000000000E+00),
+            Vector2d( 6.104166666666669405E-01,  0.000000000000000000E+00),
+        ]
+        targetTri = Polygon()
+        initializePolygon(targetTri, targetTriVertices, [[2,1], [0,2], [1,0], ])
+        vol0, centroid0 = moments(targetTri)
+        clipPlanes = [
+            Plane2d(6.103886381791467919E-01, Vector2d(-9.999540830238576872E-01, -9.582893295645468490E-03)),
+        ]
+        clipPolygon(targetTri, clipPlanes)
+        vol1, centroid1 = moments(targetTri)
+        self.failUnless(vol1 == 0 and centroid1 == Vector2d(0,0),
+                        "Degenerate test 1 failed: %s %s %s %s" % (vol0, centroid0, vol1, centroid1))
 
 if __name__ == "__main__":
     unittest.main()

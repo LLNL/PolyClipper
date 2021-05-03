@@ -203,7 +203,7 @@ void moments(double& zerothMoment, typename VA::VECTOR& firstMoment,
   firstMoment = VA::Vector(0.0, 0.0);
 
   // Walk the polygon, and add up our results triangle by triangle.
-  if (not polygon.empty()) {
+  if (polygon.size() > 2) {
     const auto nverts = polygon.size();
     const auto v0 = polygon[0];
     for (const auto v1: polygon) {
@@ -417,16 +417,19 @@ void clipPolygon(std::vector<Vertex2d<VA>>& polygon,
         }
         internal::removeElements(polygon, verts2kill);
       }
-      double V1;
-      Vector C1;
-      moments(V1, C1, polygon);
 
       // cerr << "After compression: " << polygon2string(polygon) << " " << V1 << " " << V1/V0 << endl;
 
       // Is the polygon gone?
-      if (polygon.size() < 3 or
-          V1 < nearlyZero or
+      if (polygon.size() < 3) {
+        polygon.clear();
+      } else {
+        double V1;
+        Vector C1;
+        moments(V1, C1, polygon);
+      if (V1 < nearlyZero or
           V1/V0 < 100.0*nearlyZero) polygon.clear();
+      }
     }
   }
 }
