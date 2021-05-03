@@ -194,7 +194,7 @@ void moments(double& zerothMoment, typename VA::VECTOR& firstMoment,
   zerothMoment = 0.0;
   firstMoment = VA::Vector(0.0, 0.0, 0.0);
 
-  if (not polyhedron.empty()) {
+  if (polyhedron.size() > 3) {                // Require at least a tetrahedron
 
     // Pick a central point to work from.
     // auto nactive = 0;
@@ -468,16 +468,18 @@ void clipPolyhedron(std::vector<Vertex3d<VA>>& polyhedron,
         }
       }
       polyhedron.erase(std::remove_if(polyhedron.begin(), polyhedron.end(), [](Vertex& v) { return v.comp < 0; }), polyhedron.end());
-      double V1;
-      Vector C1;
-      moments(V1, C1, polyhedron);
 
       // Is the polyhedron gone?
-      if (polyhedron.size() < 4 or
-          V1 < nearlyZero or
-          V1/V0 < 100.0*nearlyZero) polyhedron.clear();
+      if (polyhedron.size() < 4) {
+        polyhedron.clear();
+      } else {
+        double V1;
+        Vector C1;
+        moments(V1, C1, polyhedron);
 
-      // collapseDegenerates(polyhedron, 1.0e-8);
+        if (V1 < nearlyZero or
+            V1/V0 < 100.0*nearlyZero) polyhedron.clear();
+      }
     }
   }
 }

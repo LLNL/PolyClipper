@@ -203,7 +203,7 @@ void moments(double& zerothMoment, typename VA::VECTOR& firstMoment,
   firstMoment = VA::Vector(0.0, 0.0);
 
   // Walk the polygon, and add up our results triangle by triangle.
-  if (polygon.size() > 2) {
+  if (polygon.size() > 2) {             // Require at least a triangle
     const auto nverts = polygon.size();
     const auto v0 = polygon[0];
     for (const auto v1: polygon) {
@@ -291,12 +291,12 @@ void clipPolygon(std::vector<Vertex2d<VA>>& polygon,
 
         // BCS XXX note that we are about to attempt to index into polygon.
         // If vnext = -1, for example, this will be a memory error with the sanitizer.
-        //PCASSERT(vnext >= 0);
-        if (vnext < 0) throw std::logic_error("vnext < 0");
-        if (vprev < 0) throw std::logic_error("vprev < 0");
+        PCASSERT(vnext >= 0);
+        // if (vnext < 0) throw std::logic_error("vnext < 0");
+        // if (vprev < 0) throw std::logic_error("vprev < 0");
         const auto nverts = polygon.size();
-        if (vnext >= nverts) throw std::logic_error("vnext >= nverts");
-        if (vprev >= nverts) throw std::logic_error("vprev >= nverts");
+        // if (vnext >= nverts) throw std::logic_error("vnext >= nverts");
+        // if (vprev >= nverts) throw std::logic_error("vprev >= nverts");
 
         if ((polygon[v].comp)*(polygon[vnext].comp) == -1) {
           // This pair straddles the plane and creates a new vertex.
@@ -338,8 +338,8 @@ void clipPolygon(std::vector<Vertex2d<VA>>& polygon,
       // For each hanging vertex, link to the neighbors that survive the clipping.
       // If there are more than two hanging vertices, we've clipped a non-convex face and need to check
       // how to hook up each section, possibly resulting in new faces.
-      //PCASSERT(hangingVertices.size() % 2 == 0);
-      if (hangingVertices.size() % 2 != 0) throw std::logic_error("hangingVertices mod 2 is not zero");
+      PCASSERT(hangingVertices.size() % 2 == 0);
+      // if (hangingVertices.size() % 2 != 0) throw std::logic_error("hangingVertices mod 2 is not zero");
       if (true) { //(hangingVertices.size() > 2) {
 
         // Yep, more than one new edge here.
@@ -418,6 +418,15 @@ void clipPolygon(std::vector<Vertex2d<VA>>& polygon,
         internal::removeElements(polygon, verts2kill);
       }
 
+#ifndef NDEBUG
+      if (polygon.size() >= 3) {
+        for (const auto& v: polygon) {
+          PCASSERT2(v.neighbors.first >= 0 and v.neighbors.second >= 0,
+                    v.neighbors.first << " " << v.neighbors.second);
+        }
+      }
+#endif
+
       // cerr << "After compression: " << polygon2string(polygon) << " " << V1 << " " << V1/V0 << endl;
 
       // Is the polygon gone?
@@ -459,9 +468,10 @@ void collapseDegenerates(std::vector<Vertex2d<VA>>& polygon,
       for (auto i = 0; i < n; ++i) {
         if (polygon[i].ID >= 0) {
           auto j = polygon[i].neighbors.second;
-          //PCASSERT(polygon[j].ID >= 0);
-          if (j==i) throw std::logic_error("got vertex and neighbor identical in collapseDegenerates");
-          if (polygon[j].ID < 0) throw std::logic_error("polygon[j].ID is negative in collapseDegenerates");
+          PCASSERT(j != i);
+          PCASSERT(polygon[j].ID >= 0);
+          // if (j==i) throw std::logic_error("got vertex and neighbor identical in collapseDegenerates");
+          // if (polygon[j].ID < 0) throw std::logic_error("polygon[j].ID is negative in collapseDegenerates");
           if (VA::magnitude2(VA::sub(polygon[i].position, polygon[j].position)) < tol2) {
             done = false;
             active = true;
