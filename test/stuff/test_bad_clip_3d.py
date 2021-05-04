@@ -1,11 +1,11 @@
 import os, os.path
 from PolyClipper import *
 
-for filename in os.listdir("."):
+for filename in os.listdir("3d"):
     if filename.endswith(".bin"):
         print "--------------------------------------------------------------------------------"
         print "Reading ", filename
-        with open(filename, 'rb') as f:
+        with open(os.path.join("3d", filename), 'rb') as f:
             binstuff = f.read()
         buf  = vector_of_char(binstuff)
 

@@ -153,7 +153,7 @@ polygon2string(const std::vector<Vertex2d<VA>>& poly) {
   std::ostringstream s;
   s << "{\n";
   for (auto i = 0; i < nverts; ++i) {
-    s << "  " << i << " " << VA::str(poly[i].position)
+    s << "  " << i << " " << VA::str(poly[i].position) << " comp=" << poly[i].comp
       << " [" << poly[i].neighbors.first << " " << poly[i].neighbors.second << "]"
       << " clips[";
     std::copy(poly[i].clips.begin(), poly[i].clips.end(), ostream_iterator<int>(s, " "));
@@ -303,7 +303,7 @@ void clipPolygon(std::vector<Vertex2d<VA>>& polygon,
         PCASSERT2(vnext >= 0, internal::dumpSerializedState(initial_state));
         // if (vnext < 0) throw std::logic_error("vnext < 0");
         // if (vprev < 0) throw std::logic_error("vprev < 0");
-        const auto nverts = polygon.size();
+        // const auto nverts = polygon.size();
         // if (vnext >= nverts) throw std::logic_error("vnext >= nverts");
         // if (vprev >= nverts) throw std::logic_error("vprev >= nverts");
 
@@ -341,66 +341,82 @@ void clipPolygon(std::vector<Vertex2d<VA>>& polygon,
 
         }
       }
-
       // cerr << "After insertion: " << polygon2string(polygon) << endl;
 
-      // For each hanging vertex, link to the neighbors that survive the clipping.
-      // If there are more than two hanging vertices, we've clipped a non-convex face and need to check
-      // how to hook up each section, possibly resulting in new faces.
-      PCASSERT2(hangingVertices.size() % 2 == 0, internal::dumpSerializedState(initial_state));
-      // if (hangingVertices.size() % 2 != 0) throw std::logic_error("hangingVertices mod 2 is not zero");
-      if (true) { //(hangingVertices.size() > 2) {
+      // Look for any topology links to clipped nodes we need to patch.
+      const auto nverts = polygon.size();
+      size_t i, j;
+      for (i = 0u; i < nverts; ++i) {
+        if (polygon[i].comp == 0 or polygon[i].comp == 2) {
 
-        // Yep, more than one new edge here.
-        const auto direction = VA::Vector(VA::y(plane.normal), -VA::x(plane.normal));
-        std::sort(hangingVertices.begin(), hangingVertices.end(), 
-                  [&](const int a, const int b) { return (VA::dot(polygon[a].position, direction) < VA::dot(polygon[b].position, direction)); });
-
-        // Now the ordered pairs of these new vertices form the new edges.
-        int v1, v2;
-        for (auto k = 0; k < hangingVertices.size(); k += 2) {
-          v1 = hangingVertices[k];
-          v2 = hangingVertices[k + 1];
-          polygon[v1].neighbors.second = v2;
-          polygon[v2].neighbors.first  = v1;
+          // Make sure this vertex links to surviving neighbors.
+          j = polygon[i].neighbors.first;
+          while (polygon[j].comp == -1 and j != i) j = polygon[j].neighbors.first;
+          polygon[i].neighbors.first = j;
+            
+          j = polygon[i].neighbors.second;
+          while (polygon[j].comp == -1 and j != i) j = polygon[j].neighbors.second;
+          polygon[i].neighbors.second = j;
         }
-
-      } else {
-
-        // Just hook across the vertices and we're done.
-        for (auto v: hangingVertices) {
-          std::tie(vprev, vnext) = polygon[v].neighbors;
-          PCASSERT2(polygon[v].comp == 0 or polygon[v].comp == 2, internal::dumpSerializedState(initial_state));
-          PCASSERT2(polygon[vprev].comp == -1 xor polygon[vnext].comp == -1, internal::dumpSerializedState(initial_state));
-
-          if (polygon[vprev].comp == -1) {
-            // We have to search backwards.
-            while (polygon[vprev].comp == -1) {
-              vprev = polygon[vprev].neighbors.first;
-            }
-            PCASSERT2(vprev != v, internal::dumpSerializedState(initial_state));
-            polygon[v].neighbors.first = vprev;
-
-          } else {
-            // We have to search forward.
-            while (polygon[vnext].comp == -1) {
-              vnext = polygon[vnext].neighbors.second;
-            }
-            PCASSERT2(vnext != v, internal::dumpSerializedState(initial_state));
-            polygon[v].neighbors.second = vnext;
-
-          }
-        }
-
       }
+
+      // // For each hanging vertex, link to the neighbors that survive the clipping.
+      // // If there are more than two hanging vertices, we've clipped a non-convex face and need to check
+      // // how to hook up each section, possibly resulting in new faces.
+      // PCASSERT2(hangingVertices.size() % 2 == 0, internal::dumpSerializedState(initial_state));
+      // // if (hangingVertices.size() % 2 != 0) throw std::logic_error("hangingVertices mod 2 is not zero");
+      // if (true) { //(hangingVertices.size() > 2) {
+
+      //   // Yep, more than one new edge here.
+      //   const auto direction = VA::Vector(VA::y(plane.normal), -VA::x(plane.normal));
+      //   std::sort(hangingVertices.begin(), hangingVertices.end(), 
+      //             [&](const int a, const int b) { return (VA::dot(polygon[a].position, direction) < VA::dot(polygon[b].position, direction)); });
+
+      //   // Now the ordered pairs of these new vertices form the new edges.
+      //   int v1, v2;
+      //   for (auto k = 0; k < hangingVertices.size(); k += 2) {
+      //     v1 = hangingVertices[k];
+      //     v2 = hangingVertices[k + 1];
+      //     polygon[v1].neighbors.second = v2;
+      //     polygon[v2].neighbors.first  = v1;
+      //   }
+
+      // } else {
+
+      //   // Just hook across the vertices and we're done.
+      //   for (auto v: hangingVertices) {
+      //     std::tie(vprev, vnext) = polygon[v].neighbors;
+      //     PCASSERT2(polygon[v].comp == 0 or polygon[v].comp == 2, internal::dumpSerializedState(initial_state));
+      //     PCASSERT2(polygon[vprev].comp == -1 xor polygon[vnext].comp == -1, internal::dumpSerializedState(initial_state));
+
+      //     if (polygon[vprev].comp == -1) {
+      //       // We have to search backwards.
+      //       while (polygon[vprev].comp == -1) {
+      //         vprev = polygon[vprev].neighbors.first;
+      //       }
+      //       PCASSERT2(vprev != v, internal::dumpSerializedState(initial_state));
+      //       polygon[v].neighbors.first = vprev;
+
+      //     } else {
+      //       // We have to search forward.
+      //       while (polygon[vnext].comp == -1) {
+      //         vnext = polygon[vnext].neighbors.second;
+      //       }
+      //       PCASSERT2(vnext != v, internal::dumpSerializedState(initial_state));
+      //       polygon[v].neighbors.second = vnext;
+
+      //     }
+      //   }
+
+      // }
 
       // Remove the clipped vertices, compressing the polygon.
 
       // First, number the active vertices sequentially.
       xmin = std::numeric_limits<double>::max(), xmax = std::numeric_limits<double>::lowest();
       ymin = std::numeric_limits<double>::max(), ymax = std::numeric_limits<double>::lowest();
-      auto i = 0;
-      auto nkill = 0;
+      size_t nkill = 0u;
+      i = 0u;
       for (auto& v: polygon) {
         if (v.comp < 0) {
           nkill++;
@@ -414,7 +430,7 @@ void clipPolygon(std::vector<Vertex2d<VA>>& polygon,
       }
 
       // Find the vertices to remove, and renumber the neighbors.
-      if (nkill > 0) {
+      if (nkill > 0u) {
         vector<int> verts2kill;
         for (auto k = 0; k < polygon.size(); ++k) {
           if (polygon[k].comp < 0) {
@@ -427,6 +443,8 @@ void clipPolygon(std::vector<Vertex2d<VA>>& polygon,
         internal::removeElements(polygon, verts2kill);
       }
 
+      // cerr << "After compression: " << polygon2string(polygon) << endl;
+
 #ifndef NDEBUG
       if (polygon.size() >= 3) {
         for (const auto& v: polygon) {
@@ -435,8 +453,6 @@ void clipPolygon(std::vector<Vertex2d<VA>>& polygon,
         }
       }
 #endif
-
-      // cerr << "After compression: " << polygon2string(polygon) << " " << V1 << " " << V1/V0 << endl;
 
       // Is the polygon gone?
       if (polygon.size() < 3) {
