@@ -230,6 +230,15 @@ void clipPolygon(std::vector<Vertex2d<VA>>& polygon,
   using Vertex = Vertex2d<VA>;
   const double nearlyZero = 1.0e-15;
 
+  // Prepare to dump the input state if we hit an exception
+  std::vector<char> initial_state;
+#ifndef NDEBUG
+  {
+    internal::serialize(polygon, initial_state);
+    internal::serialize<VA>(planes, initial_state);
+  }
+#endif
+
   // Check the input.
   double V0;
   Vector C0;
@@ -258,7 +267,7 @@ void clipPolygon(std::vector<Vertex2d<VA>>& polygon,
     auto boxcomp = internal::compare(plane, xmin, ymin, xmax, ymax);
     auto above = boxcomp ==  1;
     auto below = boxcomp == -1;
-    PCASSERT(not (above and below));
+    PCASSERT2(not (above and below), internal::dumpSerializedState(initial_state));
 
     // Check the current set of vertices against this plane.
     if (not (above or below)) {
@@ -270,7 +279,7 @@ void clipPolygon(std::vector<Vertex2d<VA>>& polygon,
           above = false;
         }
       }
-      PCASSERT(not (above and below));
+      PCASSERT2(not (above and below), internal::dumpSerializedState(initial_state));
     }
 
     // Did we get a simple case?
@@ -291,7 +300,7 @@ void clipPolygon(std::vector<Vertex2d<VA>>& polygon,
 
         // BCS XXX note that we are about to attempt to index into polygon.
         // If vnext = -1, for example, this will be a memory error with the sanitizer.
-        PCASSERT(vnext >= 0);
+        PCASSERT2(vnext >= 0, internal::dumpSerializedState(initial_state));
         // if (vnext < 0) throw std::logic_error("vnext < 0");
         // if (vprev < 0) throw std::logic_error("vprev < 0");
         const auto nverts = polygon.size();
@@ -338,7 +347,7 @@ void clipPolygon(std::vector<Vertex2d<VA>>& polygon,
       // For each hanging vertex, link to the neighbors that survive the clipping.
       // If there are more than two hanging vertices, we've clipped a non-convex face and need to check
       // how to hook up each section, possibly resulting in new faces.
-      PCASSERT(hangingVertices.size() % 2 == 0);
+      PCASSERT2(hangingVertices.size() % 2 == 0, internal::dumpSerializedState(initial_state));
       // if (hangingVertices.size() % 2 != 0) throw std::logic_error("hangingVertices mod 2 is not zero");
       if (true) { //(hangingVertices.size() > 2) {
 
@@ -361,15 +370,15 @@ void clipPolygon(std::vector<Vertex2d<VA>>& polygon,
         // Just hook across the vertices and we're done.
         for (auto v: hangingVertices) {
           std::tie(vprev, vnext) = polygon[v].neighbors;
-          PCASSERT(polygon[v].comp == 0 or polygon[v].comp == 2);
-          PCASSERT(polygon[vprev].comp == -1 xor polygon[vnext].comp == -1);
+          PCASSERT2(polygon[v].comp == 0 or polygon[v].comp == 2, internal::dumpSerializedState(initial_state));
+          PCASSERT2(polygon[vprev].comp == -1 xor polygon[vnext].comp == -1, internal::dumpSerializedState(initial_state));
 
           if (polygon[vprev].comp == -1) {
             // We have to search backwards.
             while (polygon[vprev].comp == -1) {
               vprev = polygon[vprev].neighbors.first;
             }
-            PCASSERT(vprev != v);
+            PCASSERT2(vprev != v, internal::dumpSerializedState(initial_state));
             polygon[v].neighbors.first = vprev;
 
           } else {
@@ -377,7 +386,7 @@ void clipPolygon(std::vector<Vertex2d<VA>>& polygon,
             while (polygon[vnext].comp == -1) {
               vnext = polygon[vnext].neighbors.second;
             }
-            PCASSERT(vnext != v);
+            PCASSERT2(vnext != v, internal::dumpSerializedState(initial_state));
             polygon[v].neighbors.second = vnext;
 
           }
@@ -422,7 +431,7 @@ void clipPolygon(std::vector<Vertex2d<VA>>& polygon,
       if (polygon.size() >= 3) {
         for (const auto& v: polygon) {
           PCASSERT2(v.neighbors.first >= 0 and v.neighbors.second >= 0,
-                    v.neighbors.first << " " << v.neighbors.second);
+                    v.neighbors.first << " " << v.neighbors.second << "\n" << internal::dumpSerializedState(initial_state));
         }
       }
 #endif
