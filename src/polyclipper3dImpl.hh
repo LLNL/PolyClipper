@@ -301,6 +301,8 @@ void clipPolyhedron(std::vector<Vertex3d<VA>>& polyhedron,
     // Check the current set of vertices against this plane.
     // Also keep track of any vertices that landed exactly in-plane.
     if (not (above or below)) {
+      above = true;
+      below = true;
       for (auto& v: polyhedron) {
         v.comp = internal::compare<VA>(plane, v.position);
         if (v.comp == 1) {
