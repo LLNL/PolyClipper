@@ -1,6 +1,6 @@
-###############################################
-Obtaining, building, and installing PolyClipper
-###############################################
+#########################################################
+Obtaining, building, installing, and testing PolyClipper
+#########################################################
 
 PolyClipper minimally requires a C++11 compliant compiler.  In order to build the Python interface you also need a Python 2 installation -- porting to Python 3 is forthcoming.  If you use git to clone the PolyClipper source note PolyClipper includes three submodules: `BLT <https://github.com/LLNL/blt>`_, `pybind11 <https://github.com/pybind/pybind11>`_, and `PYB11Generator <https://github.com/jmikeowen/PYB11Generator>`_.  In order to ensure these are properly downloaded when cloning PolyClipper be sure to use the ``--recurse-submodules`` git option::
 
@@ -67,3 +67,14 @@ SPHINX_THEME
 
 SPHINX_THEME_DIR
   Where to look for Sphinx themes.
+
+-------
+Testing
+-------
+
+PolyClipper can be tested using the Python module (if built).  There are two unit test classes in the ``test`` directory: ``testPolyClipper2d.py`` and ``testPolyClipper3d.py``.  So, one you have added the location of the ``PolyClipper.so`` file to your PYTHONPATH, testing is as simple as executing::
+
+  cd test
+  python testPolyClipper2d.py -v
+  python testPolyClipper3d.py -v
+

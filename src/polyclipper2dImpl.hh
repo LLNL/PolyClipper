@@ -271,6 +271,8 @@ void clipPolygon(std::vector<Vertex2d<VA>>& polygon,
 
     // Check the current set of vertices against this plane.
     if (not (above or below)) {
+      above = true;
+      below = true;
       for (auto& v: polygon) {
         v.comp = internal::compare<VA>(plane, v.position);
         if (v.comp == 1) {
