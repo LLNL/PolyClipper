@@ -83,6 +83,13 @@ def vertexNeighbors(points):
     return neighbors
 
 #-------------------------------------------------------------------------------
+# Compute the average outward normal to a vertex
+#-------------------------------------------------------------------------------
+def vertexNormal(vertex, poly):
+    return -(poly[vertex.neighbors[0]].position - vertex.position +
+             poly[vertex.neighbors[1]].position - vertex.position).unitVector()
+
+#-------------------------------------------------------------------------------
 # Compute the facets assuming an ordered ring of the given size.
 #-------------------------------------------------------------------------------
 def facets(points):
@@ -306,9 +313,24 @@ class TestPolyClipper2d(unittest.TestCase):
                 planes = [Plane2d(p0, phat)]
                 chunk = Polygon(poly)
                 clipPolygon(chunk, planes)
-                v1, c1 = moments(chunk)
-                self.failUnless(v1 == 0.0,
-                                "Full plane clipping failure: %s != %s" % (v1, 0.0))
+                self.failUnless(len(chunk) == 0,
+                                "Full plane clipping failure: %s" % chunk)
+
+    #---------------------------------------------------------------------------
+    # Clip with planes that exactly hit at least one vertex.  Should reject
+    # entire polygon.
+    #---------------------------------------------------------------------------
+    def testFullClipOnePlaneDegenerate(self):
+        for points in (square_points, diamond_points, degenerate_square_points):
+            poly = Polygon()
+            initializePolygon(poly, points, vertexNeighbors(points))
+            for v in poly:
+                phat = vertexNormal(v, poly)
+                planes = [Plane2d(v.position, phat)]
+                chunk = Polygon(poly)
+                clipPolygon(chunk, planes)
+                self.failUnless(len(chunk) == 0,
+                                "Full plane clipping failure: %s" % chunk)
 
     #---------------------------------------------------------------------------
     # Clip with planes passing through the polygon.

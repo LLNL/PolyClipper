@@ -144,7 +144,16 @@ def moments_answer(poly):
     return m0, m1
 
 #-------------------------------------------------------------------------------
-# Find the maximum length across a polygon
+# Compute the average outward normal to a vertex
+#-------------------------------------------------------------------------------
+def vertexNormal(vertex, poly):
+    result = Vector3d(0,0,0)
+    for j in vertex.neighbors:
+        result += poly[j].position - vertex.position
+    return -result.unitVector()
+
+#-------------------------------------------------------------------------------
+# Find the maximum length across a polyhedron
 #-------------------------------------------------------------------------------
 def max_chord(poly):
     xmin = min([v.position.x for v in poly])
@@ -386,10 +395,28 @@ class TestPolyhedronClipping(unittest.TestCase):
                 planes = [Plane3d(p0, phat)]
                 chunk = Polyhedron(poly)
                 clipPolyhedron(chunk, planes)
-                v1, c1 = moments(chunk)
-                self.failUnless(v1 == 0.0,
-                                "Full plane clipping failure: %s != %s" % (v1, 0.0))
+                self.failUnless(len(chunk) == 0,
+                                "Full plane clipping failure: %s" % chunk)
         return
+
+    #---------------------------------------------------------------------------
+    # Clip with planes that exactly hit at least one vertex.  Should reject
+    # entire polyhedron.
+    #---------------------------------------------------------------------------
+    def testFullClipOnePlaneDegenerate(self):
+        for points, neighbors in [(cube_points, cube_neighbors),
+                                  (diamond_points, diamond_neighbors),
+                                  (degenerate_cube_points1, cube_neighbors),
+                                  (degenerate_cube_points2, cube_neighbors)]:
+            poly = Polyhedron()
+            initializePolyhedron(poly, points, neighbors)
+            for v in poly:
+                phat = vertexNormal(v, poly)
+                planes = [Plane3d(v.position, phat)]
+                chunk = Polyhedron(poly)
+                clipPolyhedron(chunk, planes)
+                self.failUnless(len(chunk) == 0,
+                                "Full plane clipping failure: %s" % chunk)
 
     #---------------------------------------------------------------------------
     # Clip with planes passing through the polyhedron.

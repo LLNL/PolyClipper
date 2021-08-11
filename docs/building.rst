@@ -72,7 +72,7 @@ SPHINX_THEME_DIR
 Testing
 -------
 
-PolyClipper can be tested using the Python module (if built).  There are two unit test classes in the ``test`` directory: ``testPolyClipper2d.py`` and ``testPolyClipper3d.py``.  So, one you have added the location of the ``PolyClipper.so`` file to your PYTHONPATH, testing is as simple as executing::
+PolyClipper can be tested using the Python module (if built).  There are two unit test classes in the ``test`` directory: ``testPolyClipper2d.py`` and ``testPolyClipper3d.py``.  So, once you have added the location of the ``PolyClipper.so`` file to your PYTHONPATH, testing is as simple as executing::
 
   cd test
   python testPolyClipper2d.py -v
