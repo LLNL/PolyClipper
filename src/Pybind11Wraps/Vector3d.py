@@ -1,7 +1,7 @@
 from PYB11Generator import *
 
 class Vector3d:
-    "The PolyClipper (x,y) geometric vector type"
+    "The PolyClipper (x,y,z) geometric vector type"
 
     #---------------------------------------------------------------------------
     # Constructors
@@ -50,6 +50,10 @@ class Vector3d:
 
     def __neg__(self):
         return
+
+    @PYB11implementation("[](Vector3d &s) { return py::make_iterator(&s.x, &s.z+1u); }, py::keep_alive<0,1>()")
+    def __iter__(self):
+        "Python iteration through a Vector."
 
     #---------------------------------------------------------------------------
     # Methods

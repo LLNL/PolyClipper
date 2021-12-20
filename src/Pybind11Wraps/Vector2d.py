@@ -50,6 +50,10 @@ class Vector2d:
     def __neg__(self):
         return
 
+    @PYB11implementation("[](Vector2d &s) { return py::make_iterator(&s.x, &s.y+1u); }, py::keep_alive<0,1>()")
+    def __iter__(self):
+        "Python iteration through a Vector."
+
     #---------------------------------------------------------------------------
     # Methods
     #---------------------------------------------------------------------------
