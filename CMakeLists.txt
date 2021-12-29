@@ -11,6 +11,13 @@ set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 set(CMAKE_EXPORT_COMPILE_COMMANDS On)
 
 #-------------------------------------------------------------------------------
+# Options
+#-------------------------------------------------------------------------------
+option(ENABLE_STATIC_CXXONLY "enable C++ only build with static libraries" OFF)
+option(ENABLE_CXXONLY "enable C++ only build without python bindings" OFF)
+option(ENABLE_DOCS "enable the sphinx documentation" OFF)
+
+#-------------------------------------------------------------------------------
 # Configure and Include blt
 #-------------------------------------------------------------------------------
 set(ENABLE_OPENMP ON CACHE BOOL "")
@@ -42,9 +49,6 @@ message("-- install path ${CMAKE_INSTALL_PREFIX}")
 #-------------------------------------------------------------------------------
 # Include standard build system logic and options / definitions
 #-------------------------------------------------------------------------------
-option(ENABLE_STATIC_CXXONLY "enable C++ only build with static libraries" OFF)
-option(ENABLE_CXXONLY "enable C++ only build without python bindings" OFF)
-
 if (ENABLE_STATIC_CXXONLY)
   set(ENABLE_CXXONLY ON)
 endif()
