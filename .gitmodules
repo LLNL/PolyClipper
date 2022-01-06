@@ -2,8 +2,7 @@
 	path = cmake/blt
 	url = https://github.com/llnl/blt
 [submodule "cmake/PYB11Generator"]
-	path = cmake/PYB11Generator
+	path = extern/PYB11Generator
 	url = https://github.com/jmikeowen/PYB11Generator.git
-[submodule "cmake/pybind11"]
-	path = cmake/pybind11
-	url = https://github.com/pybind/pybind11.git
+[submodule "PYB11Generator"]
+	branch = python3
