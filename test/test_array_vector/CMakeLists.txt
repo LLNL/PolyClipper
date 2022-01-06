@@ -1,11 +1,6 @@
-blt_add_executable(
-  NAME         test_array_vector_2d
-  SOURCES      test_array_vector_2d.cc
-  DEPENDS_ON   PolyClipper
-  )
+add_executable(test_array_vector_2d test_array_vector_2d.cc)
+target_link_libraries(test_array_vector_2d PUBLIC PolyClipperAPI)
 
-blt_add_executable(
-  NAME         test_array_vector_3d
-  SOURCES      test_array_vector_3d.cc
-  DEPENDS_ON   PolyClipper
-  )
+add_executable(test_array_vector_3d test_array_vector_3d.cc)
+target_link_libraries(test_array_vector_3d PUBLIC PolyClipperAPI)
+

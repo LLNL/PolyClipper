@@ -13,85 +13,46 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS On)
 #-------------------------------------------------------------------------------
 # Options
 #-------------------------------------------------------------------------------
-option(ENABLE_STATIC_CXXONLY "enable C++ only build with static libraries" OFF)
-option(ENABLE_CXXONLY "enable C++ only build without python bindings" OFF)
+option(ENABLE_CXXONLY "Do not build Python language bindings" OFF)
 option(ENABLE_DOCS "enable the sphinx documentation" OFF)
-
-#-------------------------------------------------------------------------------
-# Configure and Include blt
-#-------------------------------------------------------------------------------
-set(ENABLE_OPENMP ON CACHE BOOL "")
-
-if (NOT POLYCLIPPER_BLT_DIR) 
-  set (POLYCLIPPER_BLT_REL_DIR "${PROJECT_SOURCE_DIR}/cmake/blt" CACHE PATH "")
-  get_filename_component(POLYCLIPPER_BLT_DIR "${POLYCLIPPER_BLT_REL_DIR}" ABSOLUTE)
-endif()
-
-if (NOT EXISTS "${POLYCLIPPER_BLT_DIR}/SetupBLT.cmake")
-    message(FATAL_ERROR 
-            "${POLYCLIPPER_BLT_DIR} is not present.\n"
-            "call cmake with -DPOLYCLIPPER_BLT_DIR=/your/installation/of/blt\n")
-endif()
-
-include(${POLYCLIPPER_BLT_DIR}/SetupBLT.cmake)
+option(ENABLE_BOUNDCHECKING "enable Gnu compiler bound checking on memory" OFF)
 
 #-------------------------------------------------------------------------------
 # Install
 #-------------------------------------------------------------------------------
-# set(POLYCLIPPER_INSTALL_DIR "" CACHE STRING "Directory to install PolyClipper.")
-# set(CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/PolyClipper)
-# if (POLYCLIPPER_INSTALL_DIR)
-#   set(CMAKE_INSTALL_PREFIX ${POLYCLIPPER_INSTALL_DIR})
-# endif()
 set(POLYCLIPPER_INSTALL_DIR ${CMAKE_INSTALL_PREFIX})
-message("-- install path ${CMAKE_INSTALL_PREFIX}")
+message("-- install path: ${CMAKE_INSTALL_PREFIX}")
 
 #-------------------------------------------------------------------------------
 # Include standard build system logic and options / definitions
 #-------------------------------------------------------------------------------
-if (ENABLE_STATIC_CXXONLY)
-  set(ENABLE_CXXONLY ON)
-endif()
-
-if (ENABLE_OPENMP)
-  list(APPEND polyclipper_blt_depends openmp)
-endif()
-
 if (ENABLE_BOUNDCHECKING)
   add_definitions(-D_GLIBCXX_DEBUG=1)
 endif()
 
 #-------------------------------------------------------------------------------
 # Are we building the python package?
+# PolyClipper doesn't actually build any compiled objects in the C++ only case,
+# but you can still install the C++ headers.
 #-------------------------------------------------------------------------------
 if (ENABLE_CXXONLY)
   add_definitions(-DCXXONLY=1)
 
 else()
   if (NOT PYTHON_EXE)
-    find_package(Python2 COMPONENTS Interpreter Development)
-    set(PYTHON_EXE "${Python2_EXECUTABLE}")
+    find_package(Python3 COMPONENTS Interpreter Development)
+    set(PYTHON_EXE "${Python3_EXECUTABLE}")
   endif()
-  message("-- PYTHON_EXE ${PYTHON_EXE}")
+  message("-- PYTHON_EXE: ${PYTHON_EXE}")
 
-  # We need pybind11 paths to compile
-  if (LOOKUP_PYBIND11_INCLUDE_PATH)
-    execute_process(COMMAND         ${PYTHON_EXE} -m pybind11 --includes
-                    OUTPUT_VARIABLE PYBIND11_INCLUDE_PATH)
-    string(REPLACE "-I" "" PYBIND11_INCLUDE_PATH "${PYBIND11_INCLUDE_PATH}")
-  elseif (NOT PYBIND11_INCLUDE_PATH)
-    set(PYBIND11_INCLUDE_PATH "${CMAKE_MODULE_PATH}/pybind11/include ${Python2_INCLUDE_DIRS}")
-  endif()
-  set(PYBIND11_INCLUDE_PATHS ${PYBIND11_INCLUDE_PATH})
-  separate_arguments(PYBIND11_INCLUDE_PATHS)
-  include_directories(${PYBIND11_INCLUDE_PATHS})
-  message("-- PYBIND11_INCLUDE_PATH ${PYBIND11_INCLUDE_PATH}")
-
-  # Also PYB11Generator
+  # We need where to find PYB11Generator
   if (NOT PYB11GEN_PATH)
-    set(PYB11GEN_PATH "${CMAKE_MODULE_PATH}/PYB11Generator")
+    set(PYB11GEN_PATH "${CMAKE_SOURCE_DIR}/extern/PYB11Generator")
   endif()
-  message("-- PYB11GEN_PATH ${PYB11GEN_PATH}")
+  set (PYB11GENERATOR_ROOT_DIR ${PYB11GEN_PATH})  # PYB11Generator requires PYB11GENERATOR_ROOT_DIR
+  add_subdirectory(${PYB11GEN_PATH}/extern/pybind11)
+  include(${PYB11GEN_PATH}/cmake/PYB11Generator.cmake)
+  message("-- PYB11GEN_PATH: ${PYB11GEN_PATH}")
 
   # Install python module path
   if (NOT POLYCLIPPER_PYTHON_INSTALL)

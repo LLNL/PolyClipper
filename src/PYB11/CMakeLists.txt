@@ -1,0 +1,1 @@
+PYB11Generator_add_module(PolyClipper)
