@@ -1,8 +1,7 @@
 [submodule "cmake/blt"]
 	path = cmake/blt
 	url = https://github.com/llnl/blt
-[submodule "cmake/PYB11Generator"]
+[submodule "extern/PYB11Generator"]
 	path = extern/PYB11Generator
-	url = https://github.com/jmikeowen/PYB11Generator.git
-[submodule "PYB11Generator"]
+	url = https://github.com/LLNL/PYB11Generator.git
 	branch = python3
