@@ -130,7 +130,7 @@ def moments_answer(poly):
     for facet in facets:
         n = len(facet)
         p0 = poly[facet[0]].position - origin
-        for k in xrange(1,n-1):
+        for k in range(1,n-1):
             i = facet[k]
             j = facet[(k + 1) % n]
             p1 = poly[i].position - origin
@@ -193,9 +193,9 @@ class TestPolyhedronClipping(unittest.TestCase):
             initializePolyhedron(poly, points, neighbors)
             m0, m1 = moments(poly)
             M0, M1 = moments_answer(poly)
-            self.failUnless(fuzzyEqual(m0, M0),
+            self.assertTrue(fuzzyEqual(m0, M0),
                             "Volume comparison failure: %g != %g" % (m0, M0))
-            self.failUnless(fuzzyEqual((m1 - M1).magnitude(), 0.0),
+            self.assertTrue(fuzzyEqual((m1 - M1).magnitude(), 0.0),
                             "Centroid comparison failure: %s != %s" % (m1, M1))
 
     #---------------------------------------------------------------------------
@@ -216,9 +216,9 @@ class TestPolyhedronClipping(unittest.TestCase):
             initializePolyhedron(poly1, points1, neighbors)
             vol1, centroid1 = moments(poly1)
 
-            self.failUnless(fuzzyEqual(vol0, vol1),
+            self.assertTrue(fuzzyEqual(vol0, vol1),
                             "Volume comparison failure: %g != %g" % (vol0, vol1))
-            self.failUnless(fuzzyEqual((centroid1 - (centroid0 + delta)).magnitude(), 0.0),
+            self.assertTrue(fuzzyEqual((centroid1 - (centroid0 + delta)).magnitude(), 0.0),
                             "Centroid comparison failure: %s != %s" % (centroid0, centroid1 + delta))
 
     #---------------------------------------------------------------------------
@@ -238,9 +238,9 @@ class TestPolyhedronClipping(unittest.TestCase):
             vol0, centroid0 = moments(poly0)
             vol1, centroid1 = moments(poly1)
             #writePolyOBJ(poly1, "poly1_collapse.obj")
-            self.failUnless(fuzzyEqual(vol1, vol0),
+            self.assertTrue(fuzzyEqual(vol1, vol0),
                             "Volume comparison failure: %g != %g" % (vol1, vol0))
-            self.failUnless(fuzzyEqual((centroid1 - centroid0).magnitude(), 0.0),
+            self.assertTrue(fuzzyEqual((centroid1 - centroid0).magnitude(), 0.0),
                             "Centroid comparison failure: %s != %s" % (centroid1, centroid0))
 
     #---------------------------------------------------------------------------
@@ -250,7 +250,7 @@ class TestPolyhedronClipping(unittest.TestCase):
         for points, neighbors, facets in self.polyData:
             poly = Polyhedron()
             initializePolyhedron(poly, points, neighbors)
-            for i in xrange(self.ntests):
+            for i in range(self.ntests):
                 planes1, planes2 = [], []
                 p0 = Vector3d(rangen.uniform(0.0, 1.0),
                               rangen.uniform(0.0, 1.0),
@@ -269,18 +269,18 @@ class TestPolyhedronClipping(unittest.TestCase):
                 v2, c2 = moments(chunk2)
                 success = fuzzyEqual(v1 + v2, v0)
                 if not success:
-                    print "Failed on pass ", i
-                    print "Plane: ", p0, phat
-                    print "Poly:\n", list(poly)
-                    print "Chunk 1:\n ", list(chunk1)
-                    print "Chunk 2:\n ", list(chunk2)
-                    print moments(chunk1)
-                    print moments(chunk2)
-                    print "Vol check: %g + %g = %g" % (v1, v2, v0)
+                    print("Failed on pass ", i)
+                    print("Plane: ", p0, phat)
+                    print("Poly:\n", list(poly))
+                    print("Chunk 1:\n ", list(chunk1))
+                    print("Chunk 2:\n ", list(chunk2))
+                    print(moments(chunk1))
+                    print(moments(chunk2))
+                    print("Vol check: %g + %g = %g" % (v1, v2, v0))
                     writePolyOBJ(poly, "poly.obj")
                     writePolyOBJ(chunk1, "chunk1.obj")
                     writePolyOBJ(chunk2, "chunk2.obj")
-                self.failUnless(success, "Plane clipping summing to wrong volumes: %s + %s = %s != %s" % (v1, v2, v1 + v2, v0))
+                self.assertTrue(success, "Plane clipping summing to wrong volumes: %s + %s = %s != %s" % (v1, v2, v1 + v2, v0))
         return
 
     #---------------------------------------------------------------------------
@@ -301,16 +301,16 @@ class TestPolyhedronClipping(unittest.TestCase):
             v2, c2 = moments(chunk2)
             success = fuzzyEqual(v1 + v2, v0)
             if not success:
-                print "Poly:\n", list(poly)
-                print "Chunk 1:\n ", list(chunk1)
-                print "Chunk 2:\n ", list(chunk2)
-                print moments(chunk1)
-                print moments(chunk2)
-                print "Vol check: %g + %g = %g" % (v1, v2, v0)
+                print("Poly:\n", list(poly))
+                print("Chunk 1:\n ", list(chunk1))
+                print("Chunk 2:\n ", list(chunk2))
+                print(moments(chunk1))
+                print(moments(chunk2))
+                print("Vol check: %g + %g = %g" % (v1, v2, v0))
                 writePolyOBJ(poly, "poly.obj")
                 writePolyOBJ(chunk1, "chunk1.obj")
                 writePolyOBJ(chunk2, "chunk2.obj")
-            self.failUnless(success, "Plane clipping summing to wrong volumes: %s + %s = %s != %s" % (v1, v2, v1 + v2, v0))
+            self.assertTrue(success, "Plane clipping summing to wrong volumes: %s + %s = %s != %s" % (v1, v2, v1 + v2, v0))
         return
 
     #---------------------------------------------------------------------------
@@ -320,7 +320,7 @@ class TestPolyhedronClipping(unittest.TestCase):
         for points, neighbors, facets in self.polyData:
             poly = Polyhedron()
             initializePolyhedron(poly, points, neighbors)
-            for i in xrange(self.ntests):
+            for i in range(self.ntests):
                 planes1, planes2 = [], []
                 p0 = Vector3d(rangen.uniform(0.0, 1.0),
                               rangen.uniform(0.0, 1.0),
@@ -340,15 +340,15 @@ class TestPolyhedronClipping(unittest.TestCase):
                 v2, c2 = moments(chunk2)
                 success = fuzzyEqual(v1, v2)
                 if not success:
-                    print "Failed on pass ", i
-                    print "Plane: ", p0, phat
-                    print "Poly:\n", list(poly)
-                    print "Chunk 1:\n ", list(chunk1)
-                    print "Chunk 2:\n ", list(chunk2)
-                    print moments(chunk1)
-                    print moments(chunk2)
-                    print "Vol check: %g = %g" % (v1, v2)
-                self.failUnless(success,
+                    print("Failed on pass ", i)
+                    print("Plane: ", p0, phat)
+                    print("Poly:\n", list(poly))
+                    print("Chunk 1:\n ", list(chunk1))
+                    print("Chunk 2:\n ", list(chunk2))
+                    print(moments(chunk1))
+                    print(moments(chunk2))
+                    print("Vol check: %g = %g" % (v1, v2))
+                self.assertTrue(success,
                                 "Redundant plane clipping wrong volumes: %s != %s" % (v1, v2))
         return
 
@@ -360,7 +360,7 @@ class TestPolyhedronClipping(unittest.TestCase):
             poly = Polyhedron()
             initializePolyhedron(poly, points, neighbors)
             v0, c0 = moments(poly)
-            for i in xrange(self.ntests):
+            for i in range(self.ntests):
                 r = rangen.uniform(2.0, 100.0) * max_chord(poly)
                 theta = rangen.uniform(0.0, 2.0*pi)
                 phi = rangen.uniform(0.0, pi)
@@ -372,7 +372,7 @@ class TestPolyhedronClipping(unittest.TestCase):
                 chunk = Polyhedron(poly)
                 clipPolyhedron(chunk, planes)
                 v1, c1 = moments(chunk)
-                self.failUnless(v1 == v0,
+                self.assertTrue(v1 == v0,
                                 "Null plane clipping failure: %s != %s" % (v1, v0))
         return
 
@@ -384,7 +384,7 @@ class TestPolyhedronClipping(unittest.TestCase):
             poly = Polyhedron()
             initializePolyhedron(poly, points, neighbors)
             v0, c0 = moments(poly)
-            for i in xrange(self.ntests):
+            for i in range(self.ntests):
                 r = rangen.uniform(2.0, 100.0) * max_chord(poly)
                 theta = rangen.uniform(0.0, 2.0*pi)
                 phi = rangen.uniform(0.0, pi)
@@ -395,7 +395,7 @@ class TestPolyhedronClipping(unittest.TestCase):
                 planes = [Plane3d(p0, phat)]
                 chunk = Polyhedron(poly)
                 clipPolyhedron(chunk, planes)
-                self.failUnless(len(chunk) == 0,
+                self.assertTrue(len(chunk) == 0,
                                 "Full plane clipping failure: %s" % chunk)
         return
 
@@ -415,7 +415,7 @@ class TestPolyhedronClipping(unittest.TestCase):
                 planes = [Plane3d(v.position, phat)]
                 chunk = Polyhedron(poly)
                 clipPolyhedron(chunk, planes)
-                self.failUnless(len(chunk) == 0,
+                self.assertTrue(len(chunk) == 0,
                                 "Full plane clipping failure: %s" % chunk)
 
     #---------------------------------------------------------------------------
@@ -426,7 +426,7 @@ class TestPolyhedronClipping(unittest.TestCase):
             poly = Polyhedron()
             initializePolyhedron(poly, points, neighbors)
             v0, c0 = moments(poly)
-            for i in xrange(self.ntests):
+            for i in range(self.ntests):
                 p0 = Vector3d(rangen.uniform(0.0, 1.0),
                               rangen.uniform(0.0, 1.0),
                               rangen.uniform(0.0, 1.0))
@@ -456,7 +456,7 @@ class TestPolyhedronClipping(unittest.TestCase):
                 v2, c2 = moments(chunk2)
                 v3, c3 = moments(chunk3)
                 v4, c4 = moments(chunk4)
-                self.failUnless(fuzzyEqual(v1 + v2 + v3 + v4, v0),
+                self.assertTrue(fuzzyEqual(v1 + v2 + v3 + v4, v0),
                                 "Two plane clipping summing to wrong volumes: %s + %s + %s + %s = %s != %s" % (v1, v2, v3, v4, v1 + v2 + v3 + v4, v0))
         return
 
@@ -510,7 +510,7 @@ class TestPolyhedronClipping(unittest.TestCase):
         for points, neighbors,facets in self.convexPolyData:
             poly = Polyhedron()
             initializePolyhedron(poly, points, neighbors)
-            for i in xrange(self.ntests):
+            for i in range(self.ntests):
                 p0 = Vector3d(rangen.uniform(0.0, 1.0),
                               rangen.uniform(0.0, 1.0),
                               rangen.uniform(0.0, 1.0))
@@ -539,7 +539,7 @@ class TestPolyhedronClipping(unittest.TestCase):
         for points, neighbors,facets in self.nonconvexPolyData:
             poly = Polyhedron()
             initializePolyhedron(poly, points, neighbors)
-            for i in xrange(self.ntests):
+            for i in range(self.ntests):
                 p0 = Vector3d(rangen.uniform(0.0, 1.0),
                               rangen.uniform(0.0, 1.0),
                               rangen.uniform(0.0, 1.0))

@@ -77,7 +77,7 @@ def moments_answer(poly):
 def vertexNeighbors(points):
     n = len(points)
     neighbors = []
-    for i in xrange(n):
+    for i in range(n):
         neighbors.append([(i - 1) % n,
                           (i + 1) % n])
     return neighbors
@@ -95,7 +95,7 @@ def vertexNormal(vertex, poly):
 def facets(points):
     n = len(points)
     facets = []
-    for i in xrange(n):
+    for i in range(n):
         facets.append([i, (i + 1) % n])
     return facets
 
@@ -132,9 +132,9 @@ class TestPolyClipper2d(unittest.TestCase):
             initializePolygon(poly, points, vertexNeighbors(points))
             vol, centroid = moments(poly)
             vol0, centroid0 = moments_answer(poly)
-            self.failUnless(vol == vol0,
+            self.assertTrue(vol == vol0,
                             "Volume comparison failure: %g != %g" % (vol, vol0))
-            self.failUnless(centroid == centroid0,
+            self.assertTrue(centroid == centroid0,
                             "Centroid comparison failure: %s != %s" % (centroid, centroid0))
 
     #---------------------------------------------------------------------------
@@ -154,9 +154,9 @@ class TestPolyClipper2d(unittest.TestCase):
             initializePolygon(poly1, points1, vertexNeighbors(points1))
             vol1, centroid1 = moments(poly1)
 
-            self.failUnless(fuzzyEqual(vol0, vol1),
+            self.assertTrue(fuzzyEqual(vol0, vol1),
                             "Volume comparison failure: %g != %g" % (vol0, vol1))
-            self.failUnless(fuzzyEqual((centroid1 - (centroid0 + delta)).magnitude(), 0.0),
+            self.assertTrue(fuzzyEqual((centroid1 - (centroid0 + delta)).magnitude(), 0.0),
                             "Centroid comparison failure: %s != %s" % (centroid0, centroid1 + delta))
 
     #---------------------------------------------------------------------------
@@ -192,17 +192,17 @@ class TestPolyClipper2d(unittest.TestCase):
             v2, c2 = moments(chunk2)
             success = fuzzyEqual(v1 + v2, v0)
             if not success:
-                print "Plane: ", p0, phat
-                print "Poly:\n", list(poly)
-                print "Chunk 1:\n ", list(chunk1)
-                print "Chunk 2:\n ", list(chunk2)
-                print moments(chunk1)
-                print moments(chunk2)
-                print "Vol check: %g + %g = %g" % (v1, v2, v0)
+                print("Plane: ", p0, phat)
+                print("Poly:\n", list(poly))
+                print("Chunk 1:\n ", list(chunk1))
+                print("Chunk 2:\n ", list(chunk2))
+                print(moments(chunk1))
+                print(moments(chunk2))
+                print("Vol check: %g + %g = %g" % (v1, v2, v0))
                 writePolyOBJ(poly, "poly.obj")
                 writePolyOBJ(chunk1, "chunk1.obj")
                 writePolyOBJ(chunk2, "chunk2.obj")
-            self.failUnless(success, "Plane clipping summing to wrong volumes: %s + %s = %s != %s" % (v1, v2, v1 + v2, v0))
+            self.assertTrue(success, "Plane clipping summing to wrong volumes: %s + %s = %s != %s" % (v1, v2, v1 + v2, v0))
 
     #---------------------------------------------------------------------------
     # Clip with planes passing through the polygon.
@@ -211,7 +211,7 @@ class TestPolyClipper2d(unittest.TestCase):
         for points in self.pointSets:
             poly = Polygon()
             initializePolygon(poly, points, vertexNeighbors(points))
-            for i in xrange(self.ntests):
+            for i in range(self.ntests):
                 planes1, planes2 = [], []
                 p0 = Vector2d(rangen.uniform(0.0, 1.0),
                               rangen.uniform(0.0, 1.0))
@@ -228,18 +228,18 @@ class TestPolyClipper2d(unittest.TestCase):
                 v2, c2 = moments(chunk2)
                 success = fuzzyEqual(v1 + v2, v0)
                 if not success:
-                    print "Failed on pass ", i
-                    print "Plane: ", p0, phat
-                    print "Poly:\n", list(poly)
-                    print "Chunk 1:\n ", list(chunk1)
-                    print "Chunk 2:\n ", list(chunk2)
-                    print moments(chunk1)
-                    print moments(chunk2)
-                    print "Vol check: %g + %g = %g" % (v1, v2, v0)
+                    print("Failed on pass ", i)
+                    print("Plane: ", p0, phat)
+                    print("Poly:\n", list(poly))
+                    print("Chunk 1:\n ", list(chunk1))
+                    print("Chunk 2:\n ", list(chunk2))
+                    print(moments(chunk1))
+                    print(moments(chunk2))
+                    print("Vol check: %g + %g = %g" % (v1, v2, v0))
                     writePolyOBJ(poly, "poly.obj")
                     writePolyOBJ(chunk1, "chunk1.obj")
                     writePolyOBJ(chunk2, "chunk2.obj")
-                self.failUnless(success, "Plane clipping summing to wrong volumes: %s + %s = %s != %s" % (v1, v2, v1 + v2, v0))
+                self.assertTrue(success, "Plane clipping summing to wrong volumes: %s + %s = %s != %s" % (v1, v2, v1 + v2, v0))
 
     #---------------------------------------------------------------------------
     # Clip with the same plane repeatedly.
@@ -248,7 +248,7 @@ class TestPolyClipper2d(unittest.TestCase):
         for points in self.pointSets:
             poly = Polygon()
             initializePolygon(poly, points, vertexNeighbors(points))
-            for i in xrange(self.ntests):
+            for i in range(self.ntests):
                 planes1, planes2 = [], []
                 p0 = Vector2d(rangen.uniform(0.0, 1.0),
                               rangen.uniform(0.0, 1.0))
@@ -266,15 +266,15 @@ class TestPolyClipper2d(unittest.TestCase):
                 v2, c2 = moments(chunk2)
                 success = fuzzyEqual(v1, v2)
                 if not success:
-                    print "Failed on pass ", i
-                    print "Plane: ", p0, phat
-                    print "Poly:\n", list(poly)
-                    print "Chunk 1:\n ", list(chunk1)
-                    print "Chunk 2:\n ", list(chunk2)
-                    print moments(chunk1)
-                    print moments(chunk2)
-                    print "Vol check: %g = %g" % (v1, v2)
-                self.failUnless(success,
+                    print("Failed on pass ", i)
+                    print("Plane: ", p0, phat)
+                    print("Poly:\n", list(poly))
+                    print("Chunk 1:\n ", list(chunk1))
+                    print("Chunk 2:\n ", list(chunk2))
+                    print(moments(chunk1))
+                    print(moments(chunk2))
+                    print("Vol check: %g = %g" % (v1, v2))
+                self.assertTrue(success,
                                 "Redundant plane clipping wrong volumes: %s != %s" % (v1, v2))
 
     #---------------------------------------------------------------------------
@@ -285,7 +285,7 @@ class TestPolyClipper2d(unittest.TestCase):
             poly = Polygon()
             initializePolygon(poly, points, vertexNeighbors(points))
             v0, c0 = moments(poly)
-            for i in xrange(self.ntests):
+            for i in range(self.ntests):
                 r = rangen.uniform(2.0, 100.0) * max_chord(poly)
                 theta = rangen.uniform(0.0, 2.0*pi)
                 phat = Vector2d(cos(theta), sin(theta))
@@ -294,7 +294,7 @@ class TestPolyClipper2d(unittest.TestCase):
                 chunk = Polygon(poly)
                 clipPolygon(chunk, planes)
                 v1, c1 = moments(chunk)
-                self.failUnless(v1 == v0,
+                self.assertTrue(v1 == v0,
                                 "Null plane clipping failure: %s != %s" % (v1, v0))
 
     #---------------------------------------------------------------------------
@@ -305,7 +305,7 @@ class TestPolyClipper2d(unittest.TestCase):
             poly = Polygon()
             initializePolygon(poly, points, vertexNeighbors(points))
             v0, c0 = moments(poly)
-            for i in xrange(self.ntests):
+            for i in range(self.ntests):
                 r = rangen.uniform(2.0, 100.0) * max_chord(poly)
                 theta = rangen.uniform(0.0, 2.0*pi)
                 phat = Vector2d(cos(theta), sin(theta))
@@ -313,7 +313,7 @@ class TestPolyClipper2d(unittest.TestCase):
                 planes = [Plane2d(p0, phat)]
                 chunk = Polygon(poly)
                 clipPolygon(chunk, planes)
-                self.failUnless(len(chunk) == 0,
+                self.assertTrue(len(chunk) == 0,
                                 "Full plane clipping failure: %s" % chunk)
 
     #---------------------------------------------------------------------------
@@ -329,7 +329,7 @@ class TestPolyClipper2d(unittest.TestCase):
                 planes = [Plane2d(v.position, phat)]
                 chunk = Polygon(poly)
                 clipPolygon(chunk, planes)
-                self.failUnless(len(chunk) == 0,
+                self.assertTrue(len(chunk) == 0,
                                 "Full plane clipping failure: %s" % chunk)
 
     #---------------------------------------------------------------------------
@@ -340,7 +340,7 @@ class TestPolyClipper2d(unittest.TestCase):
             poly = Polygon()
             initializePolygon(poly, points, vertexNeighbors(points))
             v0, c0 = moments(poly)
-            for i in xrange(self.ntests):
+            for i in range(self.ntests):
                 p0 = Vector2d(rangen.uniform(0.0, 1.0),
                               rangen.uniform(0.0, 1.0))
                 norm1 = Vector2d(rangen.uniform(-1.0, 1.0), 
@@ -367,7 +367,7 @@ class TestPolyClipper2d(unittest.TestCase):
                 v2, c2 = moments(chunk2)
                 v3, c3 = moments(chunk3)
                 v4, c4 = moments(chunk4)
-                self.failUnless(fuzzyEqual(v1 + v2 + v3 + v4, v0),
+                self.assertTrue(fuzzyEqual(v1 + v2 + v3 + v4, v0),
                                 "Two plane clipping summing to wrong volumes: %s + %s + %s + %s = %s != %s" % (v1, v2, v3, v4, v1 + v2 + v3 + v4, v0))
 
 
@@ -499,7 +499,7 @@ class TestPolyClipper2d(unittest.TestCase):
             poly = Polygon()
             initializePolygon(poly, points, vertexNeighbors(points))
             n = len(points)
-            answer = [[i, (i+1)%n] for i in xrange(n)]
+            answer = [[i, (i+1)%n] for i in range(n)]
             faces = extractFaces(poly)
             assert len(faces) == len(answer)
             for face in faces:
@@ -513,7 +513,7 @@ class TestPolyClipper2d(unittest.TestCase):
         for points in self.convexPointSets:
             poly = Polygon()
             initializePolygon(poly, points, vertexNeighbors(points))
-            for i in xrange(self.ntests):
+            for i in range(self.ntests):
                 p0 = Vector2d(rangen.uniform(0.0, 1.0),
                               rangen.uniform(0.0, 1.0))
                 norm1 = Vector2d(rangen.uniform(-1.0, 1.0), 
@@ -539,7 +539,7 @@ class TestPolyClipper2d(unittest.TestCase):
         for points in self.nonconvexPointSets:
             poly = Polygon()
             initializePolygon(poly, points, vertexNeighbors(points))
-            for i in xrange(self.ntests):
+            for i in range(self.ntests):
                 p0 = Vector2d(rangen.uniform(0.0, 1.0),
                               rangen.uniform(0.0, 1.0))
                 norm1 = Vector2d(rangen.uniform(-1.0, 1.0), 
@@ -575,7 +575,7 @@ class TestPolyClipper2d(unittest.TestCase):
         ]
         clipPolygon(targetTri, clipPlanes)
         vol1, centroid1 = moments(targetTri)
-        self.failUnless(vol1 == 0 and centroid1 == Vector2d(0,0),
+        self.assertTrue(vol1 == 0 and centroid1 == Vector2d(0,0),
                         "Degenerate test 1 failed: %s %s %s %s" % (vol0, centroid0, vol1, centroid1))
 
 if __name__ == "__main__":
