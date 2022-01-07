@@ -50,7 +50,6 @@ else()
     set(PYB11GEN_PATH "${CMAKE_SOURCE_DIR}/extern/PYB11Generator")
   endif()
   set (PYB11GENERATOR_ROOT_DIR ${PYB11GEN_PATH})  # PYB11Generator requires PYB11GENERATOR_ROOT_DIR
-  add_subdirectory(${PYB11GEN_PATH}/extern/pybind11)
   include(${PYB11GEN_PATH}/cmake/PYB11Generator.cmake)
   message("-- PYB11GEN_PATH: ${PYB11GEN_PATH}")
 
