@@ -55,7 +55,8 @@ else()
 
   # Install python module path
   if (NOT POLYCLIPPER_PYTHON_INSTALL)
-    set(POLYCLIPPER_PYTHON_INSTALL ${CMAKE_INSTALL_PREFIX}/lib/python${Python3_VERSION_MAJOR}.${Python3_VERSION_MINOR}/site-packages/PolyClipper)
+    #set(POLYCLIPPER_PYTHON_INSTALL ${CMAKE_INSTALL_PREFIX}/lib/python${Python3_VERSION_MAJOR}.${Python3_VERSION_MINOR}/site-packages/PolyClipper)
+    set(POLYCLIPPER_PYTHON_INSTALL ${CMAKE_INSTALL_PREFIX}/lib/python/site-packages/PolyClipper)
   endif()
   message("-- Python module install path ${POLYCLIPPER_PYTHON_INSTALL}")
 endif()
