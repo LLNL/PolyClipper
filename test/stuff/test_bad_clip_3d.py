@@ -3,8 +3,8 @@ from PolyClipper import *
 
 for filename in os.listdir("3d"):
     if filename.endswith(".bin"):
-        print "--------------------------------------------------------------------------------"
-        print "Reading ", filename
+        print("--------------------------------------------------------------------------------")
+        print("Reading ", filename)
         with open(os.path.join("3d", filename), 'rb') as f:
             binstuff = f.read()
         buf  = vector_of_char(binstuff)
@@ -12,11 +12,11 @@ for filename in os.listdir("3d"):
         poly, itr = deserialize_Polyhedron(0, buf)
         planes, itr = deserialize_vector_of_Plane3d(itr, buf)
 
-        print "Read poly:\n", polyhedron2string(poly)
-        print "  moments: ", moments(poly)
-        print "Read planes:\n", planes
+        print("Read poly:\n", polyhedron2string(poly))
+        print("  moments: ", moments(poly))
+        print("Read planes:\n", planes)
 
         clipPolyhedron(poly, planes)
 
-        print "After clipping:\n", polyhedron2string(poly)
-        print "  moments: ", moments(poly)
+        print("After clipping:\n", polyhedron2string(poly))
+        print("  moments: ", moments(poly))
