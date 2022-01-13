@@ -6,8 +6,7 @@ for filename in os.listdir("3d"):
         print("--------------------------------------------------------------------------------")
         print("Reading ", filename)
         with open(os.path.join("3d", filename), 'rb') as f:
-            binstuff = f.read()
-        buf  = vector_of_char(binstuff)
+            buf = f.read()
 
         poly, itr = deserialize_Polyhedron(0, buf)
         planes, itr = deserialize_vector_of_Plane3d(itr, buf)
