@@ -248,7 +248,7 @@ void clipPolyhedron(std::vector<Vertex3d<VA>>& polyhedron,
   const double nearlyZero = 1.0e-15;
 
   // Prepare to dump the input state if we hit an exception
-  std::vector<char> initial_state;
+  std::string initial_state;
 #ifndef NDEBUG
   {
     internal::serialize(polyhedron, initial_state);
@@ -494,7 +494,7 @@ void collapseDegenerates(std::vector<Vertex3d<VA>>& polyhedron,
                          const double tol) {
 
   // Prepare to dump the input state if we hit an exception
-  std::vector<char> initial_state;
+  std::string initial_state;
 #ifndef NDEBUG
   {
     internal::serialize(polyhedron, initial_state);
@@ -633,7 +633,7 @@ extractFaces(const std::vector<Vertex3d<VA>>& poly) {
   vector<vector<int>> faceVertices;
 
   // Prepare to dump the input state if we hit an exception
-  std::vector<char> initial_state;
+  std::string initial_state;
 #ifndef NDEBUG
   {
     internal::serialize(poly, initial_state);

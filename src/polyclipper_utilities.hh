@@ -210,7 +210,7 @@ segmentPlaneIntersection(const typename VA::VECTOR& a,         // line-segment b
 //------------------------------------------------------------------------------
 inline
 std::string
-dumpSerializedState(const std::vector<char>& buffer,
+dumpSerializedState(const std::string& buffer,
                     std::string filename = "PolyClipper") {
   std::string digits("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz");
   std::random_device rd;

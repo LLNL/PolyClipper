@@ -231,7 +231,7 @@ void clipPolygon(std::vector<Vertex2d<VA>>& polygon,
   const double nearlyZero = 1.0e-15;
 
   // Prepare to dump the input state if we hit an exception
-  std::vector<char> initial_state;
+  std::string initial_state;
 #ifndef NDEBUG
   {
     internal::serialize(polygon, initial_state);

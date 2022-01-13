@@ -157,94 +157,7 @@ ints representing vertex indices in the input Polyhedron."""
     return "std::vector<std::vector<int>>"
 
 #-------------------------------------------------------------------------------
-# Serialization
-#-------------------------------------------------------------------------------
-@PYB11cppname("internal::serialize")
-def serialize_double(val = "const double",
-                     buffer = "std::vector<char>&"):
-    "Serialize a double"
-    return "void"
-
-@PYB11cppname("internal::serialize")
-def serialize_int(val = "const int",
-                     buffer = "std::vector<char>&"):
-    "Serialize an int"
-    return "void"
-
-@PYB11implementation("[](const int val, std::vector<char>& buffer) { size_t uval = size_t(val); internal::serialize(uval, buffer); }")
-def serialize_size_t(val = "const int",
-                     buffer = "std::vector<char>&"):
-    "Serialize a size_t (via Python int)"
-    return "void"
-
-@PYB11cppname("internal::serialize")
-def serialize_string(val = "const std::string&",
-                     buffer = "std::vector<char>&"):
-    "Serialize a std::string"
-    return "void"
-
-@PYB11cppname("internal::serialize<internal::VectorAdapter<Vector2d>>")
-def serialize_Vector2d(val = "const Vector2d&",
-                       buffer = "std::vector<char>&"):
-    "Serialize a Vector2d"
-    return "void"
-
-@PYB11cppname("internal::serialize<internal::VectorAdapter<Vector3d>>")
-def serialize_Vector3d(val = "const Vector3d&",
-                       buffer = "std::vector<char>&"):
-    "Serialize a Vector3d"
-    return "void"
-
-@PYB11cppname("internal::serialize")
-def serialize_Vertex2d(val = "const Vertex2d<>&",
-                       buffer = "std::vector<char>&"):
-    "Serialize a Vertex2d"
-    return "void"
-
-@PYB11cppname("internal::serialize")
-def serialize_Vertex3d(val = "const Vertex3d<>&",
-                       buffer = "std::vector<char>&"):
-    "Serialize a Vertex3d"
-    return "void"
-
-@PYB11cppname("internal::serialize")
-def serialize_Polygon(val = "const std::vector<Vertex2d<>>&",
-                       buffer = "std::vector<char>&"):
-    "Serialize a Polygon"
-    return "void"
-
-@PYB11cppname("internal::serialize")
-def serialize_Polyhedron(val = "const std::vector<Vertex3d<>>&",
-                         buffer = "std::vector<char>&"):
-    "Serialize a Polyhedron"
-    return "void"
-
-@PYB11cppname("internal::serialize")
-def serialize_Plane2d(val = "const Plane2d&",
-                      buffer = "std::vector<char>&"):
-    "Serialize a Plane2d"
-    return "void"
-
-@PYB11cppname("internal::serialize")
-def serialize_Plane3d(val = "const Plane3d&",
-                      buffer = "std::vector<char>&"):
-    "Serialize a Plane3d"
-    return "void"
-
-@PYB11cppname("internal::serialize")
-def serialize_vector_of_Plane2d(val = "const std::vector<Plane2d>&",
-                                buffer = "std::vector<char>&"):
-    "Serialize a std::vector<Plane2d>"
-    return "void"
-
-@PYB11cppname("internal::serialize")
-def serialize_vector_of_Plane3d(val = "const std::vector<Plane3d>&",
-                                buffer = "std::vector<char>&"):
-    "Serialize a std::vector<Plane3d>"
-    return "void"
-
-#-------------------------------------------------------------------------------
-# Deserialization
+# Serialization/deserialization
 # I'll get cute here and use python code generation to make the various versions
 #-------------------------------------------------------------------------------
 for (cppname, pyname, template_arg) in (("double", "double", ""),
@@ -262,9 +175,26 @@ for (cppname, pyname, template_arg) in (("double", "double", ""),
                                         ("std::vector<Plane2d>", "vector_of_Plane2d", "<internal::VectorAdapter<Vector2d>>"),
                                         ("std::vector<Plane3d>", "vector_of_Plane3d", "<internal::VectorAdapter<Vector3d>>")):
     exec("""
-@PYB11implementation("[](int itr_pos, const std::vector<char>& buffer) {{ auto itr = buffer.begin() + itr_pos; {cppname} val; internal::deserialize{template_arg}(val, itr, buffer.end()); return py::make_tuple(val, int(std::distance(buffer.begin(), itr))); }}")
+@PYB11implementation('''
+    [](const {cppname}& val, py::bytes& buffer) -> py::bytes {{
+        std::string sbuf(buffer);
+        internal::serialize{template_arg}(val, sbuf);
+        return py::bytes(sbuf);
+    }}''')
+def serialize_{pyname}(val = "const {cppname}&",
+                       buffer = "py::bytes&"):
+    "Serialize a(n) {cppname} to the given buffer stream.  Returns a new buffer (different than C++ method)."
+    return "py::bytes"
+
+@PYB11implementation('''
+    [](int itr_pos, const std::string& buffer) -> py::tuple {{
+        auto itr = buffer.begin() + itr_pos; 
+        {cppname} val; 
+        internal::deserialize{template_arg}(val, itr, buffer.end()); 
+        return py::make_tuple(val, int(std::distance(buffer.begin(), itr))); 
+    }}''')
 def deserialize_{pyname}(itr_pos = "int",
-                    buffer = "const std::vector<char>&"):
+                         buffer = "const std::string&"):
     "Deserialize {cppname} starting at itr_pos in buffer.  Returns ({cppname}, new_itr_pos)"
     return "py::tuple"
 
@@ -276,7 +206,7 @@ def deserialize_{pyname}(itr_pos = "int",
 # Miscellaneous
 #-------------------------------------------------------------------------------
 @PYB11cppname("internal::dumpSerializedState")
-def dumpSerializedState(buffer = "const std::vector<char>&",
+def dumpSerializedState(buffer = "const std::string&",
                         filename = ("std::string", '"PolyClipper"')):
     "Write a char buffer to a binary file with randomly generated name extension"
     return "std::string"

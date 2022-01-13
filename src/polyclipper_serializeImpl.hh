@@ -17,7 +17,7 @@ namespace internal {
 inline
 void
 serialize(const double val,
-          std::vector<char>& buffer) {
+          std::string& buffer) {
   const auto n = sizeof(double);
   const char* data = reinterpret_cast<const char*>(&val);
   std::copy(data, data + n, std::back_inserter(buffer));
@@ -29,7 +29,7 @@ serialize(const double val,
 inline
 void
 serialize(const int val,
-          std::vector<char>& buffer) {
+          std::string& buffer) {
   const auto n = sizeof(int);
   const char* data = reinterpret_cast<const char*>(&val);
   std::copy(data, data + n, std::back_inserter(buffer));
@@ -41,7 +41,7 @@ serialize(const int val,
 inline
 void
 serialize(const size_t val,
-          std::vector<char>& buffer) {
+          std::string& buffer) {
   const auto n = sizeof(size_t);
   const char* data = reinterpret_cast<const char*>(&val);
   std::copy(data, data + n, std::back_inserter(buffer));
@@ -53,7 +53,7 @@ serialize(const size_t val,
 inline
 void
 serialize(const std::string& val,
-          std::vector<char>& buffer) {
+          std::string& buffer) {
   const auto n = val.size();
   serialize(n, buffer);
   std::copy(val.begin(), val.end(), std::back_inserter(buffer));
@@ -66,7 +66,7 @@ template<typename VA>
 inline
 void
 serialize(const typename VA::VECTOR& val,
-          std::vector<char>& buffer) {
+          std::string& buffer) {
   const auto triple_vals = VA::get_triple(val);
   serialize(triple_vals[0], buffer);
   serialize(triple_vals[1], buffer);
@@ -80,7 +80,7 @@ template<typename VA>
 inline
 void
 serialize(const Vertex2d<VA>& val,
-          std::vector<char>& buffer) {
+          std::string& buffer) {
   serialize<VA>(val.position, buffer);
   serialize(val.neighbors.first, buffer);
   serialize(val.neighbors.second, buffer);
@@ -97,7 +97,7 @@ template<typename VA>
 inline
 void
 serialize(const Vertex3d<VA>& val,
-          std::vector<char>& buffer) {
+          std::string& buffer) {
   serialize<VA>(val.position, buffer);
   serialize(val.neighbors.size(), buffer);
   for (const auto x: val.neighbors) serialize(x, buffer);
@@ -114,7 +114,7 @@ template<typename VA>
 inline
 void
 serialize(const std::vector<Vertex2d<VA>>& val,
-          std::vector<char>& buffer) {
+          std::string& buffer) {
   size_t n = val.size();
   serialize(n, buffer);
   for (const auto& x: val) serialize(x, buffer);
@@ -127,7 +127,7 @@ template<typename VA>
 inline
 void
 serialize(const std::vector<Vertex3d<VA>>& val,
-          std::vector<char>& buffer) {
+          std::string& buffer) {
   serialize(val.size(), buffer);
   for (const auto& x: val) serialize(x, buffer);
 }
@@ -139,7 +139,7 @@ template<typename VA>
 inline
 void
 serialize(const Plane<VA>& val,
-          std::vector<char>& buffer) {
+          std::string& buffer) {
   serialize(val.dist, buffer);
   serialize<VA>(val.normal, buffer);
   serialize(val.ID, buffer);
@@ -152,7 +152,7 @@ template<typename VA>
 inline
 void
 serialize(const std::vector<Plane<VA>>& val,
-          std::vector<char>& buffer) {
+          std::string& buffer) {
   serialize(val.size(), buffer);
   for (const auto& x: val) serialize<VA>(x, buffer);
 }
@@ -163,8 +163,8 @@ serialize(const std::vector<Plane<VA>>& val,
 inline
 void
 deserialize(double& val,
-            std::vector<char>::const_iterator& itr,
-            const std::vector<char>::const_iterator& endBuffer) {
+            std::string::const_iterator& itr,
+            const std::string::const_iterator& endBuffer) {
   const auto n = sizeof(double);
   char* data = reinterpret_cast<char*>(&val);
   std::copy(itr, itr + n, data);
@@ -178,8 +178,8 @@ deserialize(double& val,
 inline
 void
 deserialize(int& val,
-            std::vector<char>::const_iterator& itr,
-            const std::vector<char>::const_iterator& endBuffer) {
+            std::string::const_iterator& itr,
+            const std::string::const_iterator& endBuffer) {
   const auto n = sizeof(int);
   char* data = reinterpret_cast<char*>(&val);
   std::copy(itr, itr + n, data);
@@ -193,8 +193,8 @@ deserialize(int& val,
 inline
 void
 deserialize(size_t& val,
-            std::vector<char>::const_iterator& itr,
-            const std::vector<char>::const_iterator& endBuffer) {
+            std::string::const_iterator& itr,
+            const std::string::const_iterator& endBuffer) {
   const auto n = sizeof(size_t);
   char* data = reinterpret_cast<char*>(&val);
   std::copy(itr, itr + n, data);
@@ -208,8 +208,8 @@ deserialize(size_t& val,
 inline
 void
 deserialize(std::string& val,
-            std::vector<char>::const_iterator& itr,
-            const std::vector<char>::const_iterator& endBuffer) {
+            std::string::const_iterator& itr,
+            const std::string::const_iterator& endBuffer) {
   size_t n;
   deserialize(n, itr, endBuffer);
   val.resize(n);
@@ -225,8 +225,8 @@ template<typename VA>
 inline
 void
 deserialize(typename VA::VECTOR& val,
-            std::vector<char>::const_iterator& itr,
-            const std::vector<char>::const_iterator& endBuffer) {
+            std::string::const_iterator& itr,
+            const std::string::const_iterator& endBuffer) {
   std::array<double, 3> triple_vals;
   deserialize(triple_vals[0],itr, endBuffer);
   deserialize(triple_vals[1],itr, endBuffer);
@@ -241,8 +241,8 @@ template<typename VA>
 inline
 void
 deserialize(Vertex2d<VA>& val,
-            std::vector<char>::const_iterator& itr,
-            const std::vector<char>::const_iterator& endBuffer) {
+            std::string::const_iterator& itr,
+            const std::string::const_iterator& endBuffer) {
   size_t n;
   int x;
   deserialize<VA>(val.position, itr, endBuffer);
@@ -265,8 +265,8 @@ template<typename VA>
 inline
 void
 deserialize(Vertex3d<VA>& val,
-            std::vector<char>::const_iterator& itr,
-            const std::vector<char>::const_iterator& endBuffer) {
+            std::string::const_iterator& itr,
+            const std::string::const_iterator& endBuffer) {
   size_t n;
   int x;
   deserialize<VA>(val.position, itr, endBuffer);
@@ -290,8 +290,8 @@ template<typename VA>
 inline
 void
 deserialize(std::vector<Vertex2d<VA>>& val,
-            std::vector<char>::const_iterator& itr,
-            const std::vector<char>::const_iterator& endBuffer) {
+            std::string::const_iterator& itr,
+            const std::string::const_iterator& endBuffer) {
   val.clear();
   size_t n;
   Vertex2d<VA> x;
@@ -309,8 +309,8 @@ template<typename VA>
 inline
 void
 deserialize(std::vector<Vertex3d<VA>>& val,
-            std::vector<char>::const_iterator& itr,
-            const std::vector<char>::const_iterator& endBuffer) {
+            std::string::const_iterator& itr,
+            const std::string::const_iterator& endBuffer) {
   val.clear();
   size_t n;
   Vertex3d<VA> x;
@@ -328,8 +328,8 @@ template<typename VA>
 inline
 void
 deserialize(Plane<VA>& val,
-            std::vector<char>::const_iterator& itr,
-            const std::vector<char>::const_iterator& endBuffer) {
+            std::string::const_iterator& itr,
+            const std::string::const_iterator& endBuffer) {
   deserialize(val.dist, itr, endBuffer);
   deserialize<VA>(val.normal, itr, endBuffer);
   deserialize(val.ID, itr, endBuffer);
@@ -342,8 +342,8 @@ template<typename VA>
 inline
 void
 deserialize(std::vector<Plane<VA>>& val,
-            std::vector<char>::const_iterator& itr,
-            const std::vector<char>::const_iterator& endBuffer) {
+            std::string::const_iterator& itr,
+            const std::string::const_iterator& endBuffer) {
   val.clear();
   size_t n;
   Plane<VA> x;
