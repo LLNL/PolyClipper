@@ -242,7 +242,7 @@ void clipPolyhedron(std::vector<Vertex3d<VA>>& polyhedron,
   using Vector = typename VA::VECTOR;
   using Vertex = Vertex3d<VA>;
   using Polyhedron = std::vector<Vertex3d<VA>>;
-  bool above, below;
+  bool above, below, updated;
   int nverts0, nverts, nneigh, i, ii, j, k, jn, inew, iprev, inext, itmp;
   vector<int>::iterator nitr;
   const double nearlyZero = 1.0e-15;
@@ -422,6 +422,34 @@ void clipPolyhedron(std::vector<Vertex3d<VA>>& polyhedron,
         polyhedron[i].neighbors.erase(std::remove(polyhedron[i].neighbors.begin(), polyhedron[i].neighbors.end(), -1), polyhedron[i].neighbors.end());
       }
       // cerr << "After relinking:\n" << polyhedron2string(polyhedron) << endl;
+
+      // Check for any points with just two neighbors that are colinear
+      updated = true;
+      while (updated) {
+        updated = false;
+        for (i = 0; i < nverts; ++i) {
+          auto& v = polyhedron[i];
+          if (v.comp >= 0 and v.neighbors.size() == 2) {
+            updated = true;
+            iprev = v.neighbors[0];
+            inext = v.neighbors[1];
+            auto& vprev = polyhedron[iprev];
+            auto& vnext = polyhedron[inext];
+            PCASSERT2(VA::dot(VA::unitVector(VA::sub(vprev.position, v.position)),
+                              VA::unitVector(VA::sub(vnext.position, v.position))) + 1.0 < 1.0e-3,
+                      "Point with only two neighbors not colinear\n" << internal::dumpSerializedState(initial_state));
+            k = 0;
+            while (k < vprev.neighbors.size() and vprev.neighbors[k] != i) ++k;
+            PCASSERT2(k < vprev.neighbors.size(), "Colinearity error\n" << internal::dumpSerializedState(initial_state));
+            vprev.neighbors[k] = inext;
+            k = 0;
+            while (k < vnext.neighbors.size() and vnext.neighbors[k] != i) ++k;
+            PCASSERT2(k < vnext.neighbors.size(), "Colinearity error\n" << internal::dumpSerializedState(initial_state));
+            vnext.neighbors[k] = iprev;
+            v.comp = -1;                 // Mark this vertex for removal
+          }
+        }
+      }
 
 #ifndef NDEBUG
       {
