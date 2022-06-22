@@ -578,5 +578,27 @@ class TestPolyClipper2d(unittest.TestCase):
         self.assertTrue(vol1 == 0 and centroid1 == Vector2d(0,0),
                         "Degenerate test 1 failed: %s %s %s %s" % (vol0, centroid0, vol1, centroid1))
 
+    #---------------------------------------------------------------------------
+    # Test creating two cycles clipping a non-convex shape
+    #---------------------------------------------------------------------------
+    def testTwoCycleClip(self):
+        poly = Polygon()
+        initializePolygon(poly, notched_points, vertexNeighbors(notched_points))
+        p0 = Vector2d(0, 1.5)
+        norm0 = Vector2d(0, 1)
+        planes = [Plane2d(p0, norm0, 10)]
+        clipPolygon(poly, planes)
+        ans_conn = {0: (4, 1),
+                    1: (0, 5),
+                    2: (6, 3),
+                    3: (2, 7),
+                    4: (5, 0),
+                    5: (1, 4),
+                    6: (7, 2),
+                    7: (3, 6)}
+        for v in poly:
+            self.assertTrue(v.neighbors == ans_conn[v.ID],
+                            "Bad connectivity for vertex %i: %s != %s" % (v.ID, v.neighbors, ans_conn[v.ID]))
+
 if __name__ == "__main__":
     unittest.main()
