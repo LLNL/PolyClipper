@@ -267,7 +267,7 @@ void clipPolygon(std::vector<Vertex2d<VA>>& polygon,
     auto boxcomp = internal::compare(plane, xmin, ymin, xmax, ymax);
     auto above = boxcomp ==  1;
     auto below = boxcomp == -1;
-    PCASSERT2(not (above and below), internal::dumpSerializedState(initial_state));
+    PCALWAYSASSERT(not (above and below));
 
     // Check the current set of vertices against this plane.
     if (not (above or below)) {

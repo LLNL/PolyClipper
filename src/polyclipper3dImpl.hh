@@ -296,7 +296,7 @@ void clipPolyhedron(std::vector<Vertex3d<VA>>& polyhedron,
     auto boxcomp = internal::compare(plane, xmin, ymin, zmin, xmax, ymax, zmax);
     auto above = boxcomp ==  1;
     auto below = boxcomp == -1;
-    PCASSERT2(not (above and below), internal::dumpSerializedState(initial_state));
+    PCALWAYSASSERT(not (above and below));
 
     // Check the current set of vertices against this plane.
     // Also keep track of any vertices that landed exactly in-plane.

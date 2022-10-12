@@ -33,6 +33,8 @@ public:
 
 //------------------------------------------------------------------------------
 // Define an assert command with optional message
+// - PCASSERT is only active when compiled with -DNDEBUG
+// - PCALWAYSASSERT is always active
 //------------------------------------------------------------------------------
 #ifndef NDEBUG
 #   define PCASSERT2(condition, message)                                       \
@@ -45,11 +47,23 @@ public:
             throw PolyClipperError(s.str());                                   \
         }                                                                      \
     } while (false)
+#   define PCALWAYSASSERT2(condition, message) PCASSERT2(condition, message)
 #else
 #   define PCASSERT2(condition, message) do { } while (false)
+#   define PCALWAYSASSERT2(condition, message)                                 \
+    do {                                                                       \
+        if (! (condition)) {                                                   \
+            std::ostringstream s;                                              \
+            s << "PolyCliper ERROR: Assertion `" #condition "` failed in "     \
+              << __FILE__ << " line " << __LINE__ << ": \n" << message << "\n";\
+            std::cerr << s.str();                                              \
+            throw PolyClipperError(s.str());                                   \
+        }                                                                      \
+    } while (false)
 #endif
 
 #define PCASSERT(condition) PCASSERT2(condition, #condition)
+#define PCALWAYSASSERT(condition) PCALWAYSASSERT2(condition, #condition)
 
 namespace internal {
 
