@@ -347,20 +347,38 @@ void clipPolygon(std::vector<Vertex2d<VA>>& polygon,
 
       // Look for any topology links to clipped nodes we need to patch.
       const auto nverts = polygon.size();
-      size_t i, j;
+      size_t i, j, k;
+      bool clipped;
       for (i = 0u; i < nverts; ++i) {
         if (polygon[i].comp == 0 or polygon[i].comp == 2) {
 
-          // Make sure this vertex links to surviving neighbors.
+          // If my previous neighbor was clipped, walk forward until we encounter
+          // another clipped point, and the last unclipped becomes our previous.
           j = polygon[i].neighbors.first;
-          while (polygon[j].comp == -1 and j != i) j = polygon[j].neighbors.first;
-          polygon[i].neighbors.first = j;
-            
+          if (polygon[j].comp == -1) {
+            j = polygon[i].neighbors.second;
+            while (polygon[j].comp != -1 and j != i) j = polygon[j].neighbors.second;
+            j = polygon[j].neighbors.first;
+            PCASSERT2(polygon[j].comp != -1 and j != i,
+                      internal::dumpSerializedState(initial_state));
+            polygon[i].neighbors.first = j;
+            polygon[j].neighbors.second = i;
+          }
+
+          // Same thing in reverse for our next neighbor.
           j = polygon[i].neighbors.second;
-          while (polygon[j].comp == -1 and j != i) j = polygon[j].neighbors.second;
-          polygon[i].neighbors.second = j;
+          if (polygon[j].comp == -1) {
+            j = polygon[i].neighbors.first;
+            while (polygon[j].comp != -1 and j != i) j = polygon[j].neighbors.first;
+            j = polygon[j].neighbors.second;
+            PCASSERT2(polygon[j].comp != -1 and j != i,
+                      internal::dumpSerializedState(initial_state));
+            polygon[i].neighbors.second = j;
+            polygon[j].neighbors.first = i;
+          }
         }
       }
+      // cerr << "After clipping topology: " << polygon2string(polygon) << endl;
 
       // // For each hanging vertex, link to the neighbors that survive the clipping.
       // // If there are more than two hanging vertices, we've clipped a non-convex face and need to check
