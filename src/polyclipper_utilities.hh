@@ -53,7 +53,7 @@ public:
 #   define PCALWAYSASSERT2(condition, message)                                 \
     do {                                                                       \
         if (! (condition)) {                                                   \
-            throw PolyClipperError(s.str());                                   \
+            throw PolyClipperError());                                         \
         }                                                                      \
     } while (false)
 #endif
