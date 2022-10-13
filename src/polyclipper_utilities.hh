@@ -53,10 +53,6 @@ public:
 #   define PCALWAYSASSERT2(condition, message)                                 \
     do {                                                                       \
         if (! (condition)) {                                                   \
-            std::ostringstream s;                                              \
-            s << "PolyCliper ERROR: Assertion `" #condition "` failed in "     \
-              << __FILE__ << " line " << __LINE__ << ": \n" << message << "\n";\
-            std::cerr << s.str();                                              \
             throw PolyClipperError(s.str());                                   \
         }                                                                      \
     } while (false)
