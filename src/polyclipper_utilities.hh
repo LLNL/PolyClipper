@@ -53,7 +53,7 @@ public:
 #   define PCALWAYSASSERT2(condition, message)                                 \
     do {                                                                       \
         if (! (condition)) {                                                   \
-            throw PolyClipperError();                                          \
+            throw PolyClipperError(std::string());                             \
         }                                                                      \
     } while (false)
 #endif
