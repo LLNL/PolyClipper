@@ -311,7 +311,7 @@ void clipPolyhedron(std::vector<Vertex3d<VA>>& polyhedron,
           above = false;
         }
       }
-      PCASSERT2(not (above and below), internal::dumpSerializedState(initial_state));
+      PCALWAYSASSERT(not (above and below));
     }
 
     // Did we get a simple case?

@@ -281,7 +281,7 @@ void clipPolygon(std::vector<Vertex2d<VA>>& polygon,
           above = false;
         }
       }
-      PCASSERT2(not (above and below), internal::dumpSerializedState(initial_state));
+      PCALWAYSASSERT(not (above and below));
     }
 
     // Did we get a simple case?
