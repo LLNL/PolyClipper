@@ -128,7 +128,7 @@ initializePolygon(std::vector<Vertex2d<VA>>& poly,
   const auto n = positions.size();
   PCASSERT(neighbors.size() == n);
   poly.resize(n);
-  for (auto i = 0; i < n; ++i) {
+  for (auto i = 0u; i < n; ++i) {
     PCASSERT(neighbors[i].size() == 2);
     poly[i].position = positions[i];
     poly[i].neighbors = {neighbors[i][0], neighbors[i][1]};
@@ -145,14 +145,14 @@ polygon2string(const std::vector<Vertex2d<VA>>& poly) {
 
   // Numbers of vertices.
   const auto nverts = poly.size();
-  const auto nactive = std::count_if(poly.begin(), poly.end(),
-                                     [](const Vertex& x) { return x.comp >= 0; });
+  // const auto nactive = std::count_if(poly.begin(), poly.end(),
+  //                                    [](const Vertex& x) { return x.comp >= 0; });
   set<int> usedVertices;
 
   // Dump the raw vertex info.
   std::ostringstream s;
   s << "{\n";
-  for (auto i = 0; i < nverts; ++i) {
+  for (auto i = 0u; i < nverts; ++i) {
     s << "  " << i << " " << VA::str(poly[i].position) << " comp=" << poly[i].comp
       << " [" << poly[i].neighbors.first << " " << poly[i].neighbors.second << "]"
       << " clips[";
@@ -204,7 +204,6 @@ void moments(double& zerothMoment, typename VA::VECTOR& firstMoment,
 
   // Walk the polygon, and add up our results triangle by triangle.
   if (polygon.size() > 2) {             // Require at least a triangle
-    const auto nverts = polygon.size();
     const auto v0 = polygon[0];
     for (const auto v1: polygon) {
       const auto v2 = polygon[v1.neighbors.second];
@@ -257,7 +256,7 @@ void clipPolygon(std::vector<Vertex2d<VA>>& polygon,
   }
 
   // Loop over the planes.
-  auto kplane = 0;
+  auto kplane = 0u;
   const auto nplanes = planes.size();
   while (kplane < nplanes and not polygon.empty()) {
     const auto& plane = planes[kplane++];
@@ -297,7 +296,7 @@ void clipPolygon(std::vector<Vertex2d<VA>>& polygon,
       vector<int> hangingVertices;
       int vprev, vnext, vnew;
       const auto nverts0 = polygon.size();
-      for (auto v = 0; v < nverts0; ++v) {
+      for (auto v = 0u; v < nverts0; ++v) {
         std::tie(vprev, vnext) = polygon[v].neighbors;
 
         // BCS XXX note that we are about to attempt to index into polygon.
@@ -334,7 +333,7 @@ void clipPolygon(std::vector<Vertex2d<VA>>& polygon,
           // cerr << " --> Inserting new vertex @ " << VA::str(polygon.back().position) << endl;
 
         } else if (polygon[v].comp == 0 and 
-                   (polygon[vprev].comp == -1 xor polygon[vnext].comp == -1)) {
+                   ((polygon[vprev].comp == -1) xor (polygon[vnext].comp == -1))) {
           // This vertex is exactly in-plane, but has exactly one neighbor edge that will be entirely clipped.
           // No new vertex, but vptr will be hanging.
           hangingVertices.push_back(v);
@@ -434,7 +433,7 @@ void clipPolygon(std::vector<Vertex2d<VA>>& polygon,
       // Find the vertices to remove, and renumber the neighbors.
       if (nkill > 0u) {
         vector<int> verts2kill;
-        for (auto k = 0; k < polygon.size(); ++k) {
+        for (auto k = 0u; k < polygon.size(); ++k) {
           if (polygon[k].comp < 0) {
             verts2kill.push_back(k);
           } else {
@@ -484,7 +483,7 @@ void collapseDegenerates(std::vector<Vertex2d<VA>>& polygon,
   if (n > 0) {
 
     // Set the initial ID's the vertices.
-    for (auto i = 0; i < n; ++i) polygon[i].ID = i;
+    for (auto i = 0u; i < n; ++i) polygon[i].ID = i;
 
     // Walk the polygon removing degenerate edges until we make a sweep without
     // removing any.
@@ -492,10 +491,10 @@ void collapseDegenerates(std::vector<Vertex2d<VA>>& polygon,
     auto active = false;
     while (not done) {
       done = true;
-      for (auto i = 0; i < n; ++i) {
+      for (auto i = 0u; i < n; ++i) {
         if (polygon[i].ID >= 0) {
           auto j = polygon[i].neighbors.second;
-          PCASSERT(j != i);
+          PCASSERT(j != int(i));
           PCASSERT(polygon[j].ID >= 0);
           // if (j==i) throw std::logic_error("got vertex and neighbor identical in collapseDegenerates");
           // if (polygon[j].ID < 0) throw std::logic_error("polygon[j].ID is negative in collapseDegenerates");
@@ -540,7 +539,7 @@ void collapseDegenerates(std::vector<Vertex2d<VA>>& polygon,
 
       // Renumber the nodes assuming we're going to clear out the degenerates.
       auto offset = 0;
-      for (auto i = 0; i < n; ++i) {
+      for (auto i = 0u; i < n; ++i) {
         if (polygon[i].ID == -1) {
           --offset;
         } else {
@@ -562,10 +561,10 @@ void collapseDegenerates(std::vector<Vertex2d<VA>>& polygon,
 #ifndef NDEBUG
   {
     const auto n = polygon.size();
-    for (auto i = 0; i < n; ++i) {
-      PCASSERT(polygon[i].ID == i);
-      PCASSERT(polygon[i].neighbors.first < n);
-      PCASSERT(polygon[i].neighbors.second < n);
+    for (auto i = 0u; i < n; ++i) {
+      PCASSERT(polygon[i].ID == int(i));
+      PCASSERT(size_t(polygon[i].neighbors.first) < n);
+      PCASSERT(size_t(polygon[i].neighbors.second) < n);
     }
   }
 #endif
@@ -581,20 +580,20 @@ extractFaces(const std::vector<Vertex2d<VA>>& poly) {
   using VertexType = Vertex2d<VA>;
   
   // Numbers of vertices.
-  const auto nverts = poly.size();
-  const auto nactive = count_if(poly.begin(), poly.end(),
-                                [](const VertexType& x) { return x.comp >= 0; });
+  const size_t nverts = poly.size();
+  const size_t nactive = count_if(poly.begin(), poly.end(),
+                                  [](const VertexType& x) { return x.comp >= 0; });
 
   // Allocate the result arrays.
   vector<vector<int>> faceVertices(nactive, vector<int>(2));
 
   // Go until we hit all the active vertices.
-  auto k = 0;
+  auto k = 0u;
   set<int> usedVertices;
   while (usedVertices.size() < nactive) {
 
     // Look for the first active unused vertex.
-    auto vstart = 0;
+    auto vstart = 0u;
     while (vstart < nverts and
            (poly[vstart].comp < 0 or usedVertices.find(vstart) != usedVertices.end())) vstart++;
     PCASSERT(vstart < nverts);
@@ -628,7 +627,7 @@ commonFaceClips(const std::vector<Vertex2d<VA>>& poly,
 
   const auto nfaces = faceVertices.size();
   vector<set<int>> faceClips(nfaces);
-  for (auto k = 0; k < nfaces; ++k) {
+  for (auto k = 0u; k < nfaces; ++k) {
     PCASSERT(faceVertices[k].size() == 2);
     std::set_intersection(poly[faceVertices[k][0]].clips.begin(), poly[faceVertices[k][0]].clips.end(),
                           poly[faceVertices[k][1]].clips.begin(), poly[faceVertices[k][1]].clips.end(),
@@ -650,7 +649,7 @@ vector<vector<int>> splitIntoTriangles(const std::vector<Vertex2d<VA>>& poly,
   // Check if we're convex.
   const auto n0 = poly.size();
   bool convex = true;
-  auto i = 0;
+  auto i = 0u;
   while (convex and i < n0) {
     convex = VA::crossmag(VA::sub(poly[poly[i].neighbors.second].position, poly[i].position), VA::sub(poly[poly[i].neighbors.first].position, poly[i].position)) >= 0.0;
     ++i;
@@ -660,11 +659,11 @@ vector<vector<int>> splitIntoTriangles(const std::vector<Vertex2d<VA>>& poly,
   if (convex) {
     const auto& v0 = poly[0].position;
     double a;
-    for (auto i = 2; i < n0; ++i) {
+    for (auto i = 2u; i < n0; ++i) {
       const auto& v1 = poly[i-1].position;
       const auto& v2 = poly[i].position;
       a = VA::crossmag(VA::sub(v1, v0), VA::sub(v2, v0));  // really should be 0.5*
-      if (a > tol) result.push_back({0, i - 1, i});
+      if (a > tol) result.push_back({0, int(i - 1), int(i)});
     }
     return result;
   }
