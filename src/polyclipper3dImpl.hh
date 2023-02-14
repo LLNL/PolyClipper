@@ -152,7 +152,7 @@ initializePolyhedron(std::vector<Vertex3d<VA>>& poly,
   const auto n = positions.size();
   PCASSERT(neighbors.size() == n);
   poly.resize(n);
-  for (auto i = 0; i < n; ++i) {
+  for (auto i = 0u; i < n; ++i) {
     PCASSERT(neighbors[i].size() >= 3);
     poly[i].position = positions[i];
     poly[i].neighbors = neighbors[i];
@@ -168,7 +168,7 @@ polyhedron2string(const std::vector<Vertex3d<VA>>& poly) {
 
   std::ostringstream s;
   const auto nverts = poly.size();
-  for (auto i = 0; i < nverts; ++i) {
+  for (auto i = 0u; i < nverts; ++i) {
     s << i << " ID=" << poly[i].ID << " comp=" << poly[i].comp << " @ " << VA::str(poly[i].position)
       << " neighbors=[";
     copy(poly[i].neighbors.begin(), poly[i].neighbors.end(), ostream_iterator<int>(s, " "));
@@ -213,7 +213,7 @@ void moments(double& zerothMoment, typename VA::VECTOR& firstMoment,
     for (const auto& facet: facets) {
       const auto n = facet.size();
       const auto p0 = VA::sub(polyhedron[facet[0]].position, origin);
-      for (auto k = 1; k < n - 1; ++k) {
+      for (auto k = 1u; k < n - 1; ++k) {
         const auto i = facet[k];
         const auto j = facet[(k + 1) % n];
         const auto p1 = VA::sub(polyhedron[i].position, origin);
@@ -242,7 +242,7 @@ void clipPolyhedron(std::vector<Vertex3d<VA>>& polyhedron,
   using Vector = typename VA::VECTOR;
   using Vertex = Vertex3d<VA>;
   using Polyhedron = std::vector<Vertex3d<VA>>;
-  bool above, below, updated;
+  bool updated;
   int nverts0, nverts, nneigh, i, ii, j, k, jn, inew, iprev, inext, itmp;
   vector<int>::iterator nitr;
   const double nearlyZero = 1.0e-15;
@@ -276,7 +276,7 @@ void clipPolyhedron(std::vector<Vertex3d<VA>>& polyhedron,
   }
 
   // Loop over the planes.
-  auto kplane = 0;
+  auto kplane = 0u;
   const auto nplanes = planes.size();
   while (kplane < nplanes and not polyhedron.empty()) {
     const auto& plane = planes[kplane++];
@@ -343,7 +343,7 @@ void clipPolyhedron(std::vector<Vertex3d<VA>>& polyhedron,
                                                                              polyhedron[jn].position,
                                                                              plane),
                                           2));         // 2 indicates new vertex
-              PCASSERT2(polyhedron.size() == inew + 1, internal::dumpSerializedState(initial_state));
+              PCASSERT2(polyhedron.size() == inew + 1u, internal::dumpSerializedState(initial_state));
               polyhedron[inew].neighbors = vector<int>({i, jn});
               polyhedron[inew].clips.insert(plane.ID);
 
@@ -405,10 +405,10 @@ void clipPolyhedron(std::vector<Vertex3d<VA>>& polyhedron,
                   polyhedron[inext].neighbors.insert(polyhedron[inext].neighbors.begin(), i);
                   old_neighbors[inext].insert(old_neighbors[inext].begin(), -1);
                 } else {
-                  auto offset = std::distance(old_neighbors[inext].begin(),
-                                              std::find(old_neighbors[inext].begin(),
-                                                        old_neighbors[inext].end(),
-                                                        iprev));
+                  size_t offset = std::distance(old_neighbors[inext].begin(),
+                                                std::find(old_neighbors[inext].begin(),
+                                                          old_neighbors[inext].end(),
+                                                          iprev));
                   PCASSERT2(offset != polyhedron[inext].neighbors.size(), internal::dumpSerializedState(initial_state));
                   polyhedron[inext].neighbors.insert(polyhedron[inext].neighbors.begin() + offset, i);
                   old_neighbors[inext].insert(old_neighbors[inext].begin() + offset, i);
@@ -492,7 +492,7 @@ void clipPolyhedron(std::vector<Vertex3d<VA>>& polyhedron,
           PCASSERT2(polyhedron[i].neighbors.size() >= 3,
                     "Bad number of vertex neighbors: " << i << " " << polyhedron[i] << "\n"
                     << "Clipped from plane " << kplane << " " << plane << "\n" << internal::dumpSerializedState(initial_state));
-          for (j = 0; j < polyhedron[i].neighbors.size(); ++j) {
+          for (j = 0; j < int(polyhedron[i].neighbors.size()); ++j) {
             polyhedron[i].neighbors[j] = polyhedron[polyhedron[i].neighbors[j]].ID;
           }
         }
@@ -536,20 +536,20 @@ void collapseDegenerates(std::vector<Vertex3d<VA>>& polyhedron,
   if (n > 0) {
 
     // Set the initial ID's the vertices.
-    for (auto i = 0; i < n; ++i) polyhedron[i].ID = i;
+    for (auto i = 0u; i < n; ++i) polyhedron[i].ID = i;
 
     // cerr << "Initial: " << endl << polyhedron2string(polyhedron) << endl;
 
     // Walk the polyhedron removing degenerate edges until we make a sweep without
     // removing any.  Don't worry about ordering of the neighbors yet.
     auto active = false;
-    for (auto i = 0; i < n; ++i) {
+    for (auto i = 0u; i < n; ++i) {
       if (polyhedron[i].ID >= 0) {
         auto idone = false;
         while (not idone) {
           idone = true;
-          for (auto jneigh = 0; jneigh < polyhedron[i].neighbors.size(); ++jneigh) {
-            const auto j = polyhedron[i].neighbors[jneigh];
+          for (auto jneigh = 0u; jneigh < polyhedron[i].neighbors.size(); ++jneigh) {
+            const size_t j = polyhedron[i].neighbors[jneigh];
             PCASSERT2(polyhedron[j].ID >= 0, internal::dumpSerializedState(initial_state));
             if (VA::magnitude2(VA::sub(polyhedron[i].position, polyhedron[j].position)) < tol2) {
               // cerr << " --> collapasing " << j << " to " << i;
@@ -567,7 +567,7 @@ void collapseDegenerates(std::vector<Vertex3d<VA>>& polyhedron,
 
               // Make sure i & j are removed from the neighbor set of i.
               polyhedron[i].neighbors.erase(remove_if(polyhedron[i].neighbors.begin(), polyhedron[i].neighbors.end(),
-                                                      [&](const int val) { return val == i or val == j; }), 
+                                                      [&](const size_t val) { return val == i or val == j; }), 
                                             polyhedron[i].neighbors.end());
 
               // Remove any adjacent repeats.
@@ -586,7 +586,7 @@ void collapseDegenerates(std::vector<Vertex3d<VA>>& polyhedron,
               for (auto k: polyhedron[j].neighbors) {
                  // i is a neighbor to j, and j has already been removed from list
                  // also, i can not be a neighbor to itself
-                 if (k != i) {
+                if (k != int(i)) {
                     auto itr = find(polyhedron[k].neighbors.begin(), polyhedron[k].neighbors.end(), j);
                     // PCASSERT(itr != polyhedron[k].neighbors.end());
                     if (itr != polyhedron[k].neighbors.end()) *itr = i;
@@ -604,7 +604,7 @@ void collapseDegenerates(std::vector<Vertex3d<VA>>& polyhedron,
 
       // Renumber the nodes assuming we're going to clear out the degenerates.
       auto offset = 0;
-      for (auto i = 0; i < n; ++i) {
+      for (auto i = 0u; i < n; ++i) {
         if (polyhedron[i].ID == -1) {
           --offset;
         } else {
@@ -635,9 +635,9 @@ void collapseDegenerates(std::vector<Vertex3d<VA>>& polyhedron,
   // Post-conditions.
 #ifndef NDEBUG
   {
-    const auto n = polyhedron.size();
-    for (auto i = 0; i < n; ++i) {
-      PCASSERT2(polyhedron[i].ID == i, internal::dumpSerializedState(initial_state));
+    const long int n = polyhedron.size();
+    for (auto i = 0u; i < n; ++i) {
+      PCASSERT2(polyhedron[i].ID == int(i), internal::dumpSerializedState(initial_state));
       for (auto j: polyhedron[i].neighbors) PCASSERT2(j >= 0 and j < n, internal::dumpSerializedState(initial_state));
     }
   }
@@ -680,7 +680,7 @@ extractFaces(const std::vector<Vertex3d<VA>>& poly) {
 
   // Walk each vertex in the polyhedron.
   set<Edge> edgesWalked;
-  const auto nverts = poly.size();
+  const long int nverts = poly.size();
   for (auto i = 0; i < nverts; ++i) {
     const auto& v = poly[i];
     if (v.comp >= 0) {
@@ -727,7 +727,7 @@ extractFaces(const std::vector<Vertex3d<VA>>& poly) {
 #ifndef NDEBUG
   {
     // Every pair should have been walked twice, once in each direction.
-    for (auto i = 0; i < nverts; ++i) {
+    for (auto i = 0u; i < nverts; ++i) {
       if (poly[i].comp >= 0) {
         for (const auto ni: poly[i].neighbors) {
           PCASSERT2(edgesWalked.find(make_pair(i, ni)) != edgesWalked.end(), internal::dumpSerializedState(initial_state));
@@ -749,11 +749,11 @@ commonFaceClips(const std::vector<Vertex3d<VA>>& poly,
                 const vector<vector<int>>& faceVertices) {
   const auto nfaces = faceVertices.size();
   vector<set<int>> faceClips(nfaces);
-  for (auto k = 0; k < nfaces; ++k) {
+  for (auto k = 0u; k < nfaces; ++k) {
     const auto n = faceVertices[k].size();
     PCASSERT(n >= 3);
     faceClips[k] = poly[faceVertices[k][0]].clips;
-    for (auto j = 1; j < n; ++j) {
+    for (auto j = 1u; j < n; ++j) {
       internal::inPlaceSetIntersection(faceClips[k], poly[faceVertices[k][j]].clips);
     }
   }
@@ -773,11 +773,11 @@ vector<vector<int>> splitIntoTetrahedra(const std::vector<Vertex3d<VA>>& poly,
   // Check if we're convex.
   const auto n0 = poly.size();
   bool convex = true;
-  auto i = 0;
+  auto i = 0u;
   while (convex and i < n0) {
     const auto nv = poly[i].neighbors.size();
     PCASSERT(nv >= 3);
-    auto j = 0;
+    auto j = 0u;
     while (convex and j < nv - 2) {
       const auto& v0 = poly[i].position;
       const auto& v1 = poly[poly[i].neighbors[j  ]].position;
@@ -807,7 +807,7 @@ vector<vector<int>> splitIntoTetrahedra(const std::vector<Vertex3d<VA>>& poly,
       if (find(face.begin(), face.end(), 0) == face.end()) {
         const auto nf = face.size();
         PCASSERT(nf >= 3);
-        for (auto i = 2; i < nf; ++i) {
+        for (auto i = 2u; i < nf; ++i) {
           const auto& v1 = poly[face[0  ]].position;
           const auto& v2 = poly[face[i-1]].position;
           const auto& v3 = poly[face[i  ]].position;
