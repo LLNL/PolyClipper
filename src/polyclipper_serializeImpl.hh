@@ -5,10 +5,6 @@
 
 namespace PolyClipper {
 
-// Forward declarations
-template<typename VA> class Vertex2d;
-template<typename VA> class Vertex3d;
-
 namespace internal {
 
 //------------------------------------------------------------------------------
