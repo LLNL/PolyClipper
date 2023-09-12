@@ -42,16 +42,17 @@ else()
   if (NOT PYTHON_EXE)
     find_package(Python3 COMPONENTS Interpreter Development)
     set(PYTHON_EXE "${Python3_EXECUTABLE}")
+    message("-- PYTHON_EXE: ${PYTHON_EXE}")
   endif()
-  message("-- PYTHON_EXE: ${PYTHON_EXE}")
 
   # We need where to find PYB11Generator
-  if (NOT PYB11GEN_PATH)
-    set(PYB11GEN_PATH "${CMAKE_SOURCE_DIR}/extern/PYB11Generator")
+  if (NOT PYB11GENERATOR_ROOT_DIR)
+    set(PYB11GENERATOR_ROOT_DIR "${CMAKE_SOURCE_DIR}/extern/PYB11Generator")
+    message("-- PYB11GENERATOR_ROOT_DIR: ${PYB11GENERATOR_ROOT_DIR}")
   endif()
-  set (PYB11GENERATOR_ROOT_DIR ${PYB11GEN_PATH})  # PYB11Generator requires PYB11GENERATOR_ROOT_DIR
-  include(${PYB11GEN_PATH}/cmake/PYB11Generator.cmake)
-  message("-- PYB11GEN_PATH: ${PYB11GEN_PATH}")
+  # Previous variable for PYB11 directory path
+  set(PYB11GEN_PATH ${PYB11GENERATOR_ROOT_DIR})
+  include(${PYB11GENERATOR_ROOT_DIR}/cmake/PYB11Generator.cmake)
 
   # Install python module path
   if (NOT POLYCLIPPER_PYTHON_INSTALL)
