@@ -27,7 +27,6 @@ install(FILES       ${PolyClipper_headers}
         DESTINATION include)
 
 # Are we building the Python bindings?
-if((NOT ENABLE_CXXONLY) AND
-    (NOT IMPORTED_POLYCLIPPER))
+if(${POLYCLIPPER_MODULE_GEN})
   add_subdirectory(PYB11)
 endif()

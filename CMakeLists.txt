@@ -13,7 +13,8 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS On)
 #-------------------------------------------------------------------------------
 # Options
 #-------------------------------------------------------------------------------
-option(ENABLE_CXXONLY "Do not build Python language bindings" OFF)
+option(ENABLE_CXXONLY "Only install the C++ headers" OFF)
+option(POLYCLIPPER_MODULE_GEN "Generate the PolyClipper modules" ON)
 option(ENABLE_DOCS "enable the sphinx documentation" OFF)
 option(ENABLE_BOUNDCHECKING "enable Gnu compiler bound checking on memory" OFF)
 
@@ -37,7 +38,7 @@ endif()
 #-------------------------------------------------------------------------------
 if (ENABLE_CXXONLY)
   add_definitions(-DCXXONLY=1)
-
+  set(POLYCLIPPER_MODULE_GEN OFF BOOL)
 else()
   if (NOT PYTHON_EXE)
     find_package(Python3 COMPONENTS Interpreter Development)
