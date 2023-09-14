@@ -38,7 +38,7 @@ endif()
 #-------------------------------------------------------------------------------
 if (ENABLE_CXXONLY)
   add_definitions(-DCXXONLY=1)
-  set(POLYCLIPPER_MODULE_GEN OFF BOOL)
+  set(POLYCLIPPER_MODULE_GEN OFF)
 else()
   if (NOT PYTHON_EXE)
     find_package(Python3 COMPONENTS Interpreter Development)
