@@ -13,11 +13,14 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS On)
 #-------------------------------------------------------------------------------
 # Options
 #-------------------------------------------------------------------------------
-option(ENABLE_CXXONLY "Only install the C++ headers" OFF)
+option(POLYCLIPPER_ENABLE_CXXONLY "Only install the C++ headers" OFF)
 option(POLYCLIPPER_MODULE_GEN "Generate the PolyClipper modules" ON)
-option(ENABLE_DOCS "enable the sphinx documentation" OFF)
+option(POLYCLIPPER ENABLE_DOCS "enable the sphinx documentation" OFF)
 option(ENABLE_BOUNDCHECKING "enable Gnu compiler bound checking on memory" OFF)
 
+if(ENABLE_CXXONLY)
+  set(POLYCLIPPER_ENABLE_CXXONLY ${ENABLE_CXXONLY})
+endif()
 #-------------------------------------------------------------------------------
 # Install
 #-------------------------------------------------------------------------------
@@ -27,7 +30,7 @@ message("-- install path: ${CMAKE_INSTALL_PREFIX}")
 #-------------------------------------------------------------------------------
 # Include standard build system logic and options / definitions
 #-------------------------------------------------------------------------------
-if (ENABLE_BOUNDCHECKING)
+if (${ENABLE_BOUNDCHECKING})
   add_definitions(-D_GLIBCXX_DEBUG=1)
 endif()
 
@@ -36,7 +39,7 @@ endif()
 # PolyClipper doesn't actually build any compiled objects in the C++ only case,
 # but you can still install the C++ headers.
 #-------------------------------------------------------------------------------
-if (ENABLE_CXXONLY)
+if (${POLYCLIPPER_ENABLE_CXXONLY})
   add_definitions(-DCXXONLY=1)
   set(POLYCLIPPER_MODULE_GEN OFF)
 else()
@@ -73,7 +76,7 @@ add_subdirectory(src)
 #-------------------------------------------------------------------------------
 # Add the documentation
 #-------------------------------------------------------------------------------
-if (ENABLE_DOCS)
+if (${POLYCLIPPER_ENABLE_DOCS})
   add_subdirectory(docs)
 endif()
 

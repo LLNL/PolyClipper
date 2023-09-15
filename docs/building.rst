@@ -56,7 +56,7 @@ PYBIND11_INCLUDE_PATH
 PYB11GENERATOR_ROOT_DIR
   Similarly you can explicitly specify a path to a PYB11Generator installation.  By default the PolyClipper downloaded version is used.
 
-ENABLE_DOCS
+POLYCLIPPER_ENABLE_DOCS
   Turn Sphinx documentation generation on/off.
 
 SPHINX_EXECUTABLE
@@ -71,7 +71,7 @@ SPHINX_THEME_DIR
 POLYCLIPPER_MODULE_GEN
   Generate the PolyClipper python modules -- defaults to ``ON``.
 
-ENABLE_CXXONLY
+POLYCLIPPER_ENABLE_CXXONLY
   Only install the C++ headers, also sets ``POLYCLIPPER_MODULE_GEN`` to ``OFF`` -- defaults to ``OFF``
 
 -------
