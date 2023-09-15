@@ -15,7 +15,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS On)
 #-------------------------------------------------------------------------------
 option(POLYCLIPPER_ENABLE_CXXONLY "Only install the C++ headers" OFF)
 option(POLYCLIPPER_MODULE_GEN "Generate the PolyClipper modules" ON)
-option(POLYCLIPPER ENABLE_DOCS "enable the sphinx documentation" OFF)
+option(POLYCLIPPER_ENABLE_DOCS "enable the sphinx documentation" OFF)
 option(ENABLE_BOUNDCHECKING "enable Gnu compiler bound checking on memory" OFF)
 
 if(ENABLE_CXXONLY)
