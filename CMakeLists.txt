@@ -24,8 +24,10 @@ endif()
 #-------------------------------------------------------------------------------
 # Install
 #-------------------------------------------------------------------------------
-set(POLYCLIPPER_INSTALL_DIR ${CMAKE_INSTALL_PREFIX})
-message("-- install path: ${CMAKE_INSTALL_PREFIX}")
+if(NOT POLYCLIPPER_INSTALL_DIR)
+  set(POLYCLIPPER_INSTALL_DIR ${CMAKE_INSTALL_INCLUDEDIR})
+endif()
+message("-- PolyClipper install path: ${CMAKE_INSTALL_PREFIX}/${POLYCLIPPER_INSTALL_DIR}")
 
 #-------------------------------------------------------------------------------
 # Include standard build system logic and options / definitions
