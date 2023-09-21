@@ -72,7 +72,10 @@ POLYCLIPPER_MODULE_GEN
   Generate the PolyClipper python modules -- defaults to ``ON``.
 
 POLYCLIPPER_ENABLE_CXXONLY
-  Only install the C++ headers, also sets ``POLYCLIPPER_MODULE_GEN`` to ``OFF`` -- defaults to ``OFF``
+  Only install the C++ headers, also sets ``POLYCLIPPER_MODULE_GEN`` to ``OFF`` -- defaults to ``OFF``.
+
+POLYCLIPPER_INSTALL_DIR
+  Specify where the header files will be installed -- defaults to ``CMAKE_INSTALL_INCLUDEDIR``.
 
 -------
 Testing
