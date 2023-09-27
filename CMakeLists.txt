@@ -13,20 +13,26 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS On)
 #-------------------------------------------------------------------------------
 # Options
 #-------------------------------------------------------------------------------
-option(ENABLE_CXXONLY "Do not build Python language bindings" OFF)
-option(ENABLE_DOCS "enable the sphinx documentation" OFF)
+option(POLYCLIPPER_ENABLE_CXXONLY "Only install the C++ headers" OFF)
+option(POLYCLIPPER_MODULE_GEN "Generate the PolyClipper modules" ON)
+option(POLYCLIPPER_ENABLE_DOCS "enable the sphinx documentation" OFF)
 option(ENABLE_BOUNDCHECKING "enable Gnu compiler bound checking on memory" OFF)
 
+if(ENABLE_CXXONLY)
+  set(POLYCLIPPER_ENABLE_CXXONLY ${ENABLE_CXXONLY})
+endif()
 #-------------------------------------------------------------------------------
 # Install
 #-------------------------------------------------------------------------------
-set(POLYCLIPPER_INSTALL_DIR ${CMAKE_INSTALL_PREFIX})
-message("-- install path: ${CMAKE_INSTALL_PREFIX}")
+if(NOT POLYCLIPPER_INSTALL_DIR)
+  set(POLYCLIPPER_INSTALL_DIR ${CMAKE_INSTALL_INCLUDEDIR})
+endif()
+message("-- PolyClipper install path: ${CMAKE_INSTALL_PREFIX}/${POLYCLIPPER_INSTALL_DIR}")
 
 #-------------------------------------------------------------------------------
 # Include standard build system logic and options / definitions
 #-------------------------------------------------------------------------------
-if (ENABLE_BOUNDCHECKING)
+if (${ENABLE_BOUNDCHECKING})
   add_definitions(-D_GLIBCXX_DEBUG=1)
 endif()
 
@@ -35,23 +41,24 @@ endif()
 # PolyClipper doesn't actually build any compiled objects in the C++ only case,
 # but you can still install the C++ headers.
 #-------------------------------------------------------------------------------
-if (ENABLE_CXXONLY)
+if (${POLYCLIPPER_ENABLE_CXXONLY})
   add_definitions(-DCXXONLY=1)
-
+  set(POLYCLIPPER_MODULE_GEN OFF)
 else()
   if (NOT PYTHON_EXE)
     find_package(Python3 COMPONENTS Interpreter Development)
     set(PYTHON_EXE "${Python3_EXECUTABLE}")
+    message("-- PYTHON_EXE: ${PYTHON_EXE}")
   endif()
-  message("-- PYTHON_EXE: ${PYTHON_EXE}")
 
   # We need where to find PYB11Generator
-  if (NOT PYB11GEN_PATH)
-    set(PYB11GEN_PATH "${CMAKE_SOURCE_DIR}/extern/PYB11Generator")
+  if (NOT PYB11GENERATOR_ROOT_DIR)
+    set(PYB11GENERATOR_ROOT_DIR "${CMAKE_SOURCE_DIR}/extern/PYB11Generator")
+    message("-- PYB11GENERATOR_ROOT_DIR: ${PYB11GENERATOR_ROOT_DIR}")
   endif()
-  set (PYB11GENERATOR_ROOT_DIR ${PYB11GEN_PATH})  # PYB11Generator requires PYB11GENERATOR_ROOT_DIR
-  include(${PYB11GEN_PATH}/cmake/PYB11Generator.cmake)
-  message("-- PYB11GEN_PATH: ${PYB11GEN_PATH}")
+  # Previous variable for PYB11 directory path
+  set(PYB11GEN_PATH ${PYB11GENERATOR_ROOT_DIR})
+  include(${PYB11GENERATOR_ROOT_DIR}/cmake/PYB11Generator.cmake)
 
   # Install python module path
   if (NOT POLYCLIPPER_PYTHON_INSTALL)
@@ -71,7 +78,7 @@ add_subdirectory(src)
 #-------------------------------------------------------------------------------
 # Add the documentation
 #-------------------------------------------------------------------------------
-if (ENABLE_DOCS)
+if (${POLYCLIPPER_ENABLE_DOCS})
   add_subdirectory(docs)
 endif()
 

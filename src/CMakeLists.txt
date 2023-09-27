@@ -8,7 +8,7 @@ add_library(PolyClipperAPI INTERFACE)
 target_include_directories(
   PolyClipperAPI
   INTERFACE $<BUILD_INTERFACE:${${PROJECT_NAME}_SOURCE_DIR}/src>
-            $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+            $<INSTALL_INTERFACE:${POLYCLIPPER_INSTALL_DIR}>
   )
 
 set(PolyClipper_headers 
@@ -24,9 +24,9 @@ set(PolyClipper_headers
     polyclipper_vector2d.hh
     polyclipper_vector3d.hh)
 install(FILES       ${PolyClipper_headers}
-        DESTINATION include)
+        DESTINATION ${POLYCLIPPER_INSTALL_DIR})
 
 # Are we building the Python bindings?
-if(NOT ENABLE_CXXONLY)
+if(${POLYCLIPPER_MODULE_GEN})
   add_subdirectory(PYB11)
 endif()
