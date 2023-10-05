@@ -25,7 +25,7 @@ endif()
 # Install
 #-------------------------------------------------------------------------------
 if(NOT POLYCLIPPER_INSTALL_DIR)
-  set(POLYCLIPPER_INSTALL_DIR ${CMAKE_INSTALL_INCLUDEDIR})
+  set(POLYCLIPPER_INSTALL_DIR include)
 endif()
 message("-- PolyClipper install path: ${CMAKE_INSTALL_PREFIX}/${POLYCLIPPER_INSTALL_DIR}")
 
