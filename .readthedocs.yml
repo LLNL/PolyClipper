@@ -19,9 +19,6 @@ build:
   jobs:
     pre_build:
       - cmake -S . -B INSTALL/BUILD -DCMAKE_INSTALL_PREFIX=INSTALL -DPOLYCLIPPER_ENABLE_DOCS=1 -DPOLYCLIPPER_MODULE_GEN=0 -DPOLYCLIPPER_ENABLE_TESTS=0
-      - ls INSTALL/BUILD/
-      - ls INSTALL/BUILD/docs/_build
-      - cat INSTALL/BUILD/docs/_build/conf.py
 
 # Build documentation in the docs/ directory with Sphinx
 sphinx:
