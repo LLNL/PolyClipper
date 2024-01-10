@@ -16,7 +16,9 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS On)
 option(POLYCLIPPER_ENABLE_CXXONLY "Only install the C++ headers" OFF)
 option(POLYCLIPPER_MODULE_GEN "Generate the PolyClipper modules" ON)
 option(POLYCLIPPER_ENABLE_DOCS "enable the sphinx documentation" OFF)
+option(POLYCLIPPER_ENABLE_TESTS "enable the tests" ON)
 option(ENABLE_BOUNDCHECKING "enable Gnu compiler bound checking on memory" OFF)
+
 
 if(ENABLE_CXXONLY)
   set(POLYCLIPPER_ENABLE_CXXONLY ${ENABLE_CXXONLY})
@@ -85,4 +87,7 @@ endif()
 #-------------------------------------------------------------------------------
 # Add any tests
 #-------------------------------------------------------------------------------
-add_subdirectory(test/test_array_vector)
+if (${POLYCLIPPER_ENABLE_TESTS})
+  add_subdirectory(test/test_array_vector)
+endif()
+

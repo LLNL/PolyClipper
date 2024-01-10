@@ -16,15 +16,12 @@ build:
     python: "3.12"
   apt_packages:
     - cmake
-    # You can also specify other tool versions:
-    # nodejs: "20"
-    # rust: "1.70"
-    # golang: "1.20"
   jobs:
     pre_build:
-      - cmake . -DCMAKE_INSTALL_PREFIX=.
+      - mkdir INSTALL/BUILD
+      - cmake -S . -B INSTALL/BUILD -DCMAKE_INSTALL_PREFIX=INSTALL -DPOLYCLIPPER_ENABLE_DOCS=1 -DPOLYCLIPPER_MODULE_GEN=0 -DPOLYCLIPPER_ENABLE_TESTS=0
 
 # Build documentation in the docs/ directory with Sphinx
 sphinx:
+  configuration: INSTALL/BUILD/_build/conf.py
   configuration: docs/conf.py
-
