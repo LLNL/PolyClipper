@@ -5,21 +5,20 @@
 # Required
 version: 2
 
-submodules:
-  include: all
-  recursive: true
-
-# Set the OS, Python version and other tools you might need
-build:
-  os: ubuntu-22.04
-  tools:
-    python: "3.12"
-  apt_packages:
-    - cmake
-  jobs:
-    pre_build:
-      - cmake -S . -B INSTALL/BUILD -DCMAKE_INSTALL_PREFIX=INSTALL -DPOLYCLIPPER_ENABLE_DOCS=1 -DPOLYCLIPPER_MODULE_GEN=0 -DPOLYCLIPPER_ENABLE_TESTS=0
-
 # Build documentation in the docs/ directory with Sphinx
 sphinx:
-  configuration: INSTALL/BUILD/docs/_build/conf.py
+  configuration: docs/conf.py
+
+# Build documentation with MkDocs
+#mkdocs:
+#  configuration: mkdocs.yml
+
+# # Optionally build your docs in additional formats such as PDF
+# formats:
+#   - pdf
+
+# # Optionally set the version of Python and requirements required to build your docs
+# python:
+#   version: 3.7
+#   install:
+#     - requirements: docs/requirements.txt
