@@ -60,7 +60,6 @@ int compare(const Plane<VA>& plane,
             const double xmax,
             const double ymax,
             const double zmax) {
-  using Vector = typename VA::VECTOR;
   const auto c1 = internal::compare<VA>(plane, VA::Vector(xmin, ymin, zmin));
   const auto c2 = internal::compare<VA>(plane, VA::Vector(xmax, ymin, zmin));
   const auto c3 = internal::compare<VA>(plane, VA::Vector(xmax, ymax, zmin));
@@ -187,9 +186,6 @@ template<typename VA>
 void moments(double& zerothMoment, typename VA::VECTOR& firstMoment,
              const std::vector<Vertex3d<VA>>& polyhedron) {
 
-  // Useful types.
-  using Vector = typename VA::VECTOR;
-
   // Clear the result for accumulation.
   zerothMoment = 0.0;
   firstMoment = VA::Vector(0.0, 0.0, 0.0);
@@ -241,7 +237,6 @@ void clipPolyhedron(std::vector<Vertex3d<VA>>& polyhedron,
   // seems to slightly help performance.
   using Vector = typename VA::VECTOR;
   using Vertex = Vertex3d<VA>;
-  using Polyhedron = std::vector<Vertex3d<VA>>;
   bool updated;
   int nverts0, nverts, nneigh, i, ii, j, k, jn, inew, iprev, inext, itmp;
   vector<int>::iterator nitr;
