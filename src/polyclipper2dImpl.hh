@@ -54,7 +54,6 @@ int compare(const Plane<VA>& plane,
             const double ymin,
             const double xmax,
             const double ymax) {
-  using Vector = typename VA::VECTOR;
   const auto c1 = internal::compare<VA>(plane, VA::Vector(xmin, ymin));
   const auto c2 = internal::compare<VA>(plane, VA::Vector(xmax, ymin));
   const auto c3 = internal::compare<VA>(plane, VA::Vector(xmax, ymax));
@@ -141,7 +140,6 @@ initializePolygon(std::vector<Vertex2d<VA>>& poly,
 template<typename VA>
 std::string
 polygon2string(const std::vector<Vertex2d<VA>>& poly) {
-  using Vertex = Vertex2d<VA>;
 
   // Numbers of vertices.
   const auto nverts = poly.size();
@@ -195,7 +193,6 @@ void moments(double& zerothMoment, typename VA::VECTOR& firstMoment,
              const std::vector<Vertex2d<VA>>& polygon) {
 
   // Useful types.
-  using Vector = typename VA::VECTOR;
   const double nearlyZero = 1.0e-15;
 
   // Clear the result for accumulation.
@@ -346,8 +343,7 @@ void clipPolygon(std::vector<Vertex2d<VA>>& polygon,
 
       // Look for any topology links to clipped nodes we need to patch.
       const auto nverts = polygon.size();
-      size_t i, j, k;
-      bool clipped;
+      size_t i, j;
       for (i = 0u; i < nverts; ++i) {
         if (polygon[i].comp == 0 or polygon[i].comp == 2) {
 
