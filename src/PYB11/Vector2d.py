@@ -23,7 +23,7 @@ class Vector2d:
     def __imul__(self, rhs="double()"):
         return
 
-    def __idiv__(self, rhs="double()"):
+    def __itruediv__(self, rhs="double()"):
         return
 
     def __iadd__(self):
@@ -38,7 +38,7 @@ class Vector2d:
     def __rmul__(self, rhs="double()"):
         return
 
-    def __div__(self, rhs="double()"):
+    def __truediv__(self, rhs="double()"):
         return
 
     def __add__(self):
