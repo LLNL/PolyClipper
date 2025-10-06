@@ -1,5 +1,5 @@
 # CMakeLists to build the PolyClipper library.
-cmake_minimum_required(VERSION 3.14)
+cmake_minimum_required(VERSION 3.20)
 project(PolyClipper LANGUAGES CXX)
 
 #-------------------------------------------------------------------------------
@@ -13,16 +13,12 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS On)
 #-------------------------------------------------------------------------------
 # Options
 #-------------------------------------------------------------------------------
-option(POLYCLIPPER_ENABLE_CXXONLY "Only install the C++ headers" OFF)
+option(POLYCLIPPER_ENABLE_PYTHON "Enable python interface" ON)
 option(POLYCLIPPER_MODULE_GEN "Generate the PolyClipper modules" ON)
 option(POLYCLIPPER_ENABLE_DOCS "enable the sphinx documentation" OFF)
 option(POLYCLIPPER_ENABLE_TESTS "enable the tests" ON)
 option(ENABLE_BOUNDCHECKING "enable Gnu compiler bound checking on memory" OFF)
 
-
-if(ENABLE_CXXONLY)
-  set(POLYCLIPPER_ENABLE_CXXONLY ${ENABLE_CXXONLY})
-endif()
 #-------------------------------------------------------------------------------
 # Install
 #-------------------------------------------------------------------------------
@@ -43,10 +39,8 @@ endif()
 # PolyClipper doesn't actually build any compiled objects in the C++ only case,
 # but you can still install the C++ headers.
 #-------------------------------------------------------------------------------
-if (${POLYCLIPPER_ENABLE_CXXONLY})
-  add_definitions(-DCXXONLY=1)
-  set(POLYCLIPPER_MODULE_GEN OFF)
-else()
+if (POLYCLIPPER_ENABLE_PYTHON)
+
   if (NOT PYTHON_EXE)
     find_package(Python3 COMPONENTS Interpreter Development)
     set(PYTHON_EXE "${Python3_EXECUTABLE}")
@@ -68,6 +62,8 @@ else()
     set(POLYCLIPPER_PYTHON_INSTALL ${CMAKE_INSTALL_PREFIX}/lib/python/site-packages/PolyClipper)
   endif()
   message("-- Python module install path ${POLYCLIPPER_PYTHON_INSTALL}")
+else()
+  set(POLYCLIPPER_MODULE_GEN OFF)
 endif()
 
 set(POLYCLIPPER_PYTHON_DEPENDS )
