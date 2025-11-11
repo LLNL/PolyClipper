@@ -8,7 +8,7 @@ from testPolyClipper2d import *
 
 #-------------------------------------------------------------------------------
 # Make a non-convex notched thingy.
-#    6           5      3          2
+    6           5      3          2
 #    |------------\    /-----------|
 #    |             \  /            |
 #    |              \/             |
@@ -19,7 +19,7 @@ from testPolyClipper2d import *
 notched_points = [Vector2d(*coords)
                   for coords in [(0,0), (4,0), (4,2), (3,2), (2,1), (1,2), (0,2)]]
 n = len(notched_points)
-notched_neighbors = [[(i - 1) % n, (i + 1) % n] for i in xrange(n)]
+notched_neighbors = [[(i - 1) % n, (i + 1) % n] for i in range(n)]
 
 #-------------------------------------------------------------------------------
 # Unclipped object
@@ -27,7 +27,7 @@ notched_neighbors = [[(i - 1) % n, (i + 1) % n] for i in xrange(n)]
 poly = Polygon()
 initializePolygon(poly, notched_points, notched_neighbors)
 writePolyOBJ(poly, "notched_polygon.obj")
-print "Starting poly: ", list(poly)
+print("Starting poly: ", list(poly))
 
 #-------------------------------------------------------------------------------
 # Clip 1
@@ -37,7 +37,7 @@ initializePolygon(poly, notched_points, notched_neighbors)
 planes = [Plane2d(Vector2d(3, 1), Vector2d(-1, 0.5).unitVector(), 10)]
 clipPolygon(poly, planes)
 writePolyOBJ(poly, "notched_polygon_clip1.obj")
-print "Single clip: ", list(poly)
+print("Single clip: ", list(poly))
 
 #-------------------------------------------------------------------------------
 # Clip 2
@@ -47,7 +47,7 @@ initializePolygon(poly, notched_points, notched_neighbors)
 planes = [Plane2d(Vector2d(3, 1), Vector2d(1, -0.5).unitVector(), 20)]
 clipPolygon(poly, planes)
 writePolyOBJ(poly, "notched_polygon_clip2.obj")
-print "Reverse clip: ", list(poly)
+print("Reverse clip: ", list(poly))
 
 #-------------------------------------------------------------------------------
 # Clip 3
@@ -58,4 +58,4 @@ planes = [Plane2d(Vector2d(3, 1), Vector2d(-1, 0.5).unitVector(), 10),
           Plane2d(Vector2d(2, 1.1), Vector2d(1, 5).unitVector(), 30)]
 clipPolygon(poly, planes)
 writePolyOBJ(poly, "notched_polygon_clip3.obj")
-print "Double clip: ", list(poly)
+print("Double clip: ", list(poly))

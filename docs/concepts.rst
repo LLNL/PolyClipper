@@ -22,7 +22,7 @@ In this case the neighbors of vertex 6 will be (5, 2, 7), listed counterclockwis
 
 .. image:: Pyramid.*
    :width: 200
-   :alt: You should see a labeld pyramid here
+   :alt: You should see a labeled pyramid here
 
 Here we can see that vertex 4 will have 4 neighbors: (0, 1, 2, 3).
 
@@ -33,7 +33,7 @@ Here we can see that vertex 4 will have 4 neighbors: (0, 1, 2, 3).
 Clipping operations
 ========================================
 
-PolyClippers main functionality is the clipping of Polygons/Polyhedra by arbitray planes.  Planes are defined by a unit normal and distance from the plane to the origin, :math:`(\hat{n}, d)`.  Note given some point :math:`\vec{p_0}` in the plane, :math:`d = -\hat{n}\cdot\vec{p}_0`.
+PolyClippers main functionality is the clipping of Polygons/Polyhedra by arbitrary planes.  Planes are defined by a unit normal and distance from the plane to the origin, :math:`(\hat{n}, d)`.  Note given some point :math:`\vec{p_0}` in the plane, :math:`d = -\hat{n}\cdot\vec{p}_0`.
 
 Points are defined as above a plane when they are on the side the plane normal :math:`\hat{n}` points toward, and below if on the opposite side.  This can be defined mathematically in terms of the signed distance of a point :math:`\vec{p}` from the plane:
 
@@ -53,7 +53,7 @@ In this example the coordinates are shown in magenta on the interior of the poly
   notched_points = [Vector2d(*coords)
                     for coords in [(0,0), (4,0), (4,2), (3,2), (2,1), (1,2), (0,2)]]
   n = len(notched_points)
-  notched_neighbors = [[(i - 1) % n, (i + 1) % n] for i in xrange(n)]
+  notched_neighbors = [[(i - 1) % n, (i + 1) % n] for i in range(n)]
   poly = Polygon()
   initializePolygon(poly, notched_points, notched_neighbors)
   print "Starting poly: ", list(poly)

@@ -27,7 +27,7 @@ def writePolyOBJ(poly, filename, forceTriangles=False):
             # There could be multiple loops in a polygon, so break
             # those up into individual facets for obj output.
             # First, sort topologically so the loops are contiguous
-            for i in xrange(len(facets) - 1):
+            for i in range(len(facets) - 1):
                 v1 = facets[i][1]
                 j = i + 1
                 while j < len(facets) and v1 != facets[j][0]:
@@ -38,7 +38,7 @@ def writePolyOBJ(poly, filename, forceTriangles=False):
             # Now we can write the facets.
             f.write("f")
             i = 0
-            for i in xrange(len(facets)):
+            for i in range(len(facets)):
                 f.write(" %i" % (facets[i][0] + 1))
                 if ((i + 1) < len(facets) and
                     facets[i][1] != facets[i+1][0]):
@@ -52,7 +52,7 @@ def writePolyOBJ(poly, filename, forceTriangles=False):
             for facet in facets:
                 f.write("f")
                 if forceTriangles and len(facet > 3):
-                    for j in xrange(1, len(facet)-1):
+                    for j in range(1, len(facet)-1):
                         f.write(" %i %i %i\n" % (0, j, j+1))
                 else:
                     for i in facet:
