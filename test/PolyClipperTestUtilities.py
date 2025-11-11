@@ -1,5 +1,5 @@
 import PolyClipper
-from collections import Iterable
+from collections.abc import Iterable
 
 #-------------------------------------------------------------------------------
 # Fuzzy comparisons.
