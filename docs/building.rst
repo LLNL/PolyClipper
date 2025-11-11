@@ -2,7 +2,7 @@
 Obtaining, building, installing, and testing PolyClipper
 #########################################################
 
-PolyClipper minimally requires a C++11 compliant compiler.  In order to build the Python interface you also need a Python 2 installation -- porting to Python 3 is forthcoming.  If you use git to clone the PolyClipper source note PolyClipper includes three submodules: `BLT <https://github.com/LLNL/blt>`_, `pybind11 <https://github.com/pybind/pybind11>`_, and `PYB11Generator <https://github.com/jmikeowen/PYB11Generator>`_.  In order to ensure these are properly downloaded when cloning PolyClipper be sure to use the ``--recurse-submodules`` git option::
+PolyClipper minimally requires a C++11 compliant compiler.  In order to build the Python interface you also need a Python (version 3.8 or later) installation.  If you use git to clone the PolyClipper source note PolyClipper includes three submodules: `BLT <https://github.com/LLNL/blt>`_, `pybind11 <https://github.com/pybind/pybind11>`_, and `PYB11Generator <https://github.com/jmikeowen/PYB11Generator>`_.  In order to ensure these are properly downloaded when cloning PolyClipper be sure to use the ``--recurse-submodules`` git option::
 
   git clone --recursive https://github.com/LLNL/PolyClipper.git
 
